@@ -1,4 +1,6 @@
+import type { JSONPatchOperation } from "../deps.ts";
 import type { CodemodClient } from "../types.ts";
+import { applyJSONPatch } from "../deps.ts";
 
 export class Client implements CodemodClient {
   public async touch(file: string): Promise<void> {
@@ -25,6 +27,17 @@ export class Client implements CodemodClient {
   ): Promise<void> {
     const originalContent = await Deno.readTextFile(file);
     const newContent = originalContent.replace(regex, replaceWith);
+    await Deno.writeTextFile(file, newContent);
+  }
+
+  public async jsonpatch(
+    file: string,
+    patch: JSONPatchOperation[],
+  ): Promise<void> {
+    const originalContent = await Deno.readTextFile(file);
+    const originalJSON = JSON.parse(originalContent);
+    const newJSON = applyJSONPatch(originalJSON, patch);
+    const newContent = JSON.stringify(newJSON, null, 2);
     await Deno.writeTextFile(file, newContent);
   }
 
