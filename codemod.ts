@@ -31,6 +31,9 @@ export type Codemod =
 export interface BaseCodemod {
   /** The relative paths of the files to modify. */
   files: string[];
+
+  /** The branch to modify. */
+  branch?: string;
 }
 
 /**
@@ -95,6 +98,12 @@ export interface JSONPatchCodemod extends BaseCodemod {
 
   /** The JSON patch to apply. */
   patch: ReadonlyArray<JSONPatchOperation>;
+
+  /** The replacer to use when stringifying the JSON. */
+  replacer?: Parameters<typeof JSON.stringify>[1];
+
+  /** The space to use when stringifying the JSON. */
+  space?: Parameters<typeof JSON.stringify>[2];
 }
 
 /** A codemod that deletes a file. */

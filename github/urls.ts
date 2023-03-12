@@ -1,8 +1,11 @@
 export const API_URL = "https://api.github.com";
 
-export function makeContentsURL(repo: string, branch: string, file: string) {
+export function makeContentsURL(repo: string, file: string, branch?: string) {
   const url = new URL(`/repos/${repo}/contents/${file}`, API_URL);
-  url.searchParams.set("ref", branch);
+  if (branch) {
+    url.searchParams.set("ref", branch);
+  }
+
   return url;
 }
 
