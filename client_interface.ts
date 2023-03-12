@@ -14,9 +14,8 @@ export interface CodemodClientInterface {
   jsonpatch(
     file: string,
     patch: ReadonlyArray<JSONPatchOperation>,
-    // deno-lint-ignore no-explicit-any
-    replacer?: ((this: any, key: string, value: any) => any) | undefined,
-    space?: string | number | undefined,
+    replacer?: Parameters<typeof JSON.stringify>[1],
+    space?: Parameters<typeof JSON.stringify>[2],
   ): Promise<void>;
   delete(file: string): Promise<void>;
 }

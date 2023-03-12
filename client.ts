@@ -73,11 +73,13 @@ export class Client implements CodemodClientInterface {
   public async jsonpatch(
     file: string,
     patch: readonly JSONPatchOperation[],
+    replacer?: Parameters<typeof JSON.stringify>[1],
+    space?: Parameters<typeof JSON.stringify>[2],
   ): Promise<void> {
     const originalContent = await Deno.readTextFile(file);
     const originalJSON = JSON.parse(originalContent);
     const newJSON = applyJSONPatch(originalJSON, patch);
-    const newContent = JSON.stringify(newJSON, null, 2);
+    const newContent = JSON.stringify(newJSON, replacer, space);
     await Deno.writeTextFile(file, newContent);
   }
 
