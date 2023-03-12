@@ -6,13 +6,6 @@ import type { Options } from "./options.ts";
 import { encode } from "./deps.ts";
 import { makeContentsURL, makePRURL } from "./urls.ts";
 
-type Op<T> = () => Promise<OpResult<T>>;
-
-interface OpResult<T> {
-  response: Response;
-  data: T;
-}
-
 export class Client extends BaseClient implements CodemodClientInterface {
   constructor(
     public readonly options: Options,
@@ -91,17 +84,21 @@ export class Client extends BaseClient implements CodemodClientInterface {
   }
 
   // Return readOp response if it fails, otherwise return setOp response.
-  private makeTouchOp(file: string): () => Promise<Response> {
+  private makeTouchOp(file: string): Op {
     const readOp = this.makeReadOp(file).bind(this);
     const setOp = this.makeSetOp(file, "").bind(this);
     const op = () =>
       readOp()
-        .then((res) => res.ok ? res : setOp());
-
+        .then(({ response, data: content }) => {
+          if (response.ok && content.length > 0) {
+            throw new Error(`File ${file} already exists`);
+          }
+        })
+        .then(setOp);
     return op;
   }
 
-  private makeSetOp(file: string, content: string): () => Promise<Response> {
+  private makeSetOp(file: string, content: string): Op {
     const prOp = this.makePROp(
       this.options.pr.title,
       this.options.pr.body,
@@ -145,7 +142,9 @@ export class Client extends BaseClient implements CodemodClientInterface {
     return async () => Response.error();
   }
 
-  private makeReadOp(file: string): () => Promise<string> {
+  // Maybe set up retries for this?
+  // https://deno.land/std/async/retry.ts?s=retry
+  private makeReadOp(file: string): Op<string> {
     const url = makeContentsURL(
       this.options.repo,
       this.options.commit.head,
@@ -158,25 +157,20 @@ export class Client extends BaseClient implements CodemodClientInterface {
     });
     const op = () =>
       fetch(url, { headers })
-        .then(async (res: Response) => {
-          if (!res.ok) {
+        .then(async (response: Response) => {
+          if (!response.ok) {
             throw new Error(`Failed to read ${file}`);
           }
 
           // Continue if the file doesn't exist.
-          const json = await res.json();
+          const json = await response.json();
           console.log({ json });
-          return "";
+          return { response: response, data: json.content };
         });
     return op;
   }
 
-  private makePROp(
-    title: string,
-    body: string,
-    head: string,
-    base: string,
-  ): () => Promise<Response> {
+  private makePROp(): Op {
     const url = makePRURL(this.options.repo);
     const headers = new Headers({
       Accept: "application/vnd.github+json",
@@ -184,12 +178,15 @@ export class Client extends BaseClient implements CodemodClientInterface {
       "X-GitHub-Api-Version": "2022-11-28",
       "Content-Type": "application/x-www-form-urlencoded",
     });
+    const body = JSON.stringify({
+      title: this.options.pr.title,
+      body: this.options.pr.body,
+      head: this.options.commit.head,
+      base: this.options.pr.base,
+    });
     const op = () =>
-      fetch(url, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ title, body, head, base }),
-      });
+      fetch(url, { method: "POST", headers, body })
+        .then((response) => ({ response }));
     return op;
   }
 }

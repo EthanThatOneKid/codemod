@@ -1,5 +1,6 @@
 import { parse } from "./deps.ts";
-import { Codemod, Options } from "./types.ts";
+import type { Options } from "./github/mod.ts";
+import type { Codemod } from "./codemod.ts";
 
 export type Flags = Options;
 

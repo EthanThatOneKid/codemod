@@ -1,16 +1,16 @@
-import type { Codemod } from "../codemod.ts";
+import type { Codemod } from "./codemod.ts";
 
 /**
- * The options for a codemod.
+ * The options for a client.
  *
  * @todo Add more options.
  */
 export interface Options {
-  token: string;
-  repo: string;
-  codemod: Codemod;
-  commit: CommitOptions;
-  pr: PROptions;
+  codemods: Codemod[];
+  token?: string;
+  repo?: string;
+  commit?: CommitOptions;
+  pr?: PROptions;
 }
 
 /**
