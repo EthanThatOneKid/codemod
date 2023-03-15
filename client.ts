@@ -1,5 +1,6 @@
 import type { JSONPatchOperation } from "./deps.ts";
 import { applyJSONPatch, diffCharacters } from "./deps.ts";
+import { FileSystem } from "./file_system.ts";
 import type {
   AppendCodemod,
   Codemod,
@@ -15,7 +16,11 @@ import type {
 } from "./codemod.ts";
 import { CodemodType, DiffType } from "./codemod.ts";
 
+/**
+ * A client for performing codemods.
+ */
 export abstract class Client {
+  constructor(public readonly fs: FileSystem) {}
   /**
    * Do a list of codemods.
    */
@@ -79,40 +84,44 @@ export abstract class Client {
    * Perform a touch codemod.
    */
   public async touch(file: string): Promise<CodemodOutput> {
-    const original = await safelyReadTextFile(file);
+    const original = await this.fs.read(file);
     const output = Client.makeTouchCodemodOutput(file, original ?? "");
     if (original !== undefined) {
       return output;
     }
 
-    return await safelyWriteTextFile(output);
+    await this.fs.write(file, output.changed);
+    return output;
   }
 
   /**
    * Perform a set codemod.
    */
   public async set(file: string, content: string): Promise<CodemodOutput> {
-    const original = await safelyReadTextFile(file) ?? "";
+    const original = await this.fs.read(file) ?? "";
     const output = Client.makeSetCodemodOutput(file, content, original);
-    return await safelyWriteTextFile(output);
+    await this.fs.write(file, output.changed);
+    return output;
   }
 
   /**
    * Perform an append codemod.
    */
   public async append(file: string, content: string): Promise<CodemodOutput> {
-    const original = await safelyReadTextFile(file) ?? "";
+    const original = await this.fs.read(file) ?? "";
     const output = Client.makeAppendCodemodOutput(file, content, original);
-    return await safelyWriteTextFile(output);
+    await this.fs.write(file, output.changed);
+    return output;
   }
 
   /**
    * Perform a prepend codemod.
    */
   public async prepend(file: string, content: string): Promise<CodemodOutput> {
-    const original = await safelyReadTextFile(file) ?? "";
+    const original = await this.fs.read(file) ?? "";
     const output = Client.makePrependCodemodOutput(file, content, original);
-    return await safelyWriteTextFile(output);
+    await this.fs.write(file, output.changed);
+    return output;
   }
 
   /**
@@ -123,14 +132,15 @@ export abstract class Client {
     regex: RegExp,
     replaceWith: string,
   ): Promise<CodemodOutput> {
-    const original = await safelyReadTextFile(file) ?? "";
+    const original = await this.fs.read(file) ?? "";
     const output = Client.makeReplaceCodemodOutput(
       file,
       regex,
       replaceWith,
       original,
     );
-    return await safelyWriteTextFile(output);
+    await this.fs.write(file, output.changed);
+    return output;
   }
 
   /**
@@ -145,7 +155,7 @@ export abstract class Client {
     replacer?: Parameters<typeof JSON.stringify>[1],
     space?: Parameters<typeof JSON.stringify>[2],
   ): Promise<CodemodOutput> {
-    const original = await safelyReadTextFile(file) ?? "{}";
+    const original = await this.fs.read(file) ?? "";
     const output = Client.makeJSONPatchCodemodOutput(
       file,
       patch,
@@ -153,17 +163,19 @@ export abstract class Client {
       space,
       original,
     );
-    return await safelyWriteTextFile(output);
+    await this.fs.write(file, output.changed);
+    return output;
   }
 
   public async delete(file: string): Promise<CodemodOutput> {
-    const original = await safelyReadTextFile(file);
+    const original = await this.fs.read(file);
     const output = Client.makeDeleteCodemodOutput(file, original ?? "");
     if (original === undefined) {
       return output;
     }
 
-    return await safelyDeleteFile(output);
+    await this.fs.delete(file);
+    return output;
   }
 
   /**
@@ -295,59 +307,5 @@ export abstract class Client {
   ): CodemodOutput {
     const codemod: DeleteCodemod = { type: CodemodType.DELETE };
     return Client.makeCodemodOutput(file, codemod, original, "");
-  }
-}
-
-/**
- * Safely reads a text file via Deno API.
- *
- * @remarks This function is to be replaced in environments other than Deno.
- */
-async function safelyReadTextFile(file: string): Promise<string | undefined> {
-  try {
-    return await Deno.readTextFile(file);
-  } catch (error) {
-    if (error instanceof Deno.errors.NotFound) {
-      return;
-    }
-    throw error;
-  }
-}
-
-/**
- * Safely writes a text file via Deno API.
- *
- * @remarks This function is to be replaced in environments other than Deno.
- */
-async function safelyWriteTextFile(
-  output: CodemodOutput,
-): Promise<CodemodOutput> {
-  try {
-    await Deno.writeTextFile(output.file, output.changed);
-    return output;
-  } catch (error) {
-    if (error instanceof Deno.errors.NotFound) {
-      return output;
-    }
-    throw error;
-  }
-}
-
-/**
- * Safely deletes a file via Deno API.
- *
- * @remarks This function is to be replaced in environments other than Deno.
- */
-async function safelyDeleteFile(
-  output: CodemodOutput,
-): Promise<CodemodOutput> {
-  try {
-    await Deno.remove(output.file);
-    return output;
-  } catch (error) {
-    if (error instanceof Deno.errors.NotFound) {
-      return output;
-    }
-    throw error;
   }
 }
