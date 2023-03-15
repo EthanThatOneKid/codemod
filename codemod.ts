@@ -26,14 +26,14 @@ export type Codemod =
   | DeleteCodemod;
 
 /**
- * An input codemod.
+ * Data used to perform a codemod.
  */
 export type CodemodInput =
   & CodemodInputBase
   & Codemod;
 
 /**
- * A codemod output.
+ * Data about a processed codemod.
  */
 export type CodemodOutput =
   & CodemodOutputBase
@@ -53,6 +53,12 @@ export interface CodemodInputBase {
 export interface CodemodOutputBase {
   /** The relative path of the file that were modified. */
   file: string;
+
+  /** The original content of the file. */
+  unchanged: string;
+
+  /** The new content of the file. */
+  changed: string;
 
   /** The diff of the file before and after the codemod. */
   diff: DiffCharacter[];
