@@ -26,20 +26,60 @@ export type Codemod =
   | DeleteCodemod;
 
 /**
- * A codemod is a set of instructions to modify a file.
+ * An input codemod.
  */
-export interface BaseCodemod {
+export type CodemodInput =
+  & CodemodInputBase
+  & Codemod;
+
+/**
+ * A codemod output.
+ */
+export type CodemodOutput =
+  & CodemodOutputBase
+  & Codemod;
+
+/**
+ * A codemod input.
+ */
+export interface CodemodInputBase {
   /** The relative paths of the files to modify. */
   files: string[];
+}
 
-  /** The branch to modify. */
-  branch?: string;
+/**
+ * A codemod output.
+ */
+export interface CodemodOutputBase {
+  /** The relative path of the file that were modified. */
+  file: string;
+
+  /** The diff of the file before and after the codemod. */
+  diff: DiffCharacter[];
+}
+
+/**
+ * A diff character.
+ */
+export interface DiffCharacter {
+  /** The character. */
+  character: string;
+
+  /** The type of diff. */
+  type: DiffType;
+}
+
+/** The type of diff. */
+export enum DiffType {
+  UNCHANGED,
+  ADDED,
+  REMOVED,
 }
 
 /**
  * A codemod that creates a blank file.
  */
-export interface TouchCodemod extends BaseCodemod {
+export interface TouchCodemod {
   /** The type of codemod to perform. */
   type: CodemodType.TOUCH;
 }
@@ -49,7 +89,7 @@ export interface TouchCodemod extends BaseCodemod {
  *
  * It creates the file if it doesn't exist, and overwrites it if it does.
  */
-export interface SetCodemod extends BaseCodemod {
+export interface SetCodemod {
   /** The type of codemod to perform. */
   type: CodemodType.SET;
 
@@ -58,7 +98,7 @@ export interface SetCodemod extends BaseCodemod {
 }
 
 /** A codemod that appends content to a file. */
-export interface AppendCodemod extends BaseCodemod {
+export interface AppendCodemod {
   /** The type of codemod to perform. */
   type: CodemodType.APPEND;
 
@@ -67,7 +107,7 @@ export interface AppendCodemod extends BaseCodemod {
 }
 
 /** A codemod that prepends content to a file. */
-export interface PrependCodemod extends BaseCodemod {
+export interface PrependCodemod {
   /** The type of codemod to perform. */
   type: CodemodType.PREPEND;
 
@@ -76,7 +116,7 @@ export interface PrependCodemod extends BaseCodemod {
 }
 
 /** A codemod that replaces content in a file. */
-export interface ReplaceCodemod extends BaseCodemod {
+export interface ReplaceCodemod {
   /** The type of codemod to perform. */
   type: CodemodType.REPLACE;
 
@@ -92,7 +132,7 @@ export interface ReplaceCodemod extends BaseCodemod {
  *
  * @see https://github.com/Starcounter-Jack/JSON-Patch#readme
  */
-export interface JSONPatchCodemod extends BaseCodemod {
+export interface JSONPatchCodemod {
   /** The type of codemod to perform. */
   type: CodemodType.JSONPATCH;
 
@@ -107,7 +147,7 @@ export interface JSONPatchCodemod extends BaseCodemod {
 }
 
 /** A codemod that deletes a file. */
-export interface DeleteCodemod extends BaseCodemod {
+export interface DeleteCodemod {
   /** The type of codemod to perform. */
   type: CodemodType.DELETE;
 }

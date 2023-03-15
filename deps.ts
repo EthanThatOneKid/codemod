@@ -5,3 +5,5 @@ export {
   applyPatch as applyJSONPatch,
   type Operation as JSONPatchOperation,
 } from "https://cdn.skypack.dev/fast-json-patch@3.1.1/index.mjs?dts";
+
+export { diffCharacters } from "https://deno.land/x/diff@v0.3.5/mod.ts";
