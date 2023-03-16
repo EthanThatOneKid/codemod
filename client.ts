@@ -18,6 +18,9 @@ import { CodemodType, DiffType } from "./codemod.ts";
 
 /**
  * A client for performing codemods.
+ *
+ * The Client class is not thread-safe. Please make sure each operation
+ * completes before starting another.
  */
 export abstract class Client {
   constructor(public readonly fs: FileSystem) {}
