@@ -10,27 +10,27 @@ import type { paths } from "../../deps.ts";
 export interface GitHubAPIClientInterface {
   /**
    * Gets the default branch name if not passed in by the user.
+   *
+   * See:
+   * https://docs.github.com/en/rest/reference/repos#get-a-repository
    */
   getReposOwnerRepo(): Promise<ReposOwnerRepoGetResponse>;
 
   /**
    * Gets the base tree SHA and commit SHA for the branch.
+   *
+   * See:
+   * https://docs.github.com/en/rest/reference/repos#get-a-branch
    */
   getReposOwnerRepoBranchesBranch(
     r: ReposOwnerRepoBranchesBranchGetRequest,
   ): Promise<ReposOwnerRepoBranchesBranchGetResponse>;
 
-  // Gets the entire recursive tree for the branch.
-  // getReposOwnerRepoGitTreesTreeSHA(
-  //   r: ReposOwnerRepoGitTreesTreeSHAGetRequest,
-  // ): Promise<ReposOwnerRepoGitTreesTreeSHAGetResponse>;
-
-  // TODO: Stop and check that recursive getReposOwnerRepoGitTreesTreeSHA is working.
-  // Update: I actually do not think this is entirely necessary as each file being changed will need to first be fetched
-  // individually and then the tree will be built from there and then the tree will be posted for the directory that contains the file.
-
   /**
    * Creates a new tree. Request is made per directory. The new tree SHA is returned.
+   *
+   * See:
+   * https://docs.github.com/en/rest/reference/git#create-a-tree
    */
   postReposOwnerRepoGitTrees(
     r: ReposOwnerRepoGitTreesPostRequest,
@@ -38,12 +38,33 @@ export interface GitHubAPIClientInterface {
 
   /**
    * Creates a new commit. The new commit SHA is returned.
+   *
+   * See:
+   * https://docs.github.com/en/rest/reference/git#create-a-commit
    */
   postReposOwnerRepoGitCommits(
     r: ReposOwnerRepoGitCommitsPostRequest,
   ): Promise<ReposOwnerRepoGitCommitsPostResponse>;
 
-  // TODO: Remaining required endpoints: https://youtu.be/nwHqXtk6LHA?t=538
+  /**
+   * Creates a new branch. The new branch name is returned.
+   *
+   * See:
+   * https://docs.github.com/en/rest/reference/git#create-a-reference
+   */
+  postReposOwnerRepoGitRefs(
+    r: ReposOwnerRepoGitRefsPostRequest,
+  ): Promise<ReposOwnerRepoGitRefsPostResponse>;
+
+  /**
+   * Creates a new PR. The new PR number is returned.
+   *
+   * See:
+   * https://docs.github.com/en/rest/reference/pulls#create-a-pull-request
+   */
+  postReposOwnerRepoPulls(
+    r: ReposOwnerRepoPullsPostRequest,
+  ): Promise<ReposOwnerRepoPullsPostResponse>;
 }
 
 export type ReposOwnerRepoGetResponse =
@@ -52,6 +73,7 @@ export type ReposOwnerRepoGetResponse =
   ];
 
 export interface ReposOwnerRepoBranchesBranchGetRequest {
+  /** branch is the branch passed as the path parameter. */
   branch: string;
 }
 
@@ -61,7 +83,10 @@ export type ReposOwnerRepoBranchesBranchGetResponse =
   ]["content"]["application/json"];
 
 export interface ReposOwnerRepoGitTreesTreeSHAGetRequest {
+  /** tree_sha is the tree SHA passed as the path parameter. */
   treeSHA: string;
+
+  /** recursive is the recursive flag passed as the query parameter. */
   recursive?: boolean;
 }
 
@@ -87,5 +112,25 @@ export type ReposOwnerRepoGitCommitsPostRequest =
 
 export type ReposOwnerRepoGitCommitsPostResponse =
   paths["/repos/{owner}/{repo}/git/commits"]["post"]["responses"]["201"][
+    "content"
+  ]["application/json"];
+
+export type ReposOwnerRepoGitRefsPostRequest =
+  paths["/repos/{owner}/{repo}/git/refs"]["post"]["requestBody"]["content"][
+    "application/json"
+  ];
+
+export type ReposOwnerRepoGitRefsPostResponse =
+  paths["/repos/{owner}/{repo}/git/refs"]["post"]["responses"]["201"][
+    "content"
+  ]["application/json"];
+
+export type ReposOwnerRepoPullsPostRequest =
+  paths["/repos/{owner}/{repo}/pulls"]["post"]["requestBody"][
+    "content"
+  ]["application/json"];
+
+export type ReposOwnerRepoPullsPostResponse =
+  paths["/repos/{owner}/{repo}/pulls"]["post"]["responses"]["201"][
     "content"
   ]["application/json"];

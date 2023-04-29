@@ -27,3 +27,16 @@ export function makeReposOwnerRepoGitCommitsURL(
 ) {
   return new URL(`/repos/${owner}/${repo}/git/commits`, GITHUB_API_URL);
 }
+
+/** makeReposOwnerRepoGitRefsURL returns the desired URL. */
+export function makeReposOwnerRepoGitRefsURL(owner: string, repo: string) {
+  return new URL(`/repos/${owner}/${repo}/git/refs`, GITHUB_API_URL);
+}
+
+/** makeReposOwnerRepoPullsURL returns the desired URL. */
+export function makeReposOwnerRepoPullsURL(
+  owner: string,
+  repo: string,
+) {
+  return new URL(`/repos/${owner}/${repo}/pulls`, GITHUB_API_URL);
+}

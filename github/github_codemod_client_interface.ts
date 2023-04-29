@@ -1,45 +1,78 @@
-import type { ReposOwnerRepoGitCommitsPostRequest } from "./api/mod.ts";
+import type {
+  ReposOwnerRepoGitCommitsPostRequest,
+  ReposOwnerRepoGitRefsPostRequest,
+  ReposOwnerRepoPullsPostRequest,
+  ReposOwnerRepoPullsPostResponse,
+} from "./api/mod.ts";
 
-// Internally powered by a GitHubClientInterface.
+/**
+ * GitHubCodemodClientInterface is the protocol for a GitHub Codemod client.
+ */
 export interface GitHubCodemodClientInterface {
+  /**
+   * newCommit creates a new GitHub commit client.
+   */
   newCommit(options: NewGitHubCommitClientOptions): GitHubCommitClientInterface;
 }
 
+/**
+ * NewGitHubCommitOptions are the options for creating a new GitHub commit.
+ */
 export type NewGitHubCommitClientOptions = ReposOwnerRepoGitCommitsPostRequest;
 
-//-=---------------------------------------------------------------------------
-
-// TODO: Define a Codemod branded type for NewCommitOption that maps to the GitHub API's ReposOwnerRepoGitCommitsPostRequest.
-
-// Builds an internal tree to be used for creating a commit.
-// Stores the tree, base tree SHA, and base commit SHA in memory.
+/**
+ * GitHubCommitClientInterface is the protocol for a GitHub commit client.
+ *
+ * GitHubCommitClientInterface implementation stores your tree, base tree SHA,
+ * and base commit SHA in memory.
+ */
 export interface GitHubCommitClientInterface {
-  // TODO: Use a type for a single Tree item for the add method. Leave remove, move, and edit for external CommitClientInterface.
+  /**
+   * add adds a file to the commit.
+   */
   add(path: string, content: string): void;
+
+  /**
+   * edit edits a file in the commit. The content is passed to the function
+   * which returns the new content for the file.
+   */
   edit(path: string, fn: (content: string) => string): Promise<void>;
-  //   patchJSON(path: string, value: unknown): Promise<void>;
-  //   setFile(path: string, content: string): Promise<void>;
-  //   deleteFile(path: string): Promise<void>;
-  //   // https://stackoverflow.com/a/72726316
-  //   moveFile(from: string, to: string): Promise<void>;
-  //   finish(): Promise<string>;
-  newBranch(options: NewGitHubBranchOptions): Promise<BranchClientInterface>;
+
+  /**
+   * newBranch creates a new GitHub branch client.
+   */
+  newBranch(
+    options: NewGitHubBranchOptions,
+  ): Promise<GitHubBranchClientInterface>;
 }
 
-export type NewGitHubBranchOptions = ReposOwnerRepoBranchPostRequest;
+/**
+ * NewBranchOptions are the options for creating a new branch.
+ */
+export type NewGitHubBranchOptions = ReposOwnerRepoGitRefsPostRequest;
 
-// export type NewBranchOptions = ReposOwnerRepoBranchPostRequest;
-
-// Contains new commit.
-export interface BranchClientInterface {
-  newPR(options: NewGitHubPROptions): Promise<PRClientInterface>;
+/**
+ * GitHubBranchClientInterface is the protocol for a GitHub branch client.
+ */
+export interface GitHubBranchClientInterface {
+  newPR(options: NewGitHubPROptions): Promise<GitHubPRClientInterface>;
 }
 
+/**
+ * NewGitHubPROptions are the options for creating a new PR.
+ */
 export type NewGitHubPROptions = ReposOwnerRepoPullsPostRequest;
 
-// Contains new branch.
-export interface PRClientInterface {
-  finish(): Promise<PR>;
+/**
+ * PRClientInterface is the protocol for a GitHub PR client.
+ *
+ * Privately stores the branch name.
+ */
+export interface GitHubPRClientInterface {
+  open(): Promise<PR>;
 }
 
+/**
+ * GitHubPR is the struct for a GitHub PR.
+ */
 export type PR = ReposOwnerRepoPullsPostResponse;

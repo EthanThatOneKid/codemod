@@ -5,13 +5,19 @@ import type {
   ReposOwnerRepoGetResponse,
   ReposOwnerRepoGitCommitsPostRequest,
   ReposOwnerRepoGitCommitsPostResponse,
+  ReposOwnerRepoGitRefsPostRequest,
+  ReposOwnerRepoGitRefsPostResponse,
   ReposOwnerRepoGitTreesPostRequest,
   ReposOwnerRepoGitTreesPostResponse,
+  ReposOwnerRepoPullsPostRequest,
+  ReposOwnerRepoPullsPostResponse,
 } from "./github_api_client_interface.ts";
 import {
   makeReposOwnerRepoBranchesBranchURL,
   makeReposOwnerRepoGitCommitsURL,
+  makeReposOwnerRepoGitRefsURL,
   makeReposOwnerRepoGitTreesURL,
+  makeReposOwnerRepoPullsURL,
   makeReposOwnerRepoURL,
 } from "./github_api_client_urls.ts";
 
@@ -120,6 +126,56 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     if (response.status !== 201) {
       throw new Error(
         `Failed to create commit for ${this.options.owner}/${this.options.repo}.`,
+      );
+    }
+
+    return await response.json();
+  }
+
+  public async postReposOwnerRepoGitRefs(
+    r: ReposOwnerRepoGitRefsPostRequest,
+  ): Promise<ReposOwnerRepoGitRefsPostResponse> {
+    const url = makeReposOwnerRepoGitRefsURL(
+      this.options.owner,
+      this.options.repo,
+    );
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `token ${this.options.token}`,
+      },
+      body: JSON.stringify(r),
+    });
+
+    if (response.status !== 201) {
+      throw new Error(
+        `Failed to create ref for ${this.options.owner}/${this.options.repo}.`,
+      );
+    }
+
+    return await response.json();
+  }
+
+  public async postReposOwnerRepoPulls(
+    r: ReposOwnerRepoPullsPostRequest,
+  ): Promise<ReposOwnerRepoPullsPostResponse> {
+    const url = makeReposOwnerRepoPullsURL(
+      this.options.owner,
+      this.options.repo,
+    );
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `token ${this.options.token}`,
+      },
+      body: JSON.stringify(r),
+    });
+
+    if (response.status !== 201) {
+      throw new Error(
+        `Failed to create pull request for ${this.options.owner}/${this.options.repo}.`,
       );
     }
 

@@ -1,33 +1,71 @@
 import { ReposOwnerRepoGitCommitsPostRequest } from "./github_client_interface.ts";
 
-// Internally powered by a GitHubCodemodClientInterface.
+/**
+ * CodemodClientInterface is the protocol for a Codemod client.
+ *
+ * CodemodClientInterface is a wrapper around a GitHubCodemodClientInterface.
+ * CodemodClientInterface provides a minimal approach to create commits, branches,
+ * and PRs to repositories. If you need more control over the commit, branch, or
+ * PR, use the GitHubCodemodClientInterface directly.
+ *
+ * Future work: Refactor CodemodClientInterface to be version control agnostic.
+ * It is assumed that all version control providers have equivalents for GitHub's
+ * commit, branch, and PR APIs. CodemodClientInterface is intended to be a
+ * normalized interface for creating commits, branches, and PRs.
+ */
 export interface CodemodClientInterface {
-  newCommit(options: NewCommitOptions): CommitClientInterface;
+  newCommit(options: NewCodemodCommitOptions): CodemodCommitClientInterface;
 }
 
-export interface NewCommitOptions {
+/**
+ * NewCodemodCommitOptions are the options for creating a new commit.
+ */
+export interface NewCodemodCommitOptions {
   message: string;
   branch: string;
 }
 
-export interface CommitClientInterface {
-  // Via GitHubCommitClientInterface.add
+/**
+ * CodemodCommitClientInterface is the protocol for a codemod commit client.
+ */
+export interface CodemodCommitClientInterface {
+  /**
+   * add adds a file to the commit.
+   *
+   * TODO:
+   * Implemented via GitHubCommitClientInterface.add().
+   */
   add(path: string, content: string): void;
 
-  // Via add.
+  /**
+   * remove removes a file from the commit.
+   *
+   * TODO:
+   * Implemented via this.add().
+   */
   remove(path: string): void;
 
-  // Via add.
+  /**
+   * move moves a file from one path to another.
+   *
+   * TODO:
+   * Implemented via this.add(). See: https://stackoverflow.com/a/72726316.
+   */
   move(from: string, to: string): void;
 
-  // Via GitHubCommitClientInterface.edit
+  /**
+   * edit edits a file in the commit.
+   *
+   * TODO: Via GitHubCommitClientInterface.edit().
+   */
   edit(path: string, fn: (content: string) => string): Promise<void>;
 
-  // Via edit.
   /**
-   * @see https://github.com/acmcsufoss/codemod/blob/6fa45087b04b8129b55ee1cebf6bb4d208380f37/codemod.ts#L141
+   * jsonpatch applies a JSON patch to a file in the commit.
+   *
+   * TODO: Via this.edit().
    */
-  jsonPatch(path: string, value: unknown): Promise<void>;
+  jsonpatch(path: string, value: unknown): Promise<void>;
 }
 
 // TODO: Define a Codemod branded type for NewCommitOption that maps to the GitHub API's ReposOwnerRepoGitCommitsPostRequest.
@@ -47,7 +85,10 @@ export interface GitHubCommitClientInterface {
   newBranch(options: NewBranchOptions): Promise<BranchClientInterface>;
 }
 
-// export type NewBranchOptions = ReposOwnerRepoBranchPostRequest;
+export interface NewBranchOptions {
+  name: string;
+  base: string;
+}
 
 // Contains new commit.
 export interface BranchClientInterface {
