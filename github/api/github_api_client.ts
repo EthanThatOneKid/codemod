@@ -22,7 +22,7 @@ import {
 } from "./github_api_client_urls.ts";
 
 /**
- * GitHub API client options.
+ * GitHubAPIClientOptions are GitHub API client options.
  */
 export interface GitHubAPIClientOptions {
   owner: string;
@@ -31,7 +31,7 @@ export interface GitHubAPIClientOptions {
 }
 
 /**
- * Client is a client for the GitHub API.
+ * GitHubAPIClient is a client for the GitHub API.
  */
 export class GitHubAPIClient implements GitHubAPIClientInterface {
   constructor(

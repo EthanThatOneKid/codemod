@@ -12,7 +12,9 @@ export interface GitHubCodemodClientInterface {
   /**
    * newCommit creates a new GitHub commit client.
    */
-  newCommit(options: NewGitHubCommitClientOptions): GitHubCommitClientInterface;
+  newCommit(
+    options: NewGitHubCommitClientOptions,
+  ): Promise<GitHubCommitClientInterface>;
 }
 
 /**
@@ -30,7 +32,7 @@ export interface GitHubCommitClientInterface {
   /**
    * add adds a file to the commit.
    */
-  add(path: string, content: string): void;
+  add(path: string, content: string): Promise<void>;
 
   /**
    * edit edits a file in the commit. The content is passed to the function
@@ -69,10 +71,10 @@ export type NewGitHubPROptions = ReposOwnerRepoPullsPostRequest;
  * Privately stores the branch name.
  */
 export interface GitHubPRClientInterface {
-  open(): Promise<PR>;
+  open(): Promise<GitHubPR>;
 }
 
 /**
  * GitHubPR is the struct for a GitHub PR.
  */
-export type PR = ReposOwnerRepoPullsPostResponse;
+export type GitHubPR = ReposOwnerRepoPullsPostResponse;

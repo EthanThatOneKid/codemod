@@ -106,9 +106,9 @@ export type ReposOwnerRepoGitTreesPostResponse =
   ]["application/json"];
 
 export type ReposOwnerRepoGitCommitsPostRequest =
-  paths["/repos/{owner}/{repo}/git/commits"]["post"]["requestBody"][
-    "content"
-  ]["application/json"];
+  paths["/repos/{owner}/{repo}/git/commits"]["post"]["requestBody"]["content"][
+    "application/json"
+  ];
 
 export type ReposOwnerRepoGitCommitsPostResponse =
   paths["/repos/{owner}/{repo}/git/commits"]["post"]["responses"]["201"][
