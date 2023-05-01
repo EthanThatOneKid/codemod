@@ -57,6 +57,16 @@ export interface GitHubAPIClientInterface {
   ): Promise<ReposOwnerRepoGitRefsPostResponse>;
 
   /**
+   * Updates an existing branch.
+   *
+   * See:
+   * https://docs.github.com/en/rest/git/refs#update-a-reference
+   */
+  patchReposOwnerRepoGitRefsRef(
+    r: ReposOwnerRepoGitRefsRefPatchRequest,
+  ): Promise<ReposOwnerRepoGitRefsRefPatchResponse>;
+
+  /**
    * Creates a new PR. The new PR number is returned.
    *
    * See:
@@ -122,6 +132,20 @@ export type ReposOwnerRepoGitRefsPostRequest =
 
 export type ReposOwnerRepoGitRefsPostResponse =
   paths["/repos/{owner}/{repo}/git/refs"]["post"]["responses"]["201"][
+    "content"
+  ]["application/json"];
+
+export type ReposOwnerRepoGitRefsRefPatchRequest =
+  & paths[
+    "/repos/{owner}/{repo}/git/refs/{ref}"
+  ]["patch"]["requestBody"]["content"]["application/json"]
+  & {
+    /** ref is the ref passed as the path parameter. */
+    ref: string;
+  };
+
+export type ReposOwnerRepoGitRefsRefPatchResponse =
+  paths["/repos/{owner}/{repo}/git/refs/{ref}"]["patch"]["responses"]["200"][
     "content"
   ]["application/json"];
 

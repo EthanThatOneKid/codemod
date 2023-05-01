@@ -1,5 +1,3 @@
-import { ReposOwnerRepoGitCommitsPostRequest } from "./github_client_interface.ts";
-
 /**
  * CodemodClientInterface is the protocol for a Codemod client.
  *
@@ -68,34 +66,40 @@ export interface CodemodCommitClientInterface {
   jsonpatch(path: string, value: unknown): Promise<void>;
 }
 
-// TODO: Define a Codemod branded type for NewCommitOption that maps to the GitHub API's ReposOwnerRepoGitCommitsPostRequest.
-
-// Builds an internal tree to be used for creating a commit.
-// Stores the tree, base tree SHA, and base commit SHA in memory.
-export interface GitHubCommitClientInterface {
-  // TODO: Use a type for a single Tree item for the add method. Leave remove, move, and edit for external CommitClientInterface.
-  add(path: string, content: string): void;
-  edit(path: string, fn: (content: string) => string): Promise<void>;
-  //   patchJSON(path: string, value: unknown): Promise<void>;
-  //   setFile(path: string, content: string): Promise<void>;
-  //   deleteFile(path: string): Promise<void>;
-  //   // https://stackoverflow.com/a/72726316
-  //   moveFile(from: string, to: string): Promise<void>;
-  //   finish(): Promise<string>;
-  newBranch(options: NewBranchOptions): Promise<BranchClientInterface>;
-}
-
+/**
+ * NewBranchOptions are the options for creating a new branch.
+ */
 export interface NewBranchOptions {
   name: string;
   base: string;
 }
 
-// Contains new commit.
+/**
+ * BranchClientInterface is the protocol for a branch client.
+ */
 export interface BranchClientInterface {
   newPR(options: NewPROptions): Promise<PRClientInterface>;
 }
 
-// Contains new branch.
+/**
+ * NewPROptions are the options for creating a new PR.
+ */
+export interface NewPROptions {
+  title: string;
+  body: string;
+}
+
+/**
+ * PRClientInterface is the protocol for a PR client.
+ */
 export interface PRClientInterface {
-  finish(): Promise<PR>;
+  open(): Promise<PR>;
+}
+
+/**
+ * PR is a pull request.
+ */
+export interface PR {
+  number: number;
+  url: string;
 }

@@ -7,6 +7,8 @@ import type {
   ReposOwnerRepoGitCommitsPostResponse,
   ReposOwnerRepoGitRefsPostRequest,
   ReposOwnerRepoGitRefsPostResponse,
+  ReposOwnerRepoGitRefsRefPatchRequest,
+  ReposOwnerRepoGitRefsRefPatchResponse,
   ReposOwnerRepoGitTreesPostRequest,
   ReposOwnerRepoGitTreesPostResponse,
   ReposOwnerRepoPullsPostRequest,
@@ -15,6 +17,7 @@ import type {
 import {
   makeReposOwnerRepoBranchesBranchURL,
   makeReposOwnerRepoGitCommitsURL,
+  makeReposOwnerRepoGitRefsRefURL,
   makeReposOwnerRepoGitRefsURL,
   makeReposOwnerRepoGitTreesURL,
   makeReposOwnerRepoPullsURL,
@@ -151,6 +154,38 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     if (response.status !== 201) {
       throw new Error(
         `Failed to create ref for ${this.options.owner}/${this.options.repo}.`,
+      );
+    }
+
+    return await response.json();
+  }
+
+  public async patchReposOwnerRepoGitRefsRef(
+    r: ReposOwnerRepoGitRefsRefPatchRequest,
+  ): Promise<ReposOwnerRepoGitRefsRefPatchResponse> {
+    const url = makeReposOwnerRepoGitRefsRefURL(
+      this.options.owner,
+      this.options.repo,
+      r.ref,
+    );
+    const response = await fetch(url, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `token ${this.options.token}`,
+      },
+      body: JSON.stringify(r),
+    });
+
+    if (response.status !== 200) {
+      // TODO(EthanThatOneKid):
+      // Figure out cause of the following error:
+      // {"message":"Reference does not exist","documentation_url":"https://docs.github.com/rest/reference/git#update-a-reference"}
+      // error: Uncaught (in promise) Error: Failed to update ref for EthanThatOneKid/acmcsuf.com.
+      console.log(await response.text());
+
+      throw new Error(
+        `Failed to update ref for ${this.options.owner}/${this.options.repo}.`,
       );
     }
 

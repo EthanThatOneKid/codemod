@@ -33,6 +33,15 @@ export function makeReposOwnerRepoGitRefsURL(owner: string, repo: string) {
   return new URL(`/repos/${owner}/${repo}/git/refs`, GITHUB_API_URL);
 }
 
+/** makeReposOwnerRepoGitRefsRefURL returns the desired URL. */
+export function makeReposOwnerRepoGitRefsRefURL(
+  owner: string,
+  repo: string,
+  ref: string,
+) {
+  return new URL(`/repos/${owner}/${repo}/git/refs/${ref}`, GITHUB_API_URL);
+}
+
 /** makeReposOwnerRepoPullsURL returns the desired URL. */
 export function makeReposOwnerRepoPullsURL(
   owner: string,

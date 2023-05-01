@@ -1,9 +1,19 @@
 {
   "version": "2",
   "remote": {
+    "https://cdn.skypack.dev/-/fast-json-patch@v3.1.1-IjacxII42OC4A6OXhkDe/dist=es2019,mode=imports/optimized/fast-json-patch.js": "8a50032720ec865d4ee159b727c3b6768cff79d0bc9d4596322a54bed52886a9",
+    "https://cdn.skypack.dev/-/fast-json-patch@v3.1.1-IjacxII42OC4A6OXhkDe/dist=es2019,mode=types/index.d.ts": "14fff1730ea6278c5b85b33248b881df9405c65276fe9f9964b0ce2e8dc1a71b",
+    "https://cdn.skypack.dev/-/fast-json-patch@v3.1.1-IjacxII42OC4A6OXhkDe/dist=es2019,mode=types/module/core.d.ts": "954469f78687603c8b091f09dad4ee2ce3420ad114629ccd5cc721253748446c",
+    "https://cdn.skypack.dev/-/fast-json-patch@v3.1.1-IjacxII42OC4A6OXhkDe/dist=es2019,mode=types/module/duplex.d.ts": "c5f820d4b6245fd5f9f841f8893d1f7d56a9cefcbed60eb6ed4f8de4587a8cb0",
+    "https://cdn.skypack.dev/-/fast-json-patch@v3.1.1-IjacxII42OC4A6OXhkDe/dist=es2019,mode=types/module/helpers.d.ts": "ebf6e19cb84d78da20d022a95f05e8aef12e56f816a1ee12835a4da40d7b14cf",
+    "https://cdn.skypack.dev/fast-json-patch@3.1.1/index.mjs?dts": "b2288dcad47c0abbf26e9535140b2cbae71b46c30225c1978e73b16453bb2412",
     "https://deno.land/std@0.178.0/fmt/colors.ts": "938c5d44d889fb82eff6c358bea8baa7e85950a16c9f6dae3ec3a7a729164471",
     "https://deno.land/std@0.178.0/testing/_diff.ts": "1a3c044aedf77647d6cac86b798c6417603361b66b54c53331b312caeb447aea",
     "https://deno.land/std@0.178.0/testing/_format.ts": "a69126e8a469009adf4cf2a50af889aca364c349797e63174884a52ff75cf4c7",
-    "https://deno.land/std@0.178.0/testing/asserts.ts": "984ab0bfb3faeed92ffaa3a6b06536c66811185328c5dd146257c702c41b01ab"
+    "https://deno.land/std@0.178.0/testing/asserts.ts": "984ab0bfb3faeed92ffaa3a6b06536c66811185328c5dd146257c702c41b01ab",
+    "https://deno.land/x/dotenv@v3.2.2/load.ts": "cbd76a0aee01aad8d09222afaa1dd04b84d9d3e44637503b01bf77a91df9e041",
+    "https://deno.land/x/dotenv@v3.2.2/mod.ts": "077b48773de9205266a0b44c3c3a3c3083449ed64bb0b6cc461b95720678d38e",
+    "https://deno.land/x/dotenv@v3.2.2/util.ts": "693730877b13f8ead2b79b2aa31e2a0652862f7dc0c5f6d2f313f4d39c7b7670",
+    "https://deno.land/x/github_api_types@2023-04-16-04-29/mod.ts": "0cbc94c1c81ac32ad4b2d96c5739781158ae9af3918788b77166d8094b377d95"
   }
 }
