@@ -178,12 +178,6 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     });
 
     if (response.status !== 200) {
-      // TODO(EthanThatOneKid):
-      // Figure out cause of the following error:
-      // {"message":"Reference does not exist","documentation_url":"https://docs.github.com/rest/reference/git#update-a-reference"}
-      // error: Uncaught (in promise) Error: Failed to update ref for EthanThatOneKid/acmcsuf.com.
-      console.log(await response.text());
-
       throw new Error(
         `Failed to update ref for ${this.options.owner}/${this.options.repo}.`,
       );

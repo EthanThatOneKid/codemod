@@ -1,5 +1,9 @@
+// File:
+// Demonstrates how to update a branch to reference a new commit
+// (i.e. create a commit on an existing branch).
+//
 // Run:
-// deno run -A examples/00_github_api_client/main.ts
+// deno run -A examples/00_github_api_client/main_update.ts
 //
 
 import { GitHubAPIClient } from "../../github/api/mod.ts";
@@ -15,13 +19,13 @@ async function main() {
     repo: "acmcsuf.com",
     token: GITHUB_TOKEN,
   });
-  // const repository = await client.getReposOwnerRepo();
-  // const repositoryDefaultBranch = repository.default_branch;
   const branch = await client.getReposOwnerRepoBranchesBranch({
-    branch: "refs/heads/hello-codemod",
+    branch: "refs/heads/hello-codemod-00",
   });
-  // const branchCommitSHA = branch.commit.sha;
+
+  const branchCommitSHA = branch.commit.sha;
   const branchTreeSHA = branch.commit.commit.tree.sha;
+  const randomData = crypto.randomUUID();
   const tree = await client.postReposOwnerRepoGitTrees({
     base_tree: branchTreeSHA,
     tree: [
@@ -29,23 +33,25 @@ async function main() {
         path: "hello_codemod.txt",
         mode: "100644",
         type: "blob",
-        content: "Hello Codemod!!\n",
+        content: "Hello Codemod!\n" + randomData + "\n",
       },
     ],
   });
+
   const treeSHA = tree.sha;
-  const branchCommitSHA = branch.commit.sha;
   console.log({ branchTreeSHA, branchCommitSHA, treeSHA });
   const commit = await client.postReposOwnerRepoGitCommits({
     message: "Hello Codemod!!",
     tree: treeSHA,
     parents: [branchCommitSHA],
   });
+
   const commitSHA = commit.sha;
   console.log({ commitSHA });
   const ref = await client.patchReposOwnerRepoGitRefsRef({
-    ref: `refs/heads/hello-codemod`,
+    ref: "heads/hello-codemod-01",
     sha: commitSHA,
   });
+
   console.log({ ref });
 }
