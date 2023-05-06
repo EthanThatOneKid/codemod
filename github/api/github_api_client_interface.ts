@@ -27,6 +27,13 @@ export interface GitHubAPIClientInterface {
   ): Promise<ReposOwnerRepoBranchesBranchGetResponse>;
 
   /**
+   * Uploads a blob. The new blob SHA is returned.
+   */
+  postReposOwnerRepoGitBlobs(
+    r: ReposOwnerRepoGitBlobsPostRequest,
+  ): Promise<ReposOwnerRepoGitBlobsPostResponse>;
+
+  /**
    * Creates a new tree. Request is made per directory. The new tree SHA is returned.
    *
    * See:
@@ -91,6 +98,16 @@ export type ReposOwnerRepoBranchesBranchGetResponse =
   paths["/repos/{owner}/{repo}/branches/{branch}"]["get"]["responses"][
     "200"
   ]["content"]["application/json"];
+
+export type ReposOwnerRepoGitBlobsPostRequest =
+  paths["/repos/{owner}/{repo}/git/blobs"]["post"]["requestBody"]["content"][
+    "application/json"
+  ];
+
+export type ReposOwnerRepoGitBlobsPostResponse =
+  paths["/repos/{owner}/{repo}/git/blobs"]["post"]["responses"]["201"][
+    "content"
+  ]["application/json"];
 
 export interface ReposOwnerRepoGitTreesTreeSHAGetRequest {
   /** tree_sha is the tree SHA passed as the path parameter. */

@@ -29,6 +29,12 @@ export type NewGitHubCommitClientOptions = ReposOwnerRepoGitCommitsPostRequest;
  * and base commit SHA in memory.
  */
 export interface GitHubCommitClientInterface {
+  // TODO: Differentiate between adding utf-8 and base64 encoded files.
+  // Base64 encoded files must be uploaded via the GitHub Blobs API.
+  // See:
+  // https://docs.github.com/en/rest/git/blobs#create-a-blob
+  //
+
   /**
    * add adds a file to the commit.
    */

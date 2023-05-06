@@ -20,7 +20,12 @@ async function main() {
     token: GITHUB_TOKEN,
   });
   const branch = await client.getReposOwnerRepoBranchesBranch({
-    branch: "refs/heads/hello-codemod-00",
+    branch: "refs/heads/hello-codemod-01",
+  });
+
+  const blob = await client.postReposOwnerRepoGitBlobs({
+    content: await generatePictureData(),
+    encoding: "base64",
   });
 
   const branchCommitSHA = branch.commit.sha;
@@ -34,6 +39,12 @@ async function main() {
         mode: "100644",
         type: "blob",
         content: "Hello Codemod!\n" + randomData + "\n",
+      },
+      {
+        path: "picture.jpg",
+        mode: "100644",
+        type: "blob",
+        sha: blob.sha,
       },
     ],
   });
@@ -54,4 +65,25 @@ async function main() {
   });
 
   console.log({ ref });
+}
+
+async function generatePictureData(): Promise<string> {
+  const response = await fetch("http://placekitten.com/200/300");
+  const blob = await response.blob();
+  return await blobToBase64(blob);
+}
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result !== "string") {
+        reject(new Error("Expected reader.result to be a string."));
+        return;
+      }
+
+      resolve(reader.result);
+    };
+    reader.readAsDataURL(blob);
+  });
 }

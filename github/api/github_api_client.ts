@@ -3,6 +3,8 @@ import type {
   ReposOwnerRepoBranchesBranchGetRequest,
   ReposOwnerRepoBranchesBranchGetResponse,
   ReposOwnerRepoGetResponse,
+  ReposOwnerRepoGitBlobsPostRequest,
+  ReposOwnerRepoGitBlobsPostResponse,
   ReposOwnerRepoGitCommitsPostRequest,
   ReposOwnerRepoGitCommitsPostResponse,
   ReposOwnerRepoGitRefsPostRequest,
@@ -16,6 +18,7 @@ import type {
 } from "./github_api_client_interface.ts";
 import {
   makeReposOwnerRepoBranchesBranchURL,
+  makeReposOwnerRepoGitBlobsURL,
   makeReposOwnerRepoGitCommitsURL,
   makeReposOwnerRepoGitRefsRefURL,
   makeReposOwnerRepoGitRefsURL,
@@ -79,6 +82,31 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     if (response.status !== 200) {
       throw new Error(
         `Failed to get base tree SHA and commit SHA for ${this.options.owner}/${this.options.repo} branch ${r.branch}.`,
+      );
+    }
+
+    return await response.json();
+  }
+
+  public async postReposOwnerRepoGitBlobs(
+    r: ReposOwnerRepoGitBlobsPostRequest,
+  ): Promise<ReposOwnerRepoGitBlobsPostResponse> {
+    const url = makeReposOwnerRepoGitBlobsURL(
+      this.options.owner,
+      this.options.repo,
+    );
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `token ${this.options.token}`,
+      },
+      body: JSON.stringify(r),
+    });
+
+    if (response.status !== 201) {
+      throw new Error(
+        `Failed to create blob for ${this.options.owner}/${this.options.repo}.`,
       );
     }
 

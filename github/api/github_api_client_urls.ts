@@ -15,6 +15,11 @@ export function makeReposOwnerRepoBranchesBranchURL(
   return new URL(`/repos/${owner}/${repo}/branches/${branch}`, GITHUB_API_URL);
 }
 
+/** makeReposOwnerRepoGitBlobsURL returns the desired URL. */
+export function makeReposOwnerRepoGitBlobsURL(owner: string, repo: string) {
+  return new URL(`/repos/${owner}/${repo}/git/blobs`, GITHUB_API_URL);
+}
+
 /** makeReposOwnerRepoGitTreesTreeSHAURL returns the desired URL. */
 export function makeReposOwnerRepoGitTreesURL(owner: string, repo: string) {
   return new URL(`/repos/${owner}/${repo}/git/trees`, GITHUB_API_URL);
