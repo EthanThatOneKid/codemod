@@ -82,7 +82,13 @@ function blobToBase64(blob: Blob): Promise<string> {
         return;
       }
 
-      resolve(reader.result);
+      const payload = reader.result.split(",");
+      if (payload.length !== 2) {
+        reject(new Error("Expected reader.result to be a base64 string."));
+        return;
+      }
+
+      resolve(payload[1]);
     };
     reader.readAsDataURL(blob);
   });
