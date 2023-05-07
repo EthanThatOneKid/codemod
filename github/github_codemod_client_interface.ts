@@ -10,17 +10,17 @@ import type {
  */
 export interface GitHubCodemodClientInterface {
   /**
-   * newCommit creates a new GitHub commit client.
+   * newCodemod creates a new GitHub commit client to kick off a codemod.
    */
-  newCommit(
-    options: NewGitHubCommitClientOptions,
+  newCodemod(
+    options: GitHubCommitClientOptions,
   ): Promise<GitHubCommitClientInterface>;
 }
 
 /**
- * NewGitHubCommitOptions are the options for creating a new GitHub commit.
+ * GitHubCommitClientOptions are the options for creating a new GitHub commit.
  */
-export type NewGitHubCommitClientOptions = ReposOwnerRepoGitCommitsPostRequest;
+export type GitHubCommitClientOptions = ReposOwnerRepoGitCommitsPostRequest;
 
 /**
  * GitHubCommitClientInterface is the protocol for a GitHub commit client.
@@ -29,55 +29,64 @@ export type NewGitHubCommitClientOptions = ReposOwnerRepoGitCommitsPostRequest;
  * and base commit SHA in memory.
  */
 export interface GitHubCommitClientInterface {
-  // TODO: Differentiate between adding utf-8 and base64 encoded files.
-  // Base64 encoded files must be uploaded via the GitHub Blobs API.
-  // See:
-  // https://docs.github.com/en/rest/git/blobs#create-a-blob
-  //
+  /**
+   * addFile adds a base64 encoded file to the commit.
+   */
+  addFile(path: string, blob: Blob): void;
 
   /**
-   * add adds a file to the commit.
+   * addTextFile adds a utf-8 file to the commit.
    */
-  add(path: string, content: string): Promise<void>;
+  addTextFile(path: string, content: string): void;
+
+  /**
+   * editFile edits a file in the commit. The content is passed to the function
+   * which returns the new content for the file.
+   */
+  editFile(path: string, fn: (blob: Blob) => Blob): void;
 
   /**
    * edit edits a file in the commit. The content is passed to the function
    * which returns the new content for the file.
    */
-  edit(path: string, fn: (content: string) => string): Promise<void>;
+  editTextFile(path: string, fn: (content: string) => string): void;
 
   /**
-   * newBranch creates a new GitHub branch client.
+   * newCommit makes a new commit.
    */
-  newBranch(
-    options: NewGitHubBranchOptions,
-  ): Promise<GitHubBranchClientInterface>;
+  newCommit(): Promise<void>;
+  newCommit(options: GitHubBranchOptions): Promise<GitHubBranchClientInterface>;
 }
 
 /**
- * NewBranchOptions are the options for creating a new branch.
+ * GitHubBranchOptions are the options for creating a new branch.
  */
-export type NewGitHubBranchOptions = ReposOwnerRepoGitRefsPostRequest;
+export type GitHubBranchOptions = ReposOwnerRepoGitRefsPostRequest;
 
 /**
  * GitHubBranchClientInterface is the protocol for a GitHub branch client.
  */
 export interface GitHubBranchClientInterface {
-  newPR(options: NewGitHubPROptions): Promise<GitHubPRClientInterface>;
+  /**
+   * newBranch creates a new branch.
+   */
+  newBranch(): Promise<void>;
+  newBranch(options: GitHubPROptions): Promise<GitHubPRClientInterface>;
 }
 
 /**
- * NewGitHubPROptions are the options for creating a new PR.
+ * GitHubPROptions are the options for creating a new PR.
  */
-export type NewGitHubPROptions = ReposOwnerRepoPullsPostRequest;
+export type GitHubPROptions = ReposOwnerRepoPullsPostRequest;
 
 /**
  * PRClientInterface is the protocol for a GitHub PR client.
- *
- * Privately stores the branch name.
  */
 export interface GitHubPRClientInterface {
-  open(): Promise<GitHubPR>;
+  /**
+   * newPR creates a new PR.
+   */
+  newPR(): Promise<GitHubPR>;
 }
 
 /**

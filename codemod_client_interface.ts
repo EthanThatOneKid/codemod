@@ -39,7 +39,8 @@ export interface CodemodCommitClientInterface {
    * remove removes a file from the commit.
    *
    * TODO:
-   * Implemented via this.add().
+   * Implemented via this.add() setting sha to null.
+   * See: https://stackoverflow.com/a/72726316.
    */
   remove(path: string): void;
 
