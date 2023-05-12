@@ -1,6 +1,9 @@
 import type {
   ReposOwnerRepoGitCommitsPostRequest,
+  ReposOwnerRepoGitCommitsPostResponse,
   ReposOwnerRepoGitRefsPostRequest,
+  ReposOwnerRepoGitRefsPostResponse,
+  ReposOwnerRepoGitTreesPostRequest,
   ReposOwnerRepoPullsPostRequest,
   ReposOwnerRepoPullsPostResponse,
 } from "./api/mod.ts";
@@ -40,28 +43,38 @@ export interface GitHubCommitClientInterface {
   addTextFile(path: string, content: string): void;
 
   /**
-   * editFile edits a file in the commit. The content is passed to the function
-   * which returns the new content for the file.
+   * deleteFile deletes a file in the commit.
    */
-  editFile(path: string, fn: (blob: Blob) => Blob): void;
-
-  /**
-   * edit edits a file in the commit. The content is passed to the function
-   * which returns the new content for the file.
-   */
-  editTextFile(path: string, fn: (content: string) => string): void;
+  deleteFile(path: string): void;
 
   /**
    * newCommit makes a new commit.
    */
-  newCommit(): Promise<void>;
-  newCommit(options: GitHubBranchOptions): Promise<GitHubBranchClientInterface>;
+  newCommit(): Promise<GitHubCommit>;
+  newCommit(
+    options: GitHubBranchClientOptions,
+  ): Promise<GitHubBranchClientInterface>;
 }
 
 /**
- * GitHubBranchOptions are the options for creating a new branch.
+ * GitHubTreeItem is a single node in a GitHub tree.
  */
-export type GitHubBranchOptions = ReposOwnerRepoGitRefsPostRequest;
+export type GitHubTreeItem = GitHubTree[number];
+
+/**
+ * GitHubTree is a GitHub tree.
+ */
+export type GitHubTree = ReposOwnerRepoGitTreesPostRequest["tree"];
+
+/**
+ * GitHubCommit is the struct for a GitHub commit.
+ */
+export type GitHubCommit = ReposOwnerRepoGitCommitsPostResponse;
+
+/**
+ * GitHubBranchClientOptions are the options for creating a new branch.
+ */
+export type GitHubBranchClientOptions = ReposOwnerRepoGitRefsPostRequest;
 
 /**
  * GitHubBranchClientInterface is the protocol for a GitHub branch client.
@@ -70,14 +83,27 @@ export interface GitHubBranchClientInterface {
   /**
    * newBranch creates a new branch.
    */
-  newBranch(): Promise<void>;
-  newBranch(options: GitHubPROptions): Promise<GitHubPRClientInterface>;
+  newBranch(): Promise<GitHubBranch>;
+  newBranch(options: GitHubPRClientOptions): Promise<GitHubPRClientInterface>;
+
+  /**
+   * updateBranch updates an existing branch.
+   */
+  updateBranch(): Promise<GitHubBranch>;
+  updateBranch(
+    options: GitHubPRClientOptions,
+  ): Promise<GitHubPRClientInterface>;
 }
 
 /**
- * GitHubPROptions are the options for creating a new PR.
+ * GitHubBranch is the struct for a GitHub branch.
  */
-export type GitHubPROptions = ReposOwnerRepoPullsPostRequest;
+export type GitHubBranch = ReposOwnerRepoGitRefsPostResponse;
+
+/**
+ * GitHubPRClientOptions are the options for creating a new PR.
+ */
+export type GitHubPRClientOptions = ReposOwnerRepoPullsPostRequest;
 
 /**
  * PRClientInterface is the protocol for a GitHub PR client.
