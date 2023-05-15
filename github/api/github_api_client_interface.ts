@@ -175,3 +175,17 @@ export type ReposOwnerRepoPullsPostResponse =
   paths["/repos/{owner}/{repo}/pulls"]["post"]["responses"]["201"][
     "content"
   ]["application/json"];
+
+export type ReposOwnerRepoPullsPullNumberPatchRequest =
+  & { pull_number: number }
+  & Exclude<
+    paths["/repos/{owner}/{repo}/pulls/{pull_number}"]["patch"]["requestBody"],
+    undefined
+  >[
+    "content"
+  ]["application/json"];
+
+export type ReposOwnerRepoPullsPullNumberPatchResponse =
+  paths["/repos/{owner}/{repo}/pulls/{pull_number}"]["patch"]["responses"][
+    "200"
+  ]["content"]["application/json"];

@@ -1,3 +1,4 @@
+import { codemod } from "../codemod.ts";
 import type {
   ReposOwnerRepoGitCommitsPostRequest,
   ReposOwnerRepoGitCommitsPostResponse,
@@ -7,31 +8,22 @@ import type {
   ReposOwnerRepoPullsPostRequest,
   ReposOwnerRepoPullsPostResponse,
 } from "./api/mod.ts";
+import { GitHubCodemodClient } from "./github_codemod_client.ts";
 
 /**
  * GitHubCodemodClientInterface is the protocol for a GitHub Codemod client.
  */
 export interface GitHubCodemodClientInterface {
   /**
-   * newCodemod creates a new GitHub commit client to kick off a codemod.
+   * createTreeClient creates a new GitHub tree client to kick off a codemod.
    */
-  newCodemod(
-    options: GitHubCommitClientOptions,
-  ): Promise<GitHubCommitClientInterface>;
+  createTreeClient(): GitHubTreeClientInterface;
 }
 
 /**
- * GitHubCommitClientOptions are the options for creating a new GitHub commit.
+ * GitHubTreeClientInterface is the protocol for a GitHub tree client.
  */
-export type GitHubCommitClientOptions = ReposOwnerRepoGitCommitsPostRequest;
-
-/**
- * GitHubCommitClientInterface is the protocol for a GitHub commit client.
- *
- * GitHubCommitClientInterface implementation stores your tree, base tree SHA,
- * and base commit SHA in memory.
- */
-export interface GitHubCommitClientInterface {
+export interface GitHubTreeClientInterface {
   /**
    * addFile adds a base64 encoded file to the commit.
    */
@@ -48,13 +40,86 @@ export interface GitHubCommitClientInterface {
   deleteFile(path: string): void;
 
   /**
-   * newCommit makes a new commit.
+   * create creates a new tree.
    */
-  newCommit(): Promise<GitHubCommit>;
-  newCommit(
+  create(options: GitHubTreeClientOptions): Promise<GitHubTree>;
+
+  /**
+   * createCommitClient creates a new tree and commit client.
+   */
+  createCommitClient(
+    options: GitHubCommitClientOptions,
+  ): Promise<GitHubCommitClientInterface>;
+}
+
+/**
+ * GitHubCommitClientInterface is the protocol for a GitHub commit client.
+ *
+ * GitHubCommitClientInterface implementation stores your tree, base tree SHA,
+ * and base commit SHA in memory.
+ */
+export interface GitHubCommitClientInterface {
+  create(): Promise<GitHubCommit>;
+  createBranch(
     options: GitHubBranchClientOptions,
   ): Promise<GitHubBranchClientInterface>;
+  createPR(
+    options: GitHubPRClientOptions,
+  ): Promise<GitHubPRClientInterface>;
 }
+
+const pr = await codemod(
+  codemodPROptions,
+  codemodBranchOptions,
+  codemodCommitOptions,
+  codemodTreeOptions,
+);
+
+const branch = await codemod(
+  codemodBranchOptions,
+  codemodCommitOptions,
+  codemodTreeOptions,
+);
+
+const commit = await codemod(
+  codemodCommitOptions,
+  codemodTreeOptions,
+);
+
+const tree = await codemod(
+  codemodTreeOptions,
+);
+
+// Compose tree and commit options into a new commit.
+// Compose commit and branch options into a new branch.
+// Compose branch and pr options into a new pr.
+
+const pr = await treeClient
+  .addFile("hello.txt", "hello world\n")
+  .addFile("hello2.txt", "hello world2\n")
+  .create()
+  // .then((tree) => commitClient.create({ tree }))
+  .then(commitClient.fromTree(commitOptions))
+  // .then((commit) => branchClient.create({ commit }))
+  .then(branchClient.fromCommit(branchOptions))
+  // .then((branch) => prClient.create({ branch }));
+  .then(prClient.fromBranch(prOptions));
+
+const commit = await commitClient.create({ tree });
+const branch = await branchClient.create({ commit });
+const pr = await prClient.create({ branch });
+
+// const commit = await tree
+//   .addFile()
+//   .addFile()
+//   .createCommit();
+
+// await commit.create()
+//   .createBranch();
+
+// await;
+
+// client.createBranch();
 
 /**
  * GitHubTreeItem is a single node in a GitHub tree.
@@ -72,25 +137,28 @@ export type GitHubTree = ReposOwnerRepoGitTreesPostRequest["tree"];
 export type GitHubCommit = ReposOwnerRepoGitCommitsPostResponse;
 
 /**
- * GitHubBranchClientOptions are the options for creating a new branch.
- */
-export type GitHubBranchClientOptions = ReposOwnerRepoGitRefsPostRequest;
-
-/**
  * GitHubBranchClientInterface is the protocol for a GitHub branch client.
  */
 export interface GitHubBranchClientInterface {
   /**
-   * newBranch creates a new branch.
+   * create creates a new branch.
    */
-  newBranch(): Promise<GitHubBranch>;
-  newBranch(options: GitHubPRClientOptions): Promise<GitHubPRClientInterface>;
+  create(): Promise<GitHubBranch>;
+
+  /**
+   * createPR creates a new branch.
+   */
+  createPR(options: GitHubPRClientOptions): Promise<GitHubPRClientInterface>;
 
   /**
    * updateBranch updates an existing branch.
    */
-  updateBranch(): Promise<GitHubBranch>;
-  updateBranch(
+  update(): Promise<GitHubBranch>;
+
+  /**
+   * updatePR updates an existing PR.
+   */
+  updatePR(
     options: GitHubPRClientOptions,
   ): Promise<GitHubPRClientInterface>;
 }
@@ -103,7 +171,10 @@ export type GitHubBranch = ReposOwnerRepoGitRefsPostResponse;
 /**
  * GitHubPRClientOptions are the options for creating a new PR.
  */
-export type GitHubPRClientOptions = ReposOwnerRepoPullsPostRequest;
+export type GitHubPRClientOptions = Omit<
+  ReposOwnerRepoPullsPostRequest,
+  "base" | "head"
+>;
 
 /**
  * PRClientInterface is the protocol for a GitHub PR client.
@@ -112,7 +183,7 @@ export interface GitHubPRClientInterface {
   /**
    * newPR creates a new PR.
    */
-  newPR(): Promise<GitHubPR>;
+  commit(): Promise<GitHubPR>;
 }
 
 /**

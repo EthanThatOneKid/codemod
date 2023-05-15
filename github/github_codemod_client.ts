@@ -4,13 +4,13 @@ import type {
   GitHubBranchClientInterface,
   GitHubBranchClientOptions,
   GitHubCodemodClientInterface,
-  GitHubCommit,
   GitHubCommitClientInterface,
   GitHubCommitClientOptions,
   GitHubPR,
   GitHubPRClientInterface,
   GitHubPRClientOptions,
   GitHubTree,
+  GitHubTreeClientInterface,
   GitHubTreeItem,
 } from "./github_codemod_client_interface.ts";
 import { fromBlob } from "./base64.ts";
@@ -21,22 +21,19 @@ import { fromBlob } from "./base64.ts";
 export class GitHubCodemodClient implements GitHubCodemodClientInterface {
   constructor(private readonly api: GitHubAPIClientInterface) {}
 
-  public newCodemod(
-    options: GitHubCommitClientOptions,
-  ): Promise<GitHubCommitClientInterface> {
-    return Promise.resolve(new GitHubCommitClient(this.api, options));
+  public newCodemod(): GitHubTreeClientInterface {
+    return new GitHubWorkspaceClient(this.api);
   }
 }
 
 /**
- * GitHubCommitClient is a GitHub commit client.
+ * GitHubWorkspaceClient is a GitHub workspace client.
  */
-export class GitHubCommitClient implements GitHubCommitClientInterface {
+export class GitHubWorkspaceClient implements GitHubTreeClientInterface {
   private tree = new Map<string, GitHubCodemod>();
 
   constructor(
     private readonly api: GitHubAPIClientInterface,
-    private readonly options: GitHubCommitClientOptions,
   ) {}
 
   public addFile(path: string, blob: Blob): void {
@@ -60,10 +57,10 @@ export class GitHubCommitClient implements GitHubCommitClientInterface {
   }
 
   /**
-   * doCodemod makes a GitHub tree item from a codemod, which potentially involves
+   * doTreeItem makes a GitHub tree item from a codemod, which potentially involves
    * making a new blob and/or reading an existing file from the repository.
    */
-  private async doCodemod(
+  private async doTreeItem(
     path: string,
     codemod: GitHubCodemod,
   ): Promise<GitHubTreeItem> {
@@ -105,49 +102,127 @@ export class GitHubCommitClient implements GitHubCommitClientInterface {
     }
   }
 
-  public async newCommit(): Promise<GitHubCommit>;
-  public async newCommit(
-    options: GitHubBranchClientOptions,
-  ): Promise<GitHubBranchClientInterface>;
-  public async newCommit(
-    options?: GitHubBranchClientOptions,
-  ): Promise<GitHubCommit | GitHubBranchClientInterface> {
-    const treeArray: GitHubTree = await Promise.all(
+  /**
+   * doTree makes a GitHub tree from the codemod tree.
+   */
+  private async doTree(): Promise<GitHubTree> {
+    return await Promise.all(
       Array.from(this.tree.entries()).map(([path, codemod]) =>
-        this.doCodemod(path, codemod)
+        this.doTreeItem(path, codemod)
       ),
     );
+  }
 
+  public async createCommit(
+    options: GitHubCommitClientOptions,
+  ): Promise<GitHubCommitClientInterface> {
     // Get the base branch.
-    const baseBranch = this.options.parents?.at(0) ??
+    const baseBranch = options.parents?.at(0) ??
       (await this.api.getReposOwnerRepo()).default_branch;
     const branch = await this.api.getReposOwnerRepoBranchesBranch({
       branch: baseBranch,
     });
 
-    // Get the base tree.
-    const branchCommitSHA = branch.commit.sha;
-    const branchTreeSHA = branch.commit.commit.tree.sha;
+    // Create the new tree.
+    const treeArray = await this.doTree();
     const tree = await this.api.postReposOwnerRepoGitTrees({
-      base_tree: branchTreeSHA,
+      base_tree: branch.commit.commit.tree.sha,
       tree: treeArray,
     });
 
-    // Make the commit.
-    const commit = await this.api.postReposOwnerRepoGitCommits({
-      ...this.options,
-      tree: tree.sha,
-      parents: [branchCommitSHA],
+    // Return the commit client.
+    return new GitHubCommitClient(this.api, {
+      commit,
+      parents: options.parents,
     });
-    if (options) {
-      return new GitHubBranchClient(this.api, {
-        ...options,
-        sha: commit.sha,
-      });
-    }
-
-    return commit;
   }
+}
+
+/**
+ * GitHubCommitClient is a GitHub commit client.
+ */
+export class GitHubCommitClient implements GitHubCommitClientInterface {
+  constructor(
+    private readonly api: GitHubAPIClientInterface,
+    private readonly options: GitHubCommitClientOptions,
+  ) {}
+
+  create(): Promise<> {
+    throw new Error("Method not implemented.");
+  }
+
+  createBranch(
+    options: GitHubBranchClientOptions,
+  ): Promise<GitHubBranchClientInterface> {
+    throw new Error("Method not implemented.");
+  }
+
+  createPR(options: GitHubPRClientOptions): Promise<GitHubPRClientInterface> {
+    throw new Error("Method not implemented.");
+  }
+
+  // public addFile(path: string, blob: Blob): void {
+  //   this.tree.set(path, {
+  //     type: GitHubCodemodType.ADD_FILE,
+  //     blob,
+  //   });
+  // }
+
+  // public addTextFile(path: string, content: string): void {
+  //   this.tree.set(path, {
+  //     type: GitHubCodemodType.ADD_TEXT_FILE,
+  //     content,
+  //   });
+  // }
+
+  // public deleteFile(path: string): void {
+  //   this.tree.set(path, {
+  //     type: GitHubCodemodType.DELETE_FILE,
+  //   });
+  // }
+
+  // public async newCommit(): Promise<GitHubCommit>;
+  // public async newCommit(
+  //   options: GitHubBranchClientOptions,
+  // ): Promise<GitHubBranchClientInterface>;
+  // public async newCommit(
+  //   options?: GitHubBranchClientOptions,
+  // ): Promise<GitHubCommit | GitHubBranchClientInterface> {
+  //   const treeArray: GitHubTree = await Promise.all(
+  //     Array.from(this.tree.entries()).map(([path, codemod]) =>
+  //       this.doCodemod(path, codemod)
+  //     ),
+  //   );
+
+  //   // Get the base branch.
+  //   const baseBranch = this.options.parents?.at(0) ??
+  //     (await this.api.getReposOwnerRepo()).default_branch;
+  //   const branch = await this.api.getReposOwnerRepoBranchesBranch({
+  //     branch: baseBranch,
+  //   });
+
+  //   // Get the base tree.
+  //   const tree = await this.api.postReposOwnerRepoGitTrees({
+  //     base_tree: branch.commit.commit.tree.sha,
+  //     tree: treeArray,
+  //   });
+
+  //   // Make the commit.
+  //   const commit = await this.api.postReposOwnerRepoGitCommits({
+  //     ...this.options,
+  //     tree: tree.sha,
+  //     parents: [branch.commit.sha],
+  //   });
+  //   if (options) {
+  //     return new GitHubBranchClient(this.api, {
+  //       ...options,
+  //       // TODO: Resolve this!
+  //       sha: commit.sha,
+  //     });
+  //   }
+
+  //   return commit;
+  // }
 }
 
 /**
