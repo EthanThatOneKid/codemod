@@ -31,6 +31,11 @@ export interface GitHubCodemodBuilderInterface {
   deleteFile(path: string): this;
 
   /**
+   * clone clones the builder as a new instance.
+   */
+  clone(): GitHubCodemodBuilderInterface;
+
+  /**
    * createTree creates a tree using the GitHub API.
    */
   createTree(

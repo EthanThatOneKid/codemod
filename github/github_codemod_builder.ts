@@ -29,9 +29,9 @@ export class GitHubCodemodBuilder implements GitHubCodemodBuilderInterface {
   private readonly api: GitHubAPIClientInterface;
 
   constructor(
-    options: GitHubAPIClientOptions,
+    private readonly options: GitHubAPIClientOptions,
     private readonly codemods: GitHubCodemods = {},
-    fetcher: typeof fetch = fetch.bind(globalThis),
+    private readonly fetcher: typeof fetch = fetch.bind(globalThis),
   ) {
     this.api = new GitHubAPIClient(options, fetcher);
   }
@@ -57,6 +57,14 @@ export class GitHubCodemodBuilder implements GitHubCodemodBuilderInterface {
       type: GitHubCodemodType.DELETE_FILE,
     };
     return this;
+  }
+
+  public clone(): GitHubCodemodBuilderInterface {
+    return new GitHubCodemodBuilder(
+      this.options,
+      { ...this.codemods },
+      this.fetcher,
+    );
   }
 
   public async createTree(
