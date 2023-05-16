@@ -40,13 +40,18 @@ export interface GitHubAPIClientOptions {
  * GitHubAPIClient is a client for the GitHub API.
  */
 export class GitHubAPIClient implements GitHubAPIClientInterface {
+  private readonly fetch: typeof fetch;
+
   constructor(
     private readonly options: GitHubAPIClientOptions,
-  ) {}
+    fetcher: typeof fetch = fetch,
+  ) {
+    this.fetch = fetcher;
+  }
 
   public async getReposOwnerRepo(): Promise<ReposOwnerRepoGetResponse> {
     const url = makeReposOwnerRepoURL(this.options.owner, this.options.repo);
-    const response = await fetch(url, {
+    const response = await this.fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -71,7 +76,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       this.options.repo,
       r.branch,
     );
-    const response = await fetch(url, {
+    const response = await this.fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -95,7 +100,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       this.options.owner,
       this.options.repo,
     );
-    const response = await fetch(url, {
+    const response = await this.fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -120,7 +125,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       this.options.owner,
       this.options.repo,
     );
-    const response = await fetch(url, {
+    const response = await this.fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -145,7 +150,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       this.options.owner,
       this.options.repo,
     );
-    const response = await fetch(url, {
+    const response = await this.fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -170,7 +175,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       this.options.owner,
       this.options.repo,
     );
-    const response = await fetch(url, {
+    const response = await this.fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -196,7 +201,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       this.options.repo,
       r.ref,
     );
-    const response = await fetch(url, {
+    const response = await this.fetch(url, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -221,7 +226,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       this.options.owner,
       this.options.repo,
     );
-    const response = await fetch(url, {
+    const response = await this.fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
