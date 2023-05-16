@@ -18,7 +18,7 @@ async function main() {
     owner: "EthanThatOneKid",
     repo: "acmcsuf.com",
     token: GITHUB_TOKEN,
-  });
+  }, fetch.bind(globalThis));
   const branch = await client.getReposOwnerRepoBranchesBranch({
     branch: "refs/heads/hello-codemod-01",
   });

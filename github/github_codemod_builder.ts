@@ -1,4 +1,8 @@
-import type { GitHubAPIClientInterface } from "./api/mod.ts";
+import type {
+  GitHubAPIClientInterface,
+  GitHubAPIClientOptions,
+} from "./api/mod.ts";
+import { GitHubAPIClient } from "./api/mod.ts";
 import type {
   GitHubCodemodBuilderCreateBranchOptions,
   GitHubCodemodBuilderCreateCommitOptions,
@@ -22,10 +26,15 @@ import type { GitHubCreatePROptions, GitHubPRResult } from "./pr/mod.ts";
 import { createPR } from "./pr/create.ts";
 
 export class GitHubCodemodBuilder implements GitHubCodemodBuilderInterface {
+  private readonly api: GitHubAPIClientInterface;
+
   constructor(
-    private readonly api: GitHubAPIClientInterface,
+    options: GitHubAPIClientOptions,
     private readonly codemods: GitHubCodemods = {},
-  ) {}
+    fetcher: typeof fetch = fetch.bind(globalThis),
+  ) {
+    this.api = new GitHubAPIClient(options, fetcher);
+  }
 
   public addFile(path: string, blob: Blob): this {
     this.codemods[path] = {
