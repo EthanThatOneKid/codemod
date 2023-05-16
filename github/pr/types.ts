@@ -21,4 +21,14 @@ export interface GitHubCreatePROptions
   maintainer_can_modify?: boolean;
   draft?: boolean;
   issue?: number;
+  branchAction?: GitHubBranchAction;
+}
+
+/**
+ * GitHubBranchAction is an action to take on a branch.
+ */
+export enum GitHubBranchAction {
+  CREATE = "create",
+  UPDATE = "update",
+  CREATE_OR_UPDATE = "create_or_update",
 }
