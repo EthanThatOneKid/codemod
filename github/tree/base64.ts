@@ -1,7 +1,7 @@
 /**
- * fromBlob converts a Blob to a base64 string promise.
+ * stringFromBlob converts a Blob to a base64 string promise.
  */
-export function fromBlob(blob: Blob): Promise<string> {
+export function stringFromBlob(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = () => {

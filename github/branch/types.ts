@@ -1,9 +1,8 @@
+import type { ReposOwnerRepoGitRefsPostResponse } from "../api/mod.ts";
 import type {
-  ReposOwnerRepoGitCommitsPostResponse,
-  ReposOwnerRepoGitRefsPostResponse,
-  ReposOwnerRepoGitTreesPostResponse,
-  ReposOwnerRepoPullsPostResponse,
-} from "../api/mod.ts";
+  GitHubCommitResult,
+  GitHubCreateCommitOptions,
+} from "../commit/mod.ts";
 
 /**
  * GitHubBranchResult is the result of creating a branch.
@@ -15,9 +14,8 @@ export interface GitHubBranchResult extends GitHubCommitResult {
 /**
  * GitHubCreateBranchOptions are the options to create a branch.
  */
-export interface GitHubCreateBranchOptions {
-  name: string; // Used like "refs/heads/{name}".
-  commitOrBranchSHA: string;
+export interface GitHubCreateBranchOptions extends GitHubCreateCommitOptions {
+  headBranchName: string;
 }
 
 /**

@@ -1,4 +1,5 @@
 import type {
+  ReposOwnerRepoBranchesBranchGetResponse,
   ReposOwnerRepoGitTreesPostRequest,
   ReposOwnerRepoGitTreesPostResponse,
 } from "../api/mod.ts";
@@ -8,6 +9,7 @@ import type {
  */
 export interface GitHubTreeResult {
   tree: ReposOwnerRepoGitTreesPostResponse;
+  baseBranch: ReposOwnerRepoBranchesBranchGetResponse;
 }
 
 /**

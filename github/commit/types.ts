@@ -1,5 +1,5 @@
 import type { ReposOwnerRepoGitCommitsPostResponse } from "../api/mod.ts";
-import type { GitHubTreeResult } from "../tree/mod.ts";
+import type { GitHubCreateTreeOptions, GitHubTreeResult } from "../tree/mod.ts";
 
 /**
  * GitHubCommitResult is the result of creating a commit.
@@ -11,10 +11,8 @@ export interface GitHubCommitResult extends GitHubTreeResult {
 /**
  * GitHubCreateCommitOptions are the options to create a commit.
  */
-export interface GitHubCreateCommitOptions {
+export interface GitHubCreateCommitOptions extends GitHubCreateTreeOptions {
   message: string;
-  treeSHA: string;
-  parentSHA: string;
   author?: GitHubAuthor;
   committer?: GitHubCommitter;
   signature?: string | undefined;

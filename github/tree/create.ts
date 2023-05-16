@@ -1,6 +1,6 @@
 import type {
   GitHubAPIClientInterface,
-  ReposOwnerRepoGitTreesPostRequest,
+  ReposOwnerRepoBranchesBranchGetResponse,
 } from "../api/mod.ts";
 import { GitHubCodemodType } from "./types.ts";
 import type {
@@ -11,63 +11,60 @@ import type {
   GitHubTreeItem,
   GitHubTreeResult,
 } from "./types.ts";
-import { fromBlob } from "./base64.ts";
+import { stringFromBlob } from "./base64.ts";
 
 /**
  * createTree creates a GitHub tree.
  */
 export async function createTree(
   api: GitHubAPIClientInterface,
-  createTreeOptions: GitHubCreateTreeOptions,
-): Promise<GitHubTreeResult> {
-  const request = await fromOptions(api, createTreeOptions);
-  const response = await api.postReposOwnerRepoGitTrees(request);
-  return { tree: response };
-}
-
-/**
- * fromOptions converts GitHubCreateTreeOptions into the GitHub API tree request.
- */
-export async function fromOptions(
-  api: GitHubAPIClientInterface,
   options: GitHubCreateTreeOptions,
-): Promise<ReposOwnerRepoGitTreesPostRequest> {
-  const { 0: baseTreeSHA, 1: tree } = await Promise.all([
-    getBaseTreeSHA(api, options.baseBranchName),
-    uploadTree(api, options.codemods),
-  ]);
-  return { base_tree: baseTreeSHA, tree };
-}
-
-async function getBaseTreeSHA(
-  api: GitHubAPIClientInterface,
-  baseBranchName?: string,
-): Promise<string> {
-  baseBranchName ??= (await api.getReposOwnerRepo()).default_branch;
-  return (await api.getReposOwnerRepoBranchesBranch({
-    branch: baseBranchName,
-  })).commit.commit.tree.sha;
+): Promise<GitHubTreeResult> {
+  const baseBranch = await getBranch(api, options.baseBranchName);
+  const tree = await uploadCodemodsAsTree(api, options.codemods);
+  const response = await api.postReposOwnerRepoGitTrees({
+    base_tree: baseBranch.commit.commit.tree.sha,
+    tree,
+  });
+  return {
+    baseBranch,
+    tree: response,
+  };
 }
 
 /**
- * uploadTree makes a GitHub tree from the codemod tree.
+ * getBranch gets the base tree SHA from the base branch name.
  */
-export async function uploadTree(
+export async function getBranch(
+  api: GitHubAPIClientInterface,
+  branchName?: string,
+): Promise<ReposOwnerRepoBranchesBranchGetResponse> {
+  branchName ??= (await api.getReposOwnerRepo()).default_branch;
+  return (await api.getReposOwnerRepoBranchesBranch({
+    branch: branchName,
+  }));
+}
+
+/**
+ * uploadCodemodsAsTree makes a GitHub tree from the codemod tree.
+ */
+export async function uploadCodemodsAsTree(
   api: GitHubAPIClientInterface,
   codemods: GitHubCodemods,
 ): Promise<GitHubTree> {
   return await Promise.all(
     Object.entries(codemods).map(([path, codemod]) =>
-      uploadTreeItem(api, path, codemod)
+      uploadCodemodAsTreeItem(api, path, codemod)
     ),
   );
 }
 
 /**
- * uploadTreeItem makes a GitHub tree item from a codemod, which potentially involves
- * making a new blob and/or reading an existing file from the repository.
+ * uploadCodemodAsTreeItem makes a GitHub tree item from a codemod, which
+ * potentially involves making a new blob and/or reading an existing file
+ * from the repository.
  */
-export async function uploadTreeItem(
+export async function uploadCodemodAsTreeItem(
   api: GitHubAPIClientInterface,
   path: string,
   codemod: GitHubCodemod,
@@ -75,7 +72,7 @@ export async function uploadTreeItem(
   switch (codemod.type) {
     case GitHubCodemodType.ADD_FILE: {
       const blob = await api.postReposOwnerRepoGitBlobs({
-        content: await fromBlob(codemod.blob),
+        content: await stringFromBlob(codemod.blob),
         encoding: "base64",
       });
       return {
