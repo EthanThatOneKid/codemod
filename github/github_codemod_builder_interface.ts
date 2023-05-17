@@ -16,14 +16,14 @@ import type { GitHubCreatePROptions, GitHubPRResult } from "./pr/mod.ts";
  */
 export interface GitHubCodemodBuilderInterface {
   /**
-   * addFile adds a base64 encoded file to the commit.
+   * setFile sets a base64 encoded file to the commit.
    */
-  addFile(path: string, blob: Blob): this;
+  setFile(path: string, blob: Blob): this;
 
   /**
-   * addTextFile adds a utf-8 file to the commit.
+   * setTextFile sets a utf-8 file to the commit.
    */
-  addTextFile(path: string, content: string): this;
+  setTextFile(path: string, content: string): this;
 
   /**
    * deleteFile deletes a file in the commit.

@@ -2,7 +2,7 @@
 // Demonstrates how to create a tree using the GitHub API.
 //
 // Run:
-// deno run -A examples/01_create_tree/main.ts
+// deno run -A examples/02_create_commit/main.ts
 //
 
 import { GitHubCodemodBuilder } from "../../github/mod.ts";
@@ -19,7 +19,9 @@ async function main() {
     token: GITHUB_TOKEN,
   })
     .setTextFile("hello_world.txt", "Hello, World!")
-    .createTree();
+    .createCommit({
+      message: "Add hello world",
+    });
 
   console.log({ result });
 }

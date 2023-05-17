@@ -36,7 +36,7 @@ export class GitHubCodemodBuilder implements GitHubCodemodBuilderInterface {
     this.api = new GitHubAPIClient(options, fetcher);
   }
 
-  public addFile(path: string, blob: Blob): this {
+  public setFile(path: string, blob: Blob): this {
     this.codemods[path] = {
       type: GitHubCodemodType.ADD_FILE,
       blob,
@@ -44,7 +44,7 @@ export class GitHubCodemodBuilder implements GitHubCodemodBuilderInterface {
     return this;
   }
 
-  public addTextFile(path: string, content: string): this {
+  public setTextFile(path: string, content: string): this {
     this.codemods[path] = {
       type: GitHubCodemodType.ADD_TEXT_FILE,
       content,
