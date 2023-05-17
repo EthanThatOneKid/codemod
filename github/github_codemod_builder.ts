@@ -7,6 +7,7 @@ import type {
   GitHubCodemodBuilderCreateBranchOptions,
   GitHubCodemodBuilderCreateCommitOptions,
   GitHubCodemodBuilderCreateOrUpdateBranchOptions,
+  GitHubCodemodBuilderCreatePROptions,
   GitHubCodemodBuilderCreateTreeOptions,
   GitHubCodemodBuilderInterface,
   GitHubCodemodBuilderUpdateBranchOptions,
@@ -22,7 +23,7 @@ import {
   createOrUpdateBranch,
   updateBranch,
 } from "./branch/mod.ts";
-import type { GitHubCreatePROptions, GitHubPRResult } from "./pr/mod.ts";
+import type { GitHubPRResult } from "./pr/mod.ts";
 import { createPR } from "./pr/create.ts";
 
 export class GitHubCodemodBuilder implements GitHubCodemodBuilderInterface {
@@ -113,7 +114,7 @@ export class GitHubCodemodBuilder implements GitHubCodemodBuilderInterface {
   }
 
   public async createPR(
-    options: GitHubCreatePROptions,
+    options: GitHubCodemodBuilderCreatePROptions,
   ): Promise<GitHubPRResult> {
     return await createPR(
       this.api,
