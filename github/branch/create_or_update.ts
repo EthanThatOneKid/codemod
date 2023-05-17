@@ -14,7 +14,7 @@ export async function createOrUpdateBranch(
   options: GitHubCreateOrUpdateBranchOptions,
 ): Promise<GitHubBranchResult> {
   const headBranch = await api.getBranch({
-    branch: options.headBranchName,
+    branch: `refs/heads/${options.headBranchName}`,
   }).catch(() => null);
   if (!headBranch) {
     return createBranch(api, options);

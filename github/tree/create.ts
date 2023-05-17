@@ -40,7 +40,9 @@ export async function getBranch(
   branchName?: string,
 ): Promise<GitHubAPIBranchGetResponse> {
   branchName ??= (await api.getRepository()).default_branch;
-  return await api.getBranch({ branch: branchName });
+  return await api.getBranch({
+    branch: `refs/heads/${branchName}`,
+  });
 }
 
 /**
