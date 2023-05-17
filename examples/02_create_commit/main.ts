@@ -1,5 +1,5 @@
 // File:
-// Demonstrates how to create a tree using the GitHub API.
+// Demonstrates how to create a commit using the GitHub API.
 //
 // Run:
 // deno run -A examples/02_create_commit/main.ts

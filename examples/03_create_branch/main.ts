@@ -1,8 +1,8 @@
 // File:
-// Demonstrates how to create a tree using the GitHub API.
+// Demonstrates how to create a branch using the GitHub API.
 //
 // Run:
-// deno run -A examples/02_create_commit/main.ts
+// deno run -A examples/03_create_branch/main.ts
 //
 
 import { GitHubCodemodBuilder } from "../../github/mod.ts";
@@ -19,8 +19,9 @@ async function main() {
     token: GITHUB_TOKEN,
   })
     .setTextFile("hello_world.txt", "Hello, World!")
-    .createCommit({
+    .createBranch({
       message: "Add hello world",
+      headBranchName: "new-branch",
     });
 
   console.log({ result });
