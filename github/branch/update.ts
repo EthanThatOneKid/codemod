@@ -9,9 +9,12 @@ export async function updateBranch(
   api: GitHubAPIClientInterface,
   options: GitHubUpdateBranchOptions,
 ): Promise<GitHubBranchResult> {
-  const commitResult = await createCommit(api, options);
+  const commitResult = await createCommit(api, {
+    ...options,
+    baseBranchName: options.headBranchName,
+  });
   const response = await api.patchRef({
-    ref: `refs/heads/${options.headBranchName}`,
+    ref: `heads/${options.headBranchName}`,
     sha: commitResult.commit.sha,
     force: options.force,
   });

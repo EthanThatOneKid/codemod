@@ -21,11 +21,15 @@ export interface GitHubCreateBranchOptions extends GitHubCreateCommitOptions {
 /**
  * GitHubUpdateBranchOptions are the options to update a branch.
  */
-export interface GitHubUpdateBranchOptions extends GitHubCreateBranchOptions {
+export interface GitHubUpdateBranchOptions
+  extends Omit<GitHubCreateBranchOptions, "baseBranchName"> {
   force?: boolean;
 }
 
 /**
  * GitHubCreateOrUpdateBranchOptions are the options to create or update a branch.
  */
-export type GitHubCreateOrUpdateBranchOptions = GitHubUpdateBranchOptions;
+export interface GitHubCreateOrUpdateBranchOptions
+  extends GitHubCreateBranchOptions {
+  force?: boolean;
+}
