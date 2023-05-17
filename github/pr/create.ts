@@ -23,7 +23,7 @@ export async function createPR(
     options.branchAction ?? GitHubBranchAction.CREATE_OR_UPDATE,
     options,
   );
-  const response = await api.postReposOwnerRepoPulls({
+  const response = await api.postPulls({
     base: branchResult.baseBranch.name,
     head: branchResult.branch.ref,
     title: options.title,

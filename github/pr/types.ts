@@ -1,4 +1,4 @@
-import type { ReposOwnerRepoPullsPostResponse } from "../api/mod.ts";
+import type { GitHubAPIPullsPostResponse } from "../api/mod.ts";
 import type {
   GitHubBranchResult,
   GitHubCreateOrUpdateBranchOptions,
@@ -8,7 +8,7 @@ import type {
  * GitHubPRResult is the result of creating a PR.
  */
 export interface GitHubPRResult extends GitHubBranchResult {
-  pr: ReposOwnerRepoPullsPostResponse;
+  pr: GitHubAPIPullsPostResponse;
 }
 
 /**

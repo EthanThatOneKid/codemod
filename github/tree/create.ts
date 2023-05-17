@@ -1,6 +1,6 @@
 import type {
+  GitHubAPIBranchGetResponse,
   GitHubAPIClientInterface,
-  ReposOwnerRepoBranchesBranchGetResponse,
 } from "../api/mod.ts";
 import { GitHubCodemodType } from "./types.ts";
 import type {
@@ -22,7 +22,7 @@ export async function createTree(
 ): Promise<GitHubTreeResult> {
   const baseBranch = await getBranch(api, options.baseBranchName);
   const tree = await uploadCodemodsAsTree(api, options.codemods);
-  const response = await api.postReposOwnerRepoGitTrees({
+  const response = await api.postTrees({
     base_tree: baseBranch.commit.commit.tree.sha,
     tree,
   });
@@ -38,11 +38,9 @@ export async function createTree(
 export async function getBranch(
   api: GitHubAPIClientInterface,
   branchName?: string,
-): Promise<ReposOwnerRepoBranchesBranchGetResponse> {
-  branchName ??= (await api.getReposOwnerRepo()).default_branch;
-  return (await api.getReposOwnerRepoBranchesBranch({
-    branch: branchName,
-  }));
+): Promise<GitHubAPIBranchGetResponse> {
+  branchName ??= (await api.getRepository()).default_branch;
+  return await api.getBranch({ branch: branchName });
 }
 
 /**
@@ -71,7 +69,7 @@ export async function uploadCodemodAsTreeItem(
 ): Promise<GitHubTreeItem> {
   switch (codemod.type) {
     case GitHubCodemodType.ADD_FILE: {
-      const blob = await api.postReposOwnerRepoGitBlobs({
+      const blob = await api.postBlobs({
         content: await stringFromBlob(codemod.blob),
         encoding: "base64",
       });
@@ -84,7 +82,7 @@ export async function uploadCodemodAsTreeItem(
     }
 
     case GitHubCodemodType.ADD_TEXT_FILE: {
-      const blob = await api.postReposOwnerRepoGitBlobs({
+      const blob = await api.postBlobs({
         content: codemod.content,
         encoding: "utf-8",
       });

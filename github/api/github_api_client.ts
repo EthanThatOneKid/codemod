@@ -1,30 +1,30 @@
 import type {
+  GitHubAPIBlobsPostRequest,
+  GitHubAPIBlobsPostResponse,
+  GitHubAPIBranchGetRequest,
+  GitHubAPIBranchGetResponse,
   GitHubAPIClientInterface,
-  ReposOwnerRepoBranchesBranchGetRequest,
-  ReposOwnerRepoBranchesBranchGetResponse,
-  ReposOwnerRepoGetResponse,
-  ReposOwnerRepoGitBlobsPostRequest,
-  ReposOwnerRepoGitBlobsPostResponse,
-  ReposOwnerRepoGitCommitsPostRequest,
-  ReposOwnerRepoGitCommitsPostResponse,
-  ReposOwnerRepoGitRefsPostRequest,
-  ReposOwnerRepoGitRefsPostResponse,
-  ReposOwnerRepoGitRefsRefPatchRequest,
-  ReposOwnerRepoGitRefsRefPatchResponse,
-  ReposOwnerRepoGitTreesPostRequest,
-  ReposOwnerRepoGitTreesPostResponse,
-  ReposOwnerRepoPullsPostRequest,
-  ReposOwnerRepoPullsPostResponse,
+  GitHubAPICommitsPostRequest,
+  GitHubAPICommitsPostResponse,
+  GitHubAPIPullsPostRequest,
+  GitHubAPIPullsPostResponse,
+  GitHubAPIRefPatchRequest,
+  GitHubAPIRefPatchResponse,
+  GitHubAPIRefsPostRequest,
+  GitHubAPIRefsPostResponse,
+  GitHubAPIRepositoryGetResponse,
+  GitHubAPITreesPostRequest,
+  GitHubAPITreesPostResponse,
 } from "./github_api_client_interface.ts";
 import {
-  makeReposOwnerRepoBranchesBranchURL,
-  makeReposOwnerRepoGitBlobsURL,
-  makeReposOwnerRepoGitCommitsURL,
-  makeReposOwnerRepoGitRefsRefURL,
-  makeReposOwnerRepoGitRefsURL,
-  makeReposOwnerRepoGitTreesURL,
-  makeReposOwnerRepoPullsURL,
-  makeReposOwnerRepoURL,
+  makeBlobsURL,
+  makeBranchURL,
+  makeCommitsURL,
+  makePullsURL,
+  makeRefsURL,
+  makeRefURL,
+  makeRepositoryURL,
+  makeTreesURL,
 } from "./github_api_client_urls.ts";
 
 /**
@@ -49,8 +49,8 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     this.fetch = fetcher;
   }
 
-  public async getReposOwnerRepo(): Promise<ReposOwnerRepoGetResponse> {
-    const url = makeReposOwnerRepoURL(this.options.owner, this.options.repo);
+  public async getRepository(): Promise<GitHubAPIRepositoryGetResponse> {
+    const url = makeRepositoryURL(this.options.owner, this.options.repo);
     const response = await this.fetch(url, {
       method: "GET",
       headers: {
@@ -68,10 +68,10 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     return await response.json();
   }
 
-  public async getReposOwnerRepoBranchesBranch(
-    r: ReposOwnerRepoBranchesBranchGetRequest,
-  ): Promise<ReposOwnerRepoBranchesBranchGetResponse> {
-    const url = makeReposOwnerRepoBranchesBranchURL(
+  public async getBranch(
+    r: GitHubAPIBranchGetRequest,
+  ): Promise<GitHubAPIBranchGetResponse> {
+    const url = makeBranchURL(
       this.options.owner,
       this.options.repo,
       r.branch,
@@ -93,10 +93,10 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     return await response.json();
   }
 
-  public async postReposOwnerRepoGitBlobs(
-    r: ReposOwnerRepoGitBlobsPostRequest,
-  ): Promise<ReposOwnerRepoGitBlobsPostResponse> {
-    const url = makeReposOwnerRepoGitBlobsURL(
+  public async postBlobs(
+    r: GitHubAPIBlobsPostRequest,
+  ): Promise<GitHubAPIBlobsPostResponse> {
+    const url = makeBlobsURL(
       this.options.owner,
       this.options.repo,
     );
@@ -118,10 +118,10 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     return await response.json();
   }
 
-  public async postReposOwnerRepoGitTrees(
-    r: ReposOwnerRepoGitTreesPostRequest,
-  ): Promise<ReposOwnerRepoGitTreesPostResponse> {
-    const url = makeReposOwnerRepoGitTreesURL(
+  public async postTrees(
+    r: GitHubAPITreesPostRequest,
+  ): Promise<GitHubAPITreesPostResponse> {
+    const url = makeTreesURL(
       this.options.owner,
       this.options.repo,
     );
@@ -143,10 +143,10 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     return await response.json();
   }
 
-  public async postReposOwnerRepoGitCommits(
-    r: ReposOwnerRepoGitCommitsPostRequest,
-  ): Promise<ReposOwnerRepoGitCommitsPostResponse> {
-    const url = makeReposOwnerRepoGitCommitsURL(
+  public async postCommits(
+    r: GitHubAPICommitsPostRequest,
+  ): Promise<GitHubAPICommitsPostResponse> {
+    const url = makeCommitsURL(
       this.options.owner,
       this.options.repo,
     );
@@ -168,10 +168,10 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     return await response.json();
   }
 
-  public async postReposOwnerRepoGitRefs(
-    r: ReposOwnerRepoGitRefsPostRequest,
-  ): Promise<ReposOwnerRepoGitRefsPostResponse> {
-    const url = makeReposOwnerRepoGitRefsURL(
+  public async postRefs(
+    r: GitHubAPIRefsPostRequest,
+  ): Promise<GitHubAPIRefsPostResponse> {
+    const url = makeRefsURL(
       this.options.owner,
       this.options.repo,
     );
@@ -193,10 +193,10 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     return await response.json();
   }
 
-  public async patchReposOwnerRepoGitRefsRef(
-    r: ReposOwnerRepoGitRefsRefPatchRequest,
-  ): Promise<ReposOwnerRepoGitRefsRefPatchResponse> {
-    const url = makeReposOwnerRepoGitRefsRefURL(
+  public async patchRef(
+    r: GitHubAPIRefPatchRequest,
+  ): Promise<GitHubAPIRefPatchResponse> {
+    const url = makeRefURL(
       this.options.owner,
       this.options.repo,
       r.ref,
@@ -219,10 +219,10 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     return await response.json();
   }
 
-  public async postReposOwnerRepoPulls(
-    r: ReposOwnerRepoPullsPostRequest,
-  ): Promise<ReposOwnerRepoPullsPostResponse> {
-    const url = makeReposOwnerRepoPullsURL(
+  public async postPulls(
+    r: GitHubAPIPullsPostRequest,
+  ): Promise<GitHubAPIPullsPostResponse> {
+    const url = makePullsURL(
       this.options.owner,
       this.options.repo,
     );

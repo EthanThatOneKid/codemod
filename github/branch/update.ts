@@ -10,7 +10,7 @@ export async function updateBranch(
   options: GitHubUpdateBranchOptions,
 ): Promise<GitHubBranchResult> {
   const commitResult = await createCommit(api, options);
-  const response = await api.patchReposOwnerRepoGitRefsRef({
+  const response = await api.patchRef({
     ref: `refs/heads/${options.headBranchName}`,
     sha: commitResult.commit.sha,
     force: options.force,

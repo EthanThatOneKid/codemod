@@ -10,7 +10,7 @@ export async function createCommit(
   options: GitHubCreateCommitOptions,
 ): Promise<GitHubCommitResult> {
   const treeResult = await createTree(api, options);
-  const response = await api.postReposOwnerRepoGitCommits({
+  const response = await api.postCommits({
     message: options.message,
     author: options.author,
     committer: options.committer,

@@ -10,7 +10,7 @@ export async function createBranch(
   options: GitHubCreateBranchOptions,
 ): Promise<GitHubBranchResult> {
   const commitResult = await createCommit(api, options);
-  const response = await api.postReposOwnerRepoGitRefs({
+  const response = await api.postRefs({
     ref: `refs/heads/${options.headBranchName}`,
     sha: commitResult.commit.sha,
   });

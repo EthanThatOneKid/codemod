@@ -1,15 +1,15 @@
 import type {
-  ReposOwnerRepoBranchesBranchGetResponse,
-  ReposOwnerRepoGitTreesPostRequest,
-  ReposOwnerRepoGitTreesPostResponse,
+  GitHubAPIBranchGetResponse,
+  GitHubAPITreesPostRequest,
+  GitHubAPITreesPostResponse,
 } from "../api/mod.ts";
 
 /**
  * GitHubTreeResult is the result of creating a commit.
  */
 export interface GitHubTreeResult {
-  tree: ReposOwnerRepoGitTreesPostResponse;
-  baseBranch: ReposOwnerRepoBranchesBranchGetResponse;
+  tree: GitHubAPITreesPostResponse;
+  baseBranch: GitHubAPIBranchGetResponse;
 }
 
 /**
@@ -41,6 +41,7 @@ export type GitHubCodemod =
  * GitHubCodemodType is the type of a GitHub codemod.
  *
  * TODO(EthanThatOneKid):
+ * Support JSONPATCH.
  * Support ADD_DIRECTORY, ADD_SYMLINK, DELETE_DIRECTORY, DELETE_SYMLINK.
  * Support EDIT_FILE, EDIT_TEXT_FILE, EDIT_DIRECTORY, EDIT_SYMLINK.
  *
@@ -88,4 +89,4 @@ export type GitHubTreeItem = GitHubTree[number];
 /**
  * GitHubTree is a GitHub tree.
  */
-export type GitHubTree = ReposOwnerRepoGitTreesPostRequest["tree"];
+export type GitHubTree = GitHubAPITreesPostRequest["tree"];

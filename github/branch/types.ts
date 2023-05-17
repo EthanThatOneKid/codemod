@@ -1,4 +1,4 @@
-import type { ReposOwnerRepoGitRefsPostResponse } from "../api/mod.ts";
+import type { GitHubAPIRefsPostResponse } from "../api/mod.ts";
 import type {
   GitHubCommitResult,
   GitHubCreateCommitOptions,
@@ -8,7 +8,7 @@ import type {
  * GitHubBranchResult is the result of creating a branch.
  */
 export interface GitHubBranchResult extends GitHubCommitResult {
-  branch: ReposOwnerRepoGitRefsPostResponse;
+  branch: GitHubAPIRefsPostResponse;
 }
 
 /**

@@ -1,11 +1,11 @@
-import type { ReposOwnerRepoGitCommitsPostResponse } from "../api/mod.ts";
+import type { GitHubAPICommitsPostResponse } from "../api/mod.ts";
 import type { GitHubCreateTreeOptions, GitHubTreeResult } from "../tree/mod.ts";
 
 /**
  * GitHubCommitResult is the result of creating a commit.
  */
 export interface GitHubCommitResult extends GitHubTreeResult {
-  commit: ReposOwnerRepoGitCommitsPostResponse;
+  commit: GitHubAPICommitsPostResponse;
 }
 
 /**

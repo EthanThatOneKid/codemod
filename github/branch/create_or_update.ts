@@ -13,7 +13,7 @@ export async function createOrUpdateBranch(
   api: GitHubAPIClientInterface,
   options: GitHubCreateOrUpdateBranchOptions,
 ): Promise<GitHubBranchResult> {
-  const headBranch = await api.getReposOwnerRepoBranchesBranch({
+  const headBranch = await api.getBranch({
     branch: options.headBranchName,
   }).catch(() => null);
   if (!headBranch) {
