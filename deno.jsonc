@@ -3,8 +3,8 @@
   "tasks": {
     "lint": "deno lint",
     "fmt": "deno fmt",
-    "udd": "deno run -r --allow-read=. --allow-write=. --allow-net https://deno.land/x/udd/main.ts dev_deps.ts && deno task lock",
-    "lock": "deno cache --lock=deno.lock --lock-write dev_deps.ts",
+    "udd": "deno run -r --allow-read=. --allow-write=. --allow-net https://deno.land/x/udd/main.ts deps.ts dev_deps.ts && deno task lock",
+    "lock": "deno cache --lock=deno.lock --lock-write deps.ts dev_deps.ts",
     "all": "deno task udd && deno task lint && deno task fmt",
     "t": "deno test -A --coverage=cov/",
     "cov": "deno task t && deno coverage cov/"
