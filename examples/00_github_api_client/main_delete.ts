@@ -19,13 +19,13 @@ async function main() {
     repo: "acmcsuf.com",
     token: GITHUB_TOKEN,
   }, fetch.bind(globalThis));
-  const branch = await client.getReposOwnerRepoBranchesBranch({
+  const branch = await client.getBranch({
     branch: "refs/heads/hello-codemod-01",
   });
 
   const branchCommitSHA = branch.commit.sha;
   const branchTreeSHA = branch.commit.commit.tree.sha;
-  const tree = await client.postReposOwnerRepoGitTrees({
+  const tree = await client.postTrees({
     base_tree: branchTreeSHA,
     tree: [
       {
@@ -39,7 +39,7 @@ async function main() {
 
   const treeSHA = tree.sha;
   console.log({ branchTreeSHA, branchCommitSHA, treeSHA });
-  const commit = await client.postReposOwnerRepoGitCommits({
+  const commit = await client.postCommits({
     message: "Hello Codemod!!",
     tree: treeSHA,
     parents: [branchCommitSHA],
@@ -47,7 +47,7 @@ async function main() {
 
   const commitSHA = commit.sha;
   console.log({ commitSHA });
-  const ref = await client.patchReposOwnerRepoGitRefsRef({
+  const ref = await client.patchRef({
     ref: "heads/hello-codemod-01",
     sha: commitSHA,
   });

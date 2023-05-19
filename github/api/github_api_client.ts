@@ -153,7 +153,6 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     });
 
     if (response.status !== 201) {
-      console.log({ postTrees: await response.text() });
       throw new Error(
         `Failed to create tree for ${this.options.owner}/${this.options.repo}.`,
       );
