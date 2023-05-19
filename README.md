@@ -1,6 +1,6 @@
 # Codemod
 
-[![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https://etok.codes/codemod/raw/main/mod.ts)
+[![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https://oss.acmcsuf.com/codemod/raw/main/github/mod.ts)
 
 Codemod module for making deterministic code modifications on GitHub.
 
