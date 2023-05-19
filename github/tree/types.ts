@@ -7,16 +7,10 @@ import type {
 /**
  * GitHubTreeResult is the result of creating a commit.
  */
-export interface GitHubTreeResult extends GitHubRepoMetadataResult {
-  tree: GitHubAPITreesPostResponse;
-}
-
-/**
- * GitHubRepoMetadataResult is the partial GitHubTreeResult without the tree.
- */
-export interface GitHubRepoMetadataResult {
-  baseBranch: GitHubAPIBranchGetResponse;
+export interface GitHubTreeResult {
   defaultBranchName?: string;
+  baseBranch: GitHubAPIBranchGetResponse;
+  tree: GitHubAPITreesPostResponse;
 }
 
 /**
@@ -40,52 +34,72 @@ export interface GitHubCodemods {
  * The file mods are stored in a map where they will wait to be executed.
  */
 export type GitHubCodemod =
-  | GitHubCodemodAddFile
-  | GitHubCodemodAddTextFile
-  | GitHubCodemodDeleteFile;
+  | GitHubCodemodSetBlob
+  | GitHubCodemodSetText
+  | GitHubCodemodEditBlob
+  | GitHubCodemodEditText
+  | GitHubCodemodDelete;
 
 /**
  * GitHubCodemodType is the type of a GitHub codemod.
  *
- * TODO(EthanThatOneKid):
- * Support JSONPATCH.
- * Support ADD_DIRECTORY, ADD_SYMLINK, DELETE_DIRECTORY, DELETE_SYMLINK.
- * Support EDIT_FILE, EDIT_TEXT_FILE, EDIT_DIRECTORY, EDIT_SYMLINK.
+ * Note:
+ * The file mode; one of 100644 for file (blob), 100755 for executable (blob),
+ * 040000 for subdirectory (tree), 160000 for submodule (commit), or 120000
+ * for a blob that specifies the path of a symlink. Can be one of:
+ * 100644, 100755, 040000, 160000, 120000.
  *
  * See:
  * https://developer.github.com/v3/git/trees/#create-a-tree
- * https://github.com/acmcsufoss/codemod/commit/31ceff666b72b18bb1aaea74ff7ae8261033fdfb#diff-78a9fb49c670b37c956cecd83e26b1fdda5090b8081e5079006641b8e0089f43R54
  *
- * Note:
- * The file mode; one of 100644 for file (blob), 100755 for executable (blob), 040000 for subdirectory (tree), 160000 for submodule (commit), or 120000 for a blob that specifies the path of a symlink. Can be one of: 100644, 100755, 040000, 160000, 120000
+ * TODO(EthanThatOneKid):
+ * Support SET_DIRECTORY, SET_SYMLINK, EDIT_DIRECTORY, EDIT_SYMLINK.
  */
 export enum GitHubCodemodType {
-  ADD_FILE = "add_file",
-  ADD_TEXT_FILE = "add_text_file",
-  DELETE_FILE = "delete_file",
+  SET_BLOB = "set_blob",
+  SET_TEXT = "set_text",
+  EDIT_BLOB = "edit_blob",
+  EDIT_TEXT = "edit_text",
+  DELETE = "delete",
 }
 
 /**
- * GitHubCodemodAddFile contains a blob which is associated with a path.
+ * GitHubCodemodSetBlob contains a blob which is associated with a path.
  */
-export interface GitHubCodemodAddFile {
-  type: GitHubCodemodType.ADD_FILE;
+export interface GitHubCodemodSetBlob {
+  type: GitHubCodemodType.SET_BLOB;
   blob: Blob;
 }
 
 /**
- * GitHubCodemodAddTextFile contains a string which is associated with a path.
+ * GitHubCodemodSetText contains a string which is associated with a path.
  */
-export interface GitHubCodemodAddTextFile {
-  type: GitHubCodemodType.ADD_TEXT_FILE;
+export interface GitHubCodemodSetText {
+  type: GitHubCodemodType.SET_TEXT;
   content: string;
+}
+
+/**
+ * GitHubCodemodEditBlob contains a function which edits a blob.
+ */
+export interface GitHubCodemodEditBlob {
+  type: GitHubCodemodType.EDIT_BLOB;
+  fn: (blob: Blob) => Promise<Blob> | Blob;
+}
+
+/**
+ * GitHubCodemodEditText contains a function which edits a string.
+ */
+export interface GitHubCodemodEditText {
+  type: GitHubCodemodType.EDIT_TEXT;
+  fn: (content: string) => Promise<string> | string;
 }
 
 /**
  * GitHubCodemodDeleteFile indicates that a file should be deleted.
  */
-export interface GitHubCodemodDeleteFile {
-  type: GitHubCodemodType.DELETE_FILE;
+export interface GitHubCodemodDelete {
+  type: GitHubCodemodType.DELETE;
 }
 
 /**

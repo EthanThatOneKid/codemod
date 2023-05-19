@@ -8,6 +8,7 @@ import type {
   GitHubAPICommitsPostResponse,
   GitHubAPIPullsPostRequest,
   GitHubAPIPullsPostResponse,
+  GitHubAPIRawFileGetRequest,
   GitHubAPIRefPatchRequest,
   GitHubAPIRefPatchResponse,
   GitHubAPIRefsPostRequest,
@@ -21,6 +22,7 @@ import {
   makeBranchURL,
   makeCommitsURL,
   makePullsURL,
+  makeRawFileURL,
   makeRefsURL,
   makeRefURL,
   makeRepositoryURL,
@@ -47,6 +49,22 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     fetcher: typeof fetch,
   ) {
     this.fetch = fetcher;
+  }
+
+  public async getRawFile(r: GitHubAPIRawFileGetRequest): Promise<Response> {
+    const url = makeRawFileURL(
+      this.options.owner,
+      this.options.repo,
+      r.branch,
+      r.path,
+    );
+    return await this.fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `token ${this.options.token}`,
+      },
+    });
   }
 
   public async getRepository(): Promise<GitHubAPIRepositoryGetResponse> {
@@ -135,6 +153,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     });
 
     if (response.status !== 201) {
+      console.log({ postTrees: await response.text() });
       throw new Error(
         `Failed to create tree for ${this.options.owner}/${this.options.repo}.`,
       );
@@ -236,7 +255,6 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     });
 
     if (response.status !== 201) {
-      console.log(await response.text()); // TODO: Delete.
       throw new Error(
         `Failed to create pull request for ${this.options.owner}/${this.options.repo}.`,
       );

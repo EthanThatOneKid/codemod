@@ -1,7 +1,7 @@
 import type { GitHubAPIClientInterface } from "../api/mod.ts";
 import type { GitHubBranchResult } from "../branch/mod.ts";
 import { createBranch, createOrUpdateBranch } from "../branch/mod.ts";
-import { getDefaultBranchName } from "../tree/repo_metadata.ts";
+import { getDefaultBranchName } from "../tree/mod.ts";
 import type { GitHubCreatePROptions, GitHubPRResult } from "./types.ts";
 import { GitHubBranchAction } from "./types.ts";
 
@@ -37,7 +37,6 @@ export async function createPR(
     branchResult.defaultBranchName = defaultBranchName;
   }
 
-  console.log({ branchResult, options, base });
   const response = await api.postPulls({
     base,
     head: options.newBranchName,

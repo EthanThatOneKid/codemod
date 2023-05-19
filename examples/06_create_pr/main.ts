@@ -18,7 +18,7 @@ async function main() {
     repo: "acmcsuf.com",
     token: GITHUB_TOKEN,
   })
-    .setTextFile("hello_world.txt", "Hello, World! 💖💖💖")
+    .setText("hello_world.txt", "Hello, World! 💖💖💖")
     .createPR({
       title: "[TEST] Codemod hello world",
       body:
