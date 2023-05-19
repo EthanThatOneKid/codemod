@@ -14,7 +14,7 @@ export interface GitHubAPIClientInterface {
    * See:
    * https://docs.github.com/en/rest/reference/repos#get-a-repository
    */
-  getReposOwnerRepo(): Promise<ReposOwnerRepoGetResponse>;
+  getRepository(): Promise<GitHubAPIRepositoryGetResponse>;
 
   /**
    * Gets the base tree SHA and commit SHA for the branch.
@@ -22,16 +22,16 @@ export interface GitHubAPIClientInterface {
    * See:
    * https://docs.github.com/en/rest/reference/repos#get-a-branch
    */
-  getReposOwnerRepoBranchesBranch(
-    r: ReposOwnerRepoBranchesBranchGetRequest,
-  ): Promise<ReposOwnerRepoBranchesBranchGetResponse>;
+  getBranch(
+    r: GitHubAPIBranchGetRequest,
+  ): Promise<GitHubAPIBranchGetResponse>;
 
   /**
    * Uploads a blob. The new blob SHA is returned.
    */
-  postReposOwnerRepoGitBlobs(
-    r: ReposOwnerRepoGitBlobsPostRequest,
-  ): Promise<ReposOwnerRepoGitBlobsPostResponse>;
+  postBlobs(
+    r: GitHubAPIBlobsPostRequest,
+  ): Promise<GitHubAPIBlobsPostResponse>;
 
   /**
    * Creates a new tree. Request is made per directory. The new tree SHA is returned.
@@ -39,9 +39,9 @@ export interface GitHubAPIClientInterface {
    * See:
    * https://docs.github.com/en/rest/reference/git#create-a-tree
    */
-  postReposOwnerRepoGitTrees(
-    r: ReposOwnerRepoGitTreesPostRequest,
-  ): Promise<ReposOwnerRepoGitTreesPostResponse>;
+  postTrees(
+    r: GitHubAPITreesPostRequest,
+  ): Promise<GitHubAPITreesPostResponse>;
 
   /**
    * Creates a new commit. The new commit SHA is returned.
@@ -49,9 +49,9 @@ export interface GitHubAPIClientInterface {
    * See:
    * https://docs.github.com/en/rest/reference/git#create-a-commit
    */
-  postReposOwnerRepoGitCommits(
-    r: ReposOwnerRepoGitCommitsPostRequest,
-  ): Promise<ReposOwnerRepoGitCommitsPostResponse>;
+  postCommits(
+    r: GitHubAPICommitsPostRequest,
+  ): Promise<GitHubAPICommitsPostResponse>;
 
   /**
    * Creates a new branch. The new branch name is returned.
@@ -59,9 +59,9 @@ export interface GitHubAPIClientInterface {
    * See:
    * https://docs.github.com/en/rest/reference/git#create-a-reference
    */
-  postReposOwnerRepoGitRefs(
-    r: ReposOwnerRepoGitRefsPostRequest,
-  ): Promise<ReposOwnerRepoGitRefsPostResponse>;
+  postRefs(
+    r: GitHubAPIRefsPostRequest,
+  ): Promise<GitHubAPIRefsPostResponse>;
 
   /**
    * Updates an existing branch.
@@ -69,9 +69,9 @@ export interface GitHubAPIClientInterface {
    * See:
    * https://docs.github.com/en/rest/git/refs#update-a-reference
    */
-  patchReposOwnerRepoGitRefsRef(
-    r: ReposOwnerRepoGitRefsRefPatchRequest,
-  ): Promise<ReposOwnerRepoGitRefsRefPatchResponse>;
+  patchRef(
+    r: GitHubAPIRefPatchRequest,
+  ): Promise<GitHubAPIRefPatchResponse>;
 
   /**
    * Creates a new PR. The new PR number is returned.
@@ -79,37 +79,37 @@ export interface GitHubAPIClientInterface {
    * See:
    * https://docs.github.com/en/rest/reference/pulls#create-a-pull-request
    */
-  postReposOwnerRepoPulls(
-    r: ReposOwnerRepoPullsPostRequest,
-  ): Promise<ReposOwnerRepoPullsPostResponse>;
+  postPulls(
+    r: GitHubAPIPullsPostRequest,
+  ): Promise<GitHubAPIPullsPostResponse>;
 }
 
-export type ReposOwnerRepoGetResponse =
+export type GitHubAPIRepositoryGetResponse =
   paths["/repos/{owner}/{repo}"]["get"]["responses"]["200"]["content"][
     "application/json"
   ];
 
-export interface ReposOwnerRepoBranchesBranchGetRequest {
+export interface GitHubAPIBranchGetRequest {
   /** branch is the branch passed as the path parameter. */
   branch: string;
 }
 
-export type ReposOwnerRepoBranchesBranchGetResponse =
+export type GitHubAPIBranchGetResponse =
   paths["/repos/{owner}/{repo}/branches/{branch}"]["get"]["responses"][
     "200"
   ]["content"]["application/json"];
 
-export type ReposOwnerRepoGitBlobsPostRequest =
+export type GitHubAPIBlobsPostRequest =
   paths["/repos/{owner}/{repo}/git/blobs"]["post"]["requestBody"]["content"][
     "application/json"
   ];
 
-export type ReposOwnerRepoGitBlobsPostResponse =
+export type GitHubAPIBlobsPostResponse =
   paths["/repos/{owner}/{repo}/git/blobs"]["post"]["responses"]["201"][
     "content"
   ]["application/json"];
 
-export interface ReposOwnerRepoGitTreesTreeSHAGetRequest {
+export interface GitHubAPITreeGetRequest {
   /** tree_sha is the tree SHA passed as the path parameter. */
   treeSHA: string;
 
@@ -117,42 +117,42 @@ export interface ReposOwnerRepoGitTreesTreeSHAGetRequest {
   recursive?: boolean;
 }
 
-export type ReposOwnerRepoGitTreesTreeSHAGetResponse =
+export type GitHubAPITreeGetResponse =
   paths["/repos/{owner}/{repo}/git/trees/{tree_sha}"]["get"]["responses"][
     "200"
   ]["content"]["application/json"];
 
-export type ReposOwnerRepoGitTreesPostRequest =
+export type GitHubAPITreesPostRequest =
   paths["/repos/{owner}/{repo}/git/trees"]["post"]["requestBody"][
     "content"
   ]["application/json"];
 
-export type ReposOwnerRepoGitTreesPostResponse =
+export type GitHubAPITreesPostResponse =
   paths["/repos/{owner}/{repo}/git/trees"]["post"]["responses"]["201"][
     "content"
   ]["application/json"];
 
-export type ReposOwnerRepoGitCommitsPostRequest =
+export type GitHubAPICommitsPostRequest =
   paths["/repos/{owner}/{repo}/git/commits"]["post"]["requestBody"]["content"][
     "application/json"
   ];
 
-export type ReposOwnerRepoGitCommitsPostResponse =
+export type GitHubAPICommitsPostResponse =
   paths["/repos/{owner}/{repo}/git/commits"]["post"]["responses"]["201"][
     "content"
   ]["application/json"];
 
-export type ReposOwnerRepoGitRefsPostRequest =
+export type GitHubAPIRefsPostRequest =
   paths["/repos/{owner}/{repo}/git/refs"]["post"]["requestBody"]["content"][
     "application/json"
   ];
 
-export type ReposOwnerRepoGitRefsPostResponse =
+export type GitHubAPIRefsPostResponse =
   paths["/repos/{owner}/{repo}/git/refs"]["post"]["responses"]["201"][
     "content"
   ]["application/json"];
 
-export type ReposOwnerRepoGitRefsRefPatchRequest =
+export type GitHubAPIRefPatchRequest =
   & paths[
     "/repos/{owner}/{repo}/git/refs/{ref}"
   ]["patch"]["requestBody"]["content"]["application/json"]
@@ -161,22 +161,22 @@ export type ReposOwnerRepoGitRefsRefPatchRequest =
     ref: string;
   };
 
-export type ReposOwnerRepoGitRefsRefPatchResponse =
+export type GitHubAPIRefPatchResponse =
   paths["/repos/{owner}/{repo}/git/refs/{ref}"]["patch"]["responses"]["200"][
     "content"
   ]["application/json"];
 
-export type ReposOwnerRepoPullsPostRequest =
+export type GitHubAPIPullsPostRequest =
   paths["/repos/{owner}/{repo}/pulls"]["post"]["requestBody"][
     "content"
   ]["application/json"];
 
-export type ReposOwnerRepoPullsPostResponse =
+export type GitHubAPIPullsPostResponse =
   paths["/repos/{owner}/{repo}/pulls"]["post"]["responses"]["201"][
     "content"
   ]["application/json"];
 
-export type ReposOwnerRepoPullsPullNumberPatchRequest =
+export type GitHubAPIPullsPullNumberPatchRequest =
   & { pull_number: number }
   & Exclude<
     paths["/repos/{owner}/{repo}/pulls/{pull_number}"]["patch"]["requestBody"],
@@ -185,7 +185,7 @@ export type ReposOwnerRepoPullsPullNumberPatchRequest =
     "content"
   ]["application/json"];
 
-export type ReposOwnerRepoPullsPullNumberPatchResponse =
+export type GitHubAPIPullsPullNumberPatchResponse =
   paths["/repos/{owner}/{repo}/pulls/{pull_number}"]["patch"]["responses"][
     "200"
   ]["content"]["application/json"];
