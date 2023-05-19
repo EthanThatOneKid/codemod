@@ -11,7 +11,7 @@ export async function createBranch(
 ): Promise<GitHubBranchResult> {
   const commitResult = await createCommit(api, options);
   const response = await api.postRefs({
-    ref: `refs/heads/${options.headBranchName}`,
+    ref: `refs/heads/${options.newBranchName}`,
     sha: commitResult.commit.sha,
   });
   return { ...commitResult, branch: response };

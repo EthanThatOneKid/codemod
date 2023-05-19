@@ -86,7 +86,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
 
     if (response.status !== 200) {
       throw new Error(
-        `Failed to get base tree SHA and commit SHA for ${this.options.owner}/${this.options.repo} branch ${r.branch}.`,
+        `Failed to get branch ${r.branch} for ${this.options.owner}/${this.options.repo}.`,
       );
     }
 
@@ -236,6 +236,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     });
 
     if (response.status !== 201) {
+      console.log(await response.text()); // TODO: Delete.
       throw new Error(
         `Failed to create pull request for ${this.options.owner}/${this.options.repo}.`,
       );

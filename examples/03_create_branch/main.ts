@@ -21,7 +21,7 @@ async function main() {
     .setTextFile("hello_world.txt", "Hello, World!")
     .createBranch({
       message: "Add hello world",
-      headBranchName: "new-branch",
+      newBranchName: "new-branch",
     });
 
   console.log({ result });

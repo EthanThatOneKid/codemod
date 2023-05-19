@@ -6,7 +6,6 @@
 //
 
 import { GitHubCodemodBuilder } from "../../github/mod.ts";
-import { GitHubBranchAction } from "../../github/pr/types.ts";
 import { GITHUB_TOKEN } from "./env.ts";
 
 if (import.meta.main) {
@@ -19,12 +18,13 @@ async function main() {
     repo: "acmcsuf.com",
     token: GITHUB_TOKEN,
   })
-    .setTextFile("hello_world.txt", "Hello, World! 💖")
+    .setTextFile("hello_world.txt", "Hello, World! 💖💖💖")
     .createPR({
       title: "[TEST] Codemod hello world",
-      message:
+      body:
         "Add hello world. Please ignore me! Context: <https://oss.acmcsuf.com/codemod/pull/3>.",
-      headBranchName: "new-branch",
+      message: "Add hello world",
+      newBranchName: "new-branch",
     });
 
   console.log({ result });

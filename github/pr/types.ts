@@ -1,6 +1,7 @@
 import type { GitHubAPIPullsPostResponse } from "../api/mod.ts";
 import type {
   GitHubBranchResult,
+  GitHubCreateBranchOptions,
   GitHubCreateOrUpdateBranchOptions,
 } from "../branch/mod.ts";
 
@@ -14,21 +15,28 @@ export interface GitHubPRResult extends GitHubBranchResult {
 /**
  * GitHubCreatePROptions are options for creating a PR.
  */
-export interface GitHubCreatePROptions
-  extends GitHubCreateOrUpdateBranchOptions {
-  title?: string;
-  body?: string;
-  maintainer_can_modify?: boolean;
-  draft?: boolean;
-  issue?: number;
-  branchAction?: GitHubBranchAction;
-}
+export type GitHubCreatePROptions =
+  & {
+    headBranchName?: string;
+    title?: string;
+    body?: string;
+    maintainerCanModify?: boolean;
+    draft?: boolean;
+    issue?: number;
+  }
+  & (
+    | (
+      & { branchAction: GitHubBranchAction.CREATE }
+      & GitHubCreateBranchOptions
+    )
+    | { branchAction?: GitHubBranchAction.CREATE_OR_UPDATE }
+      & GitHubCreateOrUpdateBranchOptions
+  );
 
 /**
  * GitHubBranchAction is an action to take on a branch.
  */
 export enum GitHubBranchAction {
   CREATE = "create",
-  UPDATE = "update",
   CREATE_OR_UPDATE = "create_or_update",
 }

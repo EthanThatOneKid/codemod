@@ -22,7 +22,6 @@ async function main() {
     .updateBranch({
       message: "Add hello world",
       baseBranchName: "new-branch",
-      headBranchName: "new-branch",
     });
 
   console.log({ result });

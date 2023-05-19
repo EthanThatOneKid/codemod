@@ -1,7 +1,4 @@
-import type {
-  GitHubAPIBranchGetResponse,
-  GitHubAPIClientInterface,
-} from "../api/mod.ts";
+import type { GitHubAPIClientInterface } from "../api/mod.ts";
 import { GitHubCodemodType } from "./types.ts";
 import type {
   GitHubCodemod,
@@ -12,6 +9,7 @@ import type {
   GitHubTreeResult,
 } from "./types.ts";
 import { stringFromBlob } from "./base64.ts";
+import { getGitHubRepoMetadataResult } from "./repo_metadata.ts";
 
 /**
  * createTree creates a GitHub tree.
@@ -20,29 +18,19 @@ export async function createTree(
   api: GitHubAPIClientInterface,
   options: GitHubCreateTreeOptions,
 ): Promise<GitHubTreeResult> {
-  const baseBranch = await getBranch(api, options.baseBranchName);
+  const repoMetadata = await getGitHubRepoMetadataResult(
+    api,
+    options.baseBranchName,
+  );
   const tree = await uploadCodemodsAsTree(api, options.codemods);
   const response = await api.postTrees({
-    base_tree: baseBranch.commit.commit.tree.sha,
+    base_tree: repoMetadata.baseBranch.commit.commit.tree.sha,
     tree,
   });
   return {
-    baseBranch,
+    ...repoMetadata,
     tree: response,
   };
-}
-
-/**
- * getBranch gets the base tree SHA from the base branch name.
- */
-export async function getBranch(
-  api: GitHubAPIClientInterface,
-  branchName?: string,
-): Promise<GitHubAPIBranchGetResponse> {
-  branchName ??= (await api.getRepository()).default_branch;
-  return await api.getBranch({
-    branch: `refs/heads/${branchName}`,
-  });
 }
 
 /**

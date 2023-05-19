@@ -18,11 +18,10 @@ async function main() {
     repo: "acmcsuf.com",
     token: GITHUB_TOKEN,
   })
-    .setTextFile("hello_world.txt", "Hello, World!")
+    .setTextFile("hello_world.txt", "Hello, World! 💖")
     .createOrUpdateBranch({
       message: "Add hello world",
-      baseBranchName: "new-branch",
-      headBranchName: "new-branch",
+      newBranchName: "new-branch",
     });
 
   console.log({ result });

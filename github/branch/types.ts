@@ -15,14 +15,13 @@ export interface GitHubBranchResult extends GitHubCommitResult {
  * GitHubCreateBranchOptions are the options to create a branch.
  */
 export interface GitHubCreateBranchOptions extends GitHubCreateCommitOptions {
-  headBranchName: string;
+  newBranchName: string;
 }
 
 /**
  * GitHubUpdateBranchOptions are the options to update a branch.
  */
-export interface GitHubUpdateBranchOptions
-  extends Omit<GitHubCreateBranchOptions, "baseBranchName"> {
+export interface GitHubUpdateBranchOptions extends GitHubCreateCommitOptions {
   force?: boolean;
 }
 
@@ -30,6 +29,4 @@ export interface GitHubUpdateBranchOptions
  * GitHubCreateOrUpdateBranchOptions are the options to create or update a branch.
  */
 export interface GitHubCreateOrUpdateBranchOptions
-  extends GitHubCreateBranchOptions {
-  force?: boolean;
-}
+  extends GitHubCreateBranchOptions, GitHubUpdateBranchOptions {}

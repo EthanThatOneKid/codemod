@@ -13,12 +13,18 @@ export async function createOrUpdateBranch(
   api: GitHubAPIClientInterface,
   options: GitHubCreateOrUpdateBranchOptions,
 ): Promise<GitHubBranchResult> {
-  const headBranch = await api.getBranch({
-    branch: `refs/heads/${options.headBranchName}`,
+  const newBranch = await api.getBranch({
+    branch: `refs/heads/${options.newBranchName}`,
   }).catch(() => null);
-  if (!headBranch) {
+  if (!newBranch) {
     return createBranch(api, options);
   }
 
-  return updateBranch(api, options);
+  // If the branch already exists, we need to update
+  // the new branch, not create a new one based on
+  // the base branch.
+  return updateBranch(api, {
+    ...options,
+    baseBranchName: options.newBranchName,
+  });
 }

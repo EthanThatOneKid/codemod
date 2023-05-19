@@ -7,9 +7,16 @@ import type {
 /**
  * GitHubTreeResult is the result of creating a commit.
  */
-export interface GitHubTreeResult {
+export interface GitHubTreeResult extends GitHubRepoMetadataResult {
   tree: GitHubAPITreesPostResponse;
+}
+
+/**
+ * GitHubRepoMetadataResult is the partial GitHubTreeResult without the tree.
+ */
+export interface GitHubRepoMetadataResult {
   baseBranch: GitHubAPIBranchGetResponse;
+  defaultBranchName?: string;
 }
 
 /**
@@ -53,9 +60,9 @@ export type GitHubCodemod =
  * The file mode; one of 100644 for file (blob), 100755 for executable (blob), 040000 for subdirectory (tree), 160000 for submodule (commit), or 120000 for a blob that specifies the path of a symlink. Can be one of: 100644, 100755, 040000, 160000, 120000
  */
 export enum GitHubCodemodType {
-  ADD_FILE,
-  ADD_TEXT_FILE,
-  DELETE_FILE,
+  ADD_FILE = "add_file",
+  ADD_TEXT_FILE = "add_text_file",
+  DELETE_FILE = "delete_file",
 }
 
 /**
