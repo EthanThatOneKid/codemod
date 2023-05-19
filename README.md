@@ -14,11 +14,17 @@ const result = await new GitHubCodemodBuilder({
   repo: "codemod",
   token: GITHUB_TOKEN,
 })
-  .setTextFile("hello_world.txt", "Hello, World!")
+  .setText("hello_world.txt", "Hello, World!")
+  .editText("friends.json", (content) => {
+    const friends = JSON.parse(content);
+    friends.push("EthanThatOneKid");
+    return JSON.stringify(friends);
+  })
+  .delete("goodbye_world.txt")
   .createPR({
     title: "Hello, World!",
     body: "This is a test PR.",
-    message: "Create hello_world.txt",
+    message: "Add hello_world.txt",
     newBranchName: "hello-world",
   });
 ```
