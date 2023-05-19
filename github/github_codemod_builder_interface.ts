@@ -39,7 +39,7 @@ export interface GitHubCodemodBuilderInterface {
   ): this;
 
   /**
-   * deleteFile deletes a file in the commit.
+   * delete deletes a file in the commit.
    */
   delete(path: string): this;
 
