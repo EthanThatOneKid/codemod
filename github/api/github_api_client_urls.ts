@@ -54,3 +54,16 @@ export function makePullsURL(
 ) {
   return new URL(`/repos/${owner}/${repo}/pulls`, GITHUB_API_URL);
 }
+
+/** makeRawFileURL returns the desired URL. */
+export function makeRawFileURL(
+  owner: string,
+  repo: string,
+  branch: string,
+  path: string,
+) {
+  return new URL(
+    `${owner}/${repo}/${branch}/${path}`,
+    "https://raw.githubusercontent.com",
+  );
+}

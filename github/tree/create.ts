@@ -9,7 +9,15 @@ import type {
   GitHubTreeResult,
 } from "./types.ts";
 import { stringFromBlob } from "./base64.ts";
-import { getGitHubRepoMetadataResult } from "./repo_metadata.ts";
+
+/**
+ * getDefaultBranchName gets the default branch name of the repository.
+ */
+export async function getDefaultBranchName(
+  api: GitHubAPIClientInterface,
+): Promise<string> {
+  return (await api.getRepository()).default_branch;
+}
 
 /**
  * createTree creates a GitHub tree.
@@ -18,18 +26,28 @@ export async function createTree(
   api: GitHubAPIClientInterface,
   options: GitHubCreateTreeOptions,
 ): Promise<GitHubTreeResult> {
-  const repoMetadata = await getGitHubRepoMetadataResult(
+  let defaultBranchName: string | undefined;
+  if (!options.baseBranchName) {
+    defaultBranchName = await getDefaultBranchName(api);
+    options.baseBranchName = defaultBranchName;
+  }
+
+  const baseBranch = await api.getBranch({
+    branch: `refs/heads/${options.baseBranchName}`,
+  });
+  const uploadedTree = await uploadCodemodsAsTree(
     api,
     options.baseBranchName,
+    options.codemods,
   );
-  const tree = await uploadCodemodsAsTree(api, options.codemods);
-  const response = await api.postTrees({
-    base_tree: repoMetadata.baseBranch.commit.commit.tree.sha,
-    tree,
+  const tree = await api.postTrees({
+    base_tree: baseBranch.commit.commit.tree.sha,
+    tree: uploadedTree,
   });
   return {
-    ...repoMetadata,
-    tree: response,
+    defaultBranchName,
+    baseBranch,
+    tree,
   };
 }
 
@@ -38,11 +56,12 @@ export async function createTree(
  */
 export async function uploadCodemodsAsTree(
   api: GitHubAPIClientInterface,
+  branch: string,
   codemods: GitHubCodemods,
 ): Promise<GitHubTree> {
   return await Promise.all(
     Object.entries(codemods).map(([path, codemod]) =>
-      uploadCodemodAsTreeItem(api, path, codemod)
+      uploadCodemodAsTreeItem(api, branch, path, codemod)
     ),
   );
 }
@@ -54,11 +73,12 @@ export async function uploadCodemodsAsTree(
  */
 export async function uploadCodemodAsTreeItem(
   api: GitHubAPIClientInterface,
+  branch: string,
   path: string,
   codemod: GitHubCodemod,
 ): Promise<GitHubTreeItem> {
   switch (codemod.type) {
-    case GitHubCodemodType.ADD_FILE: {
+    case GitHubCodemodType.SET_BLOB: {
       const blob = await api.postBlobs({
         content: await stringFromBlob(codemod.blob),
         encoding: "base64",
@@ -71,7 +91,7 @@ export async function uploadCodemodAsTreeItem(
       };
     }
 
-    case GitHubCodemodType.ADD_TEXT_FILE: {
+    case GitHubCodemodType.SET_TEXT: {
       const blob = await api.postBlobs({
         content: codemod.content,
         encoding: "utf-8",
@@ -84,12 +104,42 @@ export async function uploadCodemodAsTreeItem(
       };
     }
 
-    case GitHubCodemodType.DELETE_FILE: {
+    case GitHubCodemodType.EDIT_BLOB: {
+      const blob = await api.postBlobs({
+        encoding: "base64",
+        content: await api.getRawFile({ branch, path })
+          .then((response) => response.blob())
+          .then(codemod.fn)
+          .then(stringFromBlob),
+      });
+      return {
+        mode: "100644",
+        path,
+        sha: blob.sha,
+        type: "blob",
+      };
+    }
+
+    case GitHubCodemodType.EDIT_TEXT: {
+      const blob = await api.postBlobs({
+        encoding: "utf-8",
+        content: await api.getRawFile({ branch, path })
+          .then((response) => response.text())
+          .then(codemod.fn),
+      });
+      return {
+        mode: "100644",
+        path,
+        sha: blob.sha,
+        type: "blob",
+      };
+    }
+
+    case GitHubCodemodType.DELETE: {
       return {
         mode: "100644",
         path,
         sha: null,
-        type: "blob",
       };
     }
   }

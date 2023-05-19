@@ -16,19 +16,32 @@ import type { GitHubCreatePROptions, GitHubPRResult } from "./pr/mod.ts";
  */
 export interface GitHubCodemodBuilderInterface {
   /**
-   * setFile sets a base64 encoded file to the commit.
+   * setBlob sets a base64 encoded file to the commit.
    */
-  setFile(path: string, blob: Blob): this;
+  setBlob(path: string, blob: Blob): this;
 
   /**
-   * setTextFile sets a utf-8 file to the commit.
+   * setText sets a utf-8 file to the commit.
    */
-  setTextFile(path: string, content: string): this;
+  setText(path: string, content: string): this;
+
+  /**
+   * editBlob edits a base64 encoded file in the commit.
+   */
+  editBlob(path: string, fn: (blob: Blob) => Promise<Blob> | Blob): this;
+
+  /**
+   * editText edits a utf-8 file in the commit.
+   */
+  editText(
+    path: string,
+    fn: (content: string) => Promise<string> | string,
+  ): this;
 
   /**
    * deleteFile deletes a file in the commit.
    */
-  deleteFile(path: string): this;
+  delete(path: string): this;
 
   /**
    * clone clones the builder as a new instance.

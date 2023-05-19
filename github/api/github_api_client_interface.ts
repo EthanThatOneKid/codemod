@@ -9,6 +9,11 @@ import type { paths } from "../../deps.ts";
  */
 export interface GitHubAPIClientInterface {
   /**
+   * getRawFile gets a raw file from the repository.
+   */
+  getRawFile(r: GitHubAPIRawFileGetRequest): Promise<Response>;
+
+  /**
    * Gets the default branch name if not passed in by the user.
    *
    * See:
@@ -82,6 +87,11 @@ export interface GitHubAPIClientInterface {
   postPulls(
     r: GitHubAPIPullsPostRequest,
   ): Promise<GitHubAPIPullsPostResponse>;
+}
+
+export interface GitHubAPIRawFileGetRequest {
+  branch: string;
+  path: string;
 }
 
 export type GitHubAPIRepositoryGetResponse =
