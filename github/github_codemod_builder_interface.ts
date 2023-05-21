@@ -14,7 +14,7 @@ import type { GitHubCreatePROptions, GitHubPRResult } from "./pr/mod.ts";
 /**
  * GitHubCodemodBuilderInterface is a protocol for building a GitHub codemod.
  */
-export interface GitHubCodemodBuilderInterface {
+export interface GitHubCodemodBuilderInterface<T = never> {
   /**
    * setBlob sets a base64 encoded file to the commit.
    */
@@ -28,15 +28,12 @@ export interface GitHubCodemodBuilderInterface {
   /**
    * editBlob edits a base64 encoded file in the commit.
    */
-  editBlob(path: string, fn: (blob: Blob) => Promise<Blob> | Blob): this;
+  editBlob(path: string, fn: EditBlobFn<T>): this;
 
   /**
    * editText edits a utf-8 file in the commit.
    */
-  editText(
-    path: string,
-    fn: (content: string) => Promise<string> | string,
-  ): this;
+  editText(path: string, fn: EditTextFn<T>): this;
 
   /**
    * delete deletes a file in the commit.

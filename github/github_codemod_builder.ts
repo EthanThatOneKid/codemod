@@ -4,6 +4,8 @@ import type {
 } from "./api/mod.ts";
 import { GitHubAPIClient } from "./api/mod.ts";
 import type {
+  EditBlobFn,
+  EditTextFn,
   GitHubCodemodBuilderCreateBranchOptions,
   GitHubCodemodBuilderCreateCommitOptions,
   GitHubCodemodBuilderCreateOrUpdateBranchOptions,
@@ -27,7 +29,8 @@ import type { GitHubPRResult } from "./pr/mod.ts";
 import { createPR } from "./pr/create.ts";
 import { GitHubCodemod } from "./tree/types.ts";
 
-export class GitHubCodemodBuilder implements GitHubCodemodBuilderInterface {
+export class GitHubCodemodBuilder<T = never>
+  implements GitHubCodemodBuilderInterface {
   private readonly api: GitHubAPIClientInterface;
   private readonly codemods: Map<string, GitHubCodemod>;
 
@@ -58,7 +61,7 @@ export class GitHubCodemodBuilder implements GitHubCodemodBuilderInterface {
 
   public editBlob(
     path: string,
-    fn: (blob: Blob) => Promise<Blob> | Blob,
+    fn: EditBlobFn<T>,
   ): this {
     this.codemods.set(path, {
       type: GitHubCodemodType.EDIT_BLOB,
@@ -69,7 +72,7 @@ export class GitHubCodemodBuilder implements GitHubCodemodBuilderInterface {
 
   public editText(
     path: string,
-    fn: (content: string) => Promise<string> | string,
+    fn: (content: string) => Promise<EditTextResult<T>> | EditTextResult<T>,
   ): this {
     this.codemods.set(path, {
       type: GitHubCodemodType.EDIT_TEXT,

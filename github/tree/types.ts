@@ -16,16 +16,16 @@ export interface GitHubTreeResult {
 /**
  * GitHubCreateTreeOptions are the options to create a tree.
  */
-export interface GitHubCreateTreeOptions {
-  codemods: GitHubCodemods;
+export interface GitHubCreateTreeOptions<T = never> {
+  codemods: GitHubCodemods<T>;
   baseBranchName?: string; // Used like "refs/heads/{name}". If not provided, the default branch is used.
 }
 
 /**
  * GitHubCodemods is a map of file paths to file mods.
  */
-export interface GitHubCodemods {
-  [path: string]: GitHubCodemod;
+export interface GitHubCodemods<T> {
+  [path: string]: GitHubCodemod<T>;
 }
 
 /**
@@ -33,11 +33,11 @@ export interface GitHubCodemods {
  *
  * The file mods are stored in a map where they will wait to be executed.
  */
-export type GitHubCodemod =
+export type GitHubCodemod<T> =
   | GitHubCodemodSetBlob
   | GitHubCodemodSetText
-  | GitHubCodemodEditBlob
-  | GitHubCodemodEditText
+  | GitHubCodemodEditBlob<T>
+  | GitHubCodemodEditText<T>
   | GitHubCodemodDelete;
 
 /**
@@ -82,18 +82,48 @@ export interface GitHubCodemodSetText {
 /**
  * GitHubCodemodEditBlob contains a function which edits a blob.
  */
-export interface GitHubCodemodEditBlob {
+export interface GitHubCodemodEditBlob<T> {
   type: GitHubCodemodType.EDIT_BLOB;
-  fn: (blob: Blob) => Promise<Blob> | Blob;
+  fn: EditBlobFn<T>;
 }
 
 /**
  * GitHubCodemodEditText contains a function which edits a string.
  */
-export interface GitHubCodemodEditText {
+export interface GitHubCodemodEditText<T> {
   type: GitHubCodemodType.EDIT_TEXT;
-  fn: (content: string) => Promise<string> | string;
+  fn: EditTextFn<T>;
 }
+
+/**
+ * EditBlobFn is the function type for the editBlob method.
+ */
+export type EditBlobFn<T> = (
+  blob: Blob,
+) => Promise<EditBlobResult<T>> | EditBlobResult<T>;
+
+/**
+ * EditBlobResult is the result of the editBlob method.
+ */
+export type EditBlobResult<T> = T extends never ? Blob : {
+  blob: Blob;
+  data: T;
+};
+
+/**
+ * EditTextFn is the function type for the editText method.
+ */
+export type EditTextFn<T> = (
+  content: string,
+) => Promise<EditTextResult<T>> | EditTextResult<T>;
+
+/**
+ * EditTextResult is the result of the editText method.
+ */
+export type EditTextResult<T> = T extends never ? string : {
+  content: string;
+  data: T;
+};
 
 /**
  * GitHubCodemodDeleteFile indicates that a file should be deleted.
