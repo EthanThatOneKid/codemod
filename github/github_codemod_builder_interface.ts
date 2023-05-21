@@ -1,4 +1,9 @@
-import type { GitHubCreateTreeOptions, GitHubTreeResult } from "./tree/mod.ts";
+import type {
+  EditBlobFn,
+  EditTextFn,
+  GitHubCreateTreeOptions,
+  GitHubTreeResult,
+} from "./tree/mod.ts";
 import type {
   GitHubCommitResult,
   GitHubCreateCommitOptions,
@@ -14,7 +19,7 @@ import type { GitHubCreatePROptions, GitHubPRResult } from "./pr/mod.ts";
 /**
  * GitHubCodemodBuilderInterface is a protocol for building a GitHub codemod.
  */
-export interface GitHubCodemodBuilderInterface<T = never> {
+export interface GitHubCodemodBuilderInterface<T> {
   /**
    * setBlob sets a base64 encoded file to the commit.
    */
@@ -43,13 +48,13 @@ export interface GitHubCodemodBuilderInterface<T = never> {
   /**
    * clone clones the builder as a new instance.
    */
-  clone(): GitHubCodemodBuilderInterface;
+  clone(): GitHubCodemodBuilderInterface<T>;
 
   /**
    * createTree creates a tree using the GitHub API.
    */
   createTree(
-    options: GitHubCodemodBuilderCreateTreeOptions,
+    options: GitHubCodemodBuilderCreateTreeOptions<T>,
   ): Promise<GitHubTreeResult>;
 
   /**
@@ -91,8 +96,8 @@ export interface GitHubCodemodBuilderInterface<T = never> {
 /**
  * GitHubCodemodBuilderCreateTreeOptions is the options for the createTree method.
  */
-export type GitHubCodemodBuilderCreateTreeOptions = OmitCodemods<
-  GitHubCreateTreeOptions
+export type GitHubCodemodBuilderCreateTreeOptions<T> = OmitCodemods<
+  GitHubCreateTreeOptions<T>
 >;
 
 /**

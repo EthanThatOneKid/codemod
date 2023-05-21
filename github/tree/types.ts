@@ -16,7 +16,7 @@ export interface GitHubTreeResult {
 /**
  * GitHubCreateTreeOptions are the options to create a tree.
  */
-export interface GitHubCreateTreeOptions<T = never> {
+export interface GitHubCreateTreeOptions<T> {
   codemods: GitHubCodemods<T>;
   baseBranchName?: string; // Used like "refs/heads/{name}". If not provided, the default branch is used.
 }

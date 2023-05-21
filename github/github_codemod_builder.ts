@@ -4,8 +4,6 @@ import type {
 } from "./api/mod.ts";
 import { GitHubAPIClient } from "./api/mod.ts";
 import type {
-  EditBlobFn,
-  EditTextFn,
   GitHubCodemodBuilderCreateBranchOptions,
   GitHubCodemodBuilderCreateCommitOptions,
   GitHubCodemodBuilderCreateOrUpdateBranchOptions,
@@ -14,7 +12,12 @@ import type {
   GitHubCodemodBuilderInterface,
   GitHubCodemodBuilderUpdateBranchOptions,
 } from "./github_codemod_builder_interface.ts";
-import type { GitHubCodemods, GitHubTreeResult } from "./tree/mod.ts";
+import type {
+  EditBlobFn,
+  EditTextFn,
+  GitHubCodemods,
+  GitHubTreeResult,
+} from "./tree/mod.ts";
 import { GitHubCodemodType } from "./tree/mod.ts";
 import { createTree } from "./tree/create.ts";
 import type { GitHubCommitResult } from "./commit/mod.ts";
@@ -30,13 +33,13 @@ import { createPR } from "./pr/create.ts";
 import { GitHubCodemod } from "./tree/types.ts";
 
 export class GitHubCodemodBuilder<T = never>
-  implements GitHubCodemodBuilderInterface {
+  implements GitHubCodemodBuilderInterface<T> {
   private readonly api: GitHubAPIClientInterface;
-  private readonly codemods: Map<string, GitHubCodemod>;
+  private readonly codemods: Map<string, GitHubCodemod<T>>;
 
   constructor(
     private readonly options: GitHubAPIClientOptions,
-    codemods: GitHubCodemods = {},
+    codemods: GitHubCodemods<T> = {},
     private readonly fetcher: typeof fetch = fetch.bind(globalThis),
   ) {
     this.api = new GitHubAPIClient(options, fetcher);
@@ -72,7 +75,7 @@ export class GitHubCodemodBuilder<T = never>
 
   public editText(
     path: string,
-    fn: (content: string) => Promise<EditTextResult<T>> | EditTextResult<T>,
+    fn: EditTextFn<T>,
   ): this {
     this.codemods.set(path, {
       type: GitHubCodemodType.EDIT_TEXT,
@@ -88,7 +91,7 @@ export class GitHubCodemodBuilder<T = never>
     return this;
   }
 
-  public clone(): GitHubCodemodBuilderInterface {
+  public clone(): GitHubCodemodBuilderInterface<T> {
     return new GitHubCodemodBuilder(
       this.options,
       Object.fromEntries(this.codemods.entries()),
@@ -97,7 +100,7 @@ export class GitHubCodemodBuilder<T = never>
   }
 
   public async createTree(
-    options: GitHubCodemodBuilderCreateTreeOptions = {},
+    options: GitHubCodemodBuilderCreateTreeOptions<T> = {},
   ): Promise<GitHubTreeResult> {
     if (this.codemods.size === 0) {
       throw new Error("No codemods to create tree");

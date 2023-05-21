@@ -22,9 +22,9 @@ export async function getDefaultBranchName(
 /**
  * createTree creates a GitHub tree.
  */
-export async function createTree(
+export async function createTree<T>(
   api: GitHubAPIClientInterface,
-  options: GitHubCreateTreeOptions,
+  options: GitHubCreateTreeOptions<T>,
 ): Promise<GitHubTreeResult> {
   let defaultBranchName: string | undefined;
   if (!options.baseBranchName) {
@@ -51,13 +51,15 @@ export async function createTree(
   };
 }
 
+// TODO(EthanThatOneKid): Return data: T from uploadCodemodsAsTree.
+
 /**
  * uploadCodemodsAsTree makes a GitHub tree from the codemod tree.
  */
-export async function uploadCodemodsAsTree(
+export async function uploadCodemodsAsTree<T>(
   api: GitHubAPIClientInterface,
   branch: string,
-  codemods: GitHubCodemods,
+  codemods: GitHubCodemods<T>,
 ): Promise<GitHubTree> {
   return await Promise.all(
     Object.entries(codemods).map(([path, codemod]) =>
@@ -71,11 +73,11 @@ export async function uploadCodemodsAsTree(
  * potentially involves making a new blob and/or reading an existing file
  * from the repository.
  */
-export async function uploadCodemodAsTreeItem(
+export async function uploadCodemodAsTreeItem<T>(
   api: GitHubAPIClientInterface,
   branch: string,
   path: string,
-  codemod: GitHubCodemod,
+  codemod: GitHubCodemod<T>,
 ): Promise<GitHubTreeItem> {
   switch (codemod.type) {
     case GitHubCodemodType.SET_BLOB: {
@@ -105,13 +107,23 @@ export async function uploadCodemodAsTreeItem(
     }
 
     case GitHubCodemodType.EDIT_BLOB: {
-      const blob = await api.postBlobs({
-        encoding: "base64",
-        content: await api.getRawFile({ branch, path })
-          .then((response) => response.blob())
-          .then(codemod.fn)
-          .then(stringFromBlob),
-      });
+      const [content, data] = await api.getRawFile({ branch, path })
+        .then((response) => response.blob())
+        .then(codemod.fn)
+        .then(async (result) => {
+          if (result instanceof Blob) {
+            return [await stringFromBlob(result)] as const;
+          }
+
+          // TODO(EthanThatOneKid): Return data: T.
+          // this.data = result.data;
+          return [
+            await stringFromBlob(result.blob),
+            result.data,
+          ] as const;
+        });
+
+      const blob = await api.postBlobs({ encoding: "base64", content });
       return {
         mode: "100644",
         path,
@@ -120,6 +132,7 @@ export async function uploadCodemodAsTreeItem(
       };
     }
 
+    // TODO(EthanThatOneKid): Return data: T.
     case GitHubCodemodType.EDIT_TEXT: {
       const blob = await api.postBlobs({
         encoding: "utf-8",
