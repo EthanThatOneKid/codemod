@@ -25,7 +25,8 @@ export async function getDefaultBranchName(
 export async function createTree<T>(
   api: GitHubAPIClientInterface,
   options: GitHubCreateTreeOptions<T>,
-): Promise<GitHubTreeResult> {
+): Promise<GitHubTreeResult<T>> {
+  // If base branch is not provided, get the default branch.
   let defaultBranchName: string | undefined;
   if (!options.baseBranchName) {
     defaultBranchName = await getDefaultBranchName(api);
@@ -35,7 +36,7 @@ export async function createTree<T>(
   const baseBranch = await api.getBranch({
     branch: `refs/heads/${options.baseBranchName}`,
   });
-  const uploadedTree = await uploadCodemodsAsTree(
+  const [uploadedTree, data] = await uploadCodemodsAsTree(
     api,
     options.baseBranchName,
     options.codemods,
@@ -48,10 +49,9 @@ export async function createTree<T>(
     defaultBranchName,
     baseBranch,
     tree,
+    data,
   };
 }
-
-// TODO(EthanThatOneKid): Return data: T from uploadCodemodsAsTree.
 
 /**
  * uploadCodemodsAsTree makes a GitHub tree from the codemod tree.
@@ -60,12 +60,24 @@ export async function uploadCodemodsAsTree<T>(
   api: GitHubAPIClientInterface,
   branch: string,
   codemods: GitHubCodemods<T>,
-): Promise<GitHubTree> {
-  return await Promise.all(
+): Promise<[GitHubTree] | [GitHubTree, T]> {
+  const [tree, data] = (await Promise.all(
     Object.entries(codemods).map(([path, codemod]) =>
       uploadCodemodAsTreeItem(api, branch, path, codemod)
     ),
-  );
+  ))
+    .reduce<[GitHubTree, T | undefined]>(
+      ([tree, data], [item, itemData]) => {
+        tree.push(item);
+        return [tree, itemData ?? data];
+      },
+      [[], undefined],
+    );
+  if (!data) {
+    return [tree];
+  }
+
+  return [tree, data];
 }
 
 /**
@@ -78,19 +90,14 @@ export async function uploadCodemodAsTreeItem<T>(
   branch: string,
   path: string,
   codemod: GitHubCodemod<T>,
-): Promise<GitHubTreeItem> {
+): Promise<[GitHubTreeItem] | [GitHubTreeItem, T]> {
   switch (codemod.type) {
     case GitHubCodemodType.SET_BLOB: {
       const blob = await api.postBlobs({
         content: await stringFromBlob(codemod.blob),
         encoding: "base64",
       });
-      return {
-        mode: "100644",
-        path,
-        sha: blob.sha,
-        type: "blob",
-      };
+      return [{ mode: "100644", path, sha: blob.sha, type: "blob" }];
     }
 
     case GitHubCodemodType.SET_TEXT: {
@@ -98,12 +105,7 @@ export async function uploadCodemodAsTreeItem<T>(
         content: codemod.content,
         encoding: "utf-8",
       });
-      return {
-        mode: "100644",
-        path,
-        sha: blob.sha,
-        type: "blob",
-      };
+      return [{ mode: "100644", path, sha: blob.sha, type: "blob" }];
     }
 
     case GitHubCodemodType.EDIT_BLOB: {
@@ -115,45 +117,59 @@ export async function uploadCodemodAsTreeItem<T>(
             return [await stringFromBlob(result)] as const;
           }
 
-          // TODO(EthanThatOneKid): Return data: T.
-          // this.data = result.data;
-          return [
-            await stringFromBlob(result.blob),
-            result.data,
-          ] as const;
+          if (result[1] === undefined) {
+            return [await stringFromBlob(result[0])] as const;
+          }
+
+          return [await stringFromBlob(result[0]), result[1]] as const;
         });
 
       const blob = await api.postBlobs({ encoding: "base64", content });
-      return {
+      const treeItem: GitHubTreeItem = {
         mode: "100644",
         path,
         sha: blob.sha,
         type: "blob",
       };
+      if (!data) {
+        return [treeItem];
+      }
+
+      return [treeItem, data];
     }
 
-    // TODO(EthanThatOneKid): Return data: T.
     case GitHubCodemodType.EDIT_TEXT: {
-      const blob = await api.postBlobs({
-        encoding: "utf-8",
-        content: await api.getRawFile({ branch, path })
-          .then((response) => response.text())
-          .then(codemod.fn),
-      });
-      return {
+      const [content, data] = await api.getRawFile({ branch, path })
+        .then((response) => response.text())
+        .then(codemod.fn)
+        .then((result) => {
+          if (typeof result === "string") {
+            return [result] as const;
+          }
+
+          if (result[1] === undefined) {
+            return [result[0]] as const;
+          }
+
+          return [result[0], result[1]] as const;
+        });
+
+      const blob = await api.postBlobs({ encoding: "utf-8", content });
+      const treeItem: GitHubTreeItem = {
         mode: "100644",
         path,
         sha: blob.sha,
         type: "blob",
       };
+      if (!data) {
+        return [treeItem];
+      }
+
+      return [treeItem, data];
     }
 
     case GitHubCodemodType.DELETE: {
-      return {
-        mode: "100644",
-        path,
-        sha: null,
-      };
+      return [{ mode: "100644", path, sha: null }];
     }
   }
 }

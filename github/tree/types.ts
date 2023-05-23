@@ -7,11 +7,19 @@ import type {
 /**
  * GitHubTreeResult is the result of creating a commit.
  */
-export interface GitHubTreeResult {
+export interface GitHubTreeResult<T> {
+  data?: T;
   defaultBranchName?: string;
   baseBranch: GitHubAPIBranchGetResponse;
   tree: GitHubAPITreesPostResponse;
 }
+
+/**
+ * GitHubCreateTreeOptionsGenerate is the function type for generating a tree.
+ */
+export type GitHubCreateTreeOptionsGenerate<T> = (
+  result: GitHubTreeResult<T>,
+) => GitHubCreateTreeOptions<T>;
 
 /**
  * GitHubCreateTreeOptions are the options to create a tree.
@@ -84,46 +92,30 @@ export interface GitHubCodemodSetText {
  */
 export interface GitHubCodemodEditBlob<T> {
   type: GitHubCodemodType.EDIT_BLOB;
-  fn: EditBlobFn<T>;
+  fn: GitHubCodemodEditBlobGenerate<T>;
 }
+
+/**
+ * GitHubCodemodEditBlobGenerate is the function type for generating a blob.
+ */
+export type GitHubCodemodEditBlobGenerate<T> = (
+  blob: Blob,
+) => Blob | Promise<Blob> | [Blob, T] | Promise<[Blob, T]>;
 
 /**
  * GitHubCodemodEditText contains a function which edits a string.
  */
 export interface GitHubCodemodEditText<T> {
   type: GitHubCodemodType.EDIT_TEXT;
-  fn: EditTextFn<T>;
+  fn: GitHubCodemodEditTextGenerate<T>;
 }
 
 /**
- * EditBlobFn is the function type for the editBlob method.
+ * GitHubCodemodEditTextGenerate is the function type for generating a string.
  */
-export type EditBlobFn<T> = (
-  blob: Blob,
-) => Promise<EditBlobResult<T>> | EditBlobResult<T>;
-
-/**
- * EditBlobResult is the result of the editBlob method.
- */
-export type EditBlobResult<T> = T extends never ? Blob : {
-  blob: Blob;
-  data: T;
-};
-
-/**
- * EditTextFn is the function type for the editText method.
- */
-export type EditTextFn<T> = (
+export type GitHubCodemodEditTextGenerate<T> = (
   content: string,
-) => Promise<EditTextResult<T>> | EditTextResult<T>;
-
-/**
- * EditTextResult is the result of the editText method.
- */
-export type EditTextResult<T> = T extends never ? string : {
-  content: string;
-  data: T;
-};
+) => string | Promise<string> | [string, T] | Promise<[string, T]>;
 
 /**
  * GitHubCodemodDeleteFile indicates that a file should be deleted.
