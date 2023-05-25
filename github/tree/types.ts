@@ -1,8 +1,16 @@
 import type {
   GitHubAPIBranchGetResponse,
+  GitHubAPIClientOptions,
   GitHubAPITreesPostRequest,
   GitHubAPITreesPostResponse,
 } from "../api/mod.ts";
+
+/**
+ * GitHubTreeBuilderOptions are the options for a GitHub tree builder.
+ */
+export interface GitHubTreeBuilderOptions extends GitHubAPIClientOptions {
+  baseBranchName?: string;
+}
 
 /**
  * GitHubTreeResult is the result of creating a commit.

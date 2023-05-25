@@ -10,130 +10,95 @@ import type {
   GitHubUpdateBranchOptions,
 } from "./branch/mod.ts";
 import type { GitHubCreatePROptions, GitHubPRResult } from "./pr/mod.ts";
+import { GitHubAPITreesPostRequest } from "./api/mod.ts";
+import {
+  GitHubAPICommitsPostRequest,
+  GitHubAPIRefPatchRequest,
+  GitHubAPIRefsPostRequest,
+} from "./api/github_api_client_interface.ts";
 
 /**
  * GitHubCodemodBuilderInterface is a protocol for building a GitHub codemod.
  */
 export interface GitHubCodemodBuilderInterface {
   /**
-   * setBlob sets a base64 encoded file to the commit.
-   */
-  setBlob(path: string, blob: Blob): this;
-
-  /**
-   * setText sets a utf-8 file to the commit.
-   */
-  setText(path: string, content: string): this;
-
-  /**
-   * editBlob edits a base64 encoded file in the commit.
-   */
-  editBlob(path: string, fn: (blob: Blob) => Promise<Blob> | Blob): this;
-
-  /**
-   * editText edits a utf-8 file in the commit.
-   */
-  editText(
-    path: string,
-    fn: (content: string) => Promise<string> | string,
-  ): this;
-
-  /**
-   * delete deletes a file in the commit.
-   */
-  delete(path: string): this;
-
-  /**
    * clone clones the builder as a new instance.
    */
   clone(): GitHubCodemodBuilderInterface;
 
   /**
-   * createTree creates a tree using the GitHub API.
+   * treeOp adds a tree action to the builder.
    */
-  createTree(
-    options: GitHubCodemodBuilderCreateTreeOptions,
-  ): Promise<GitHubTreeResult>;
+  treeOp(action: GitHubTreeOp): this;
 
   /**
-   * createCommit creates a commit using the GitHub API.
+   * commitOp adds a commit action to the builder.
    */
-  createCommit(
-    options: GitHubCodemodBuilderCreateCommitOptions,
-  ): Promise<GitHubCommitResult>;
+  commitOp(action: GitHubCommitOp): this;
 
   /**
-   * createBranch creates a branch using the GitHub API.
+   * branchOp adds a branch action to the builder.
    */
-  createBranch(
-    options: GitHubCodemodBuilderCreateBranchOptions,
-  ): Promise<GitHubBranchResult>;
+  branchOp(action: GitHubBranchOp): this;
 
   /**
-   * updateBranch updates a branch using the GitHub API.
+   * prOp adds a PR action to the builder.
    */
-  updateBranch(
-    options: GitHubCodemodBuilderUpdateBranchOptions,
-  ): Promise<GitHubBranchResult>;
-
-  /**
-   * createOrUpdateBranch creates or updates a branch using the GitHub API.
-   */
-  createOrUpdateBranch(
-    options: GitHubCodemodBuilderCreateOrUpdateBranchOptions,
-  ): Promise<GitHubBranchResult>;
-
-  /**
-   * createPR creates a PR using the GitHub API.
-   */
-  createPR(
-    options: GitHubCodemodBuilderCreatePROptions,
-  ): Promise<GitHubPRResult>;
+  prOp(action: GitHubPROp): this;
 }
 
 /**
- * GitHubCodemodBuilderCreateTreeOptions is the options for the createTree method.
+ * GitHubTreeOp is a tree action.
  */
-export type GitHubCodemodBuilderCreateTreeOptions = OmitCodemods<
-  GitHubCreateTreeOptions
->;
+export type GitHubTreeOp = {
+  type: GitHubTreeOpType.CREATE;
+  data: GitHubAPITreesPostRequest;
+};
 
 /**
- * GitHubCodemodBuilderCreateCommitOptions is the options for the createCommit method.
+ * GitHubTreeOpType is a tree action type.
  */
-export type GitHubCodemodBuilderCreateCommitOptions = OmitCodemods<
-  GitHubCreateCommitOptions
->;
+export enum GitHubTreeOpType {
+  CREATE = "create",
+}
 
 /**
- * GitHubCodemodBuilderCreateBranchOptions is the options for the createBranch method.
+ * GitHubCommitOp is a commit action.
  */
-export type GitHubCodemodBuilderCreateBranchOptions = OmitCodemods<
-  GitHubCreateBranchOptions
->;
+export type GitHubCommitOp = {
+  type: GitHubCommitOpType.CREATE;
+  data: GitHubAPICommitsPostRequest;
+};
 
 /**
- * GitHubCodemodBuilderUpdateBranchOptions is the options for the updateBranch method.
+ * GitHubCommitOpType is a commit action type.
  */
-export type GitHubCodemodBuilderUpdateBranchOptions = OmitCodemods<
-  GitHubUpdateBranchOptions
->;
+export enum GitHubCommitOpType {
+  CREATE = "create",
+}
 
 /**
- * GitHubCodemodBuilderCreateOrUpdateBranchOptions is the options for the createOrUpdateBranch method.
+ * GitHubBranchOp is a branch action.
  */
-export type GitHubCodemodBuilderCreateOrUpdateBranchOptions = OmitCodemods<
-  GitHubCreateOrUpdateBranchOptions
->;
+export type GitHubBranchOp =
+  | {
+    type: GitHubBranchOpType.CREATE;
+    data: GitHubAPIRefsPostRequest;
+  }
+  | {
+    type: GitHubBranchOpType.UPDATE;
+    data: GitHubAPIRefPatchRequest;
+  }
+  | {
+    type: GitHubBranchOpType.CREATE_OR_UPDATE;
+    data: GitHubAPIRefPatchRequest;
+  };
 
 /**
- * GitHubCodemodBuilderCreatePROptions is the options for the createPR method.
+ * GitHubBranchOpType is a branch action type.
  */
-export type GitHubCodemodBuilderCreatePROptions = OmitCodemods<
-  GitHubCreatePROptions
->;
-
-/**
- * OmitCodemods is a helper type to omit the 'codemods' property from a type.
- */
-export type OmitCodemods<T> = Omit<T, "codemods">;
+export enum GitHubBranchOpType {
+  CREATE = "create",
+  UPDATE = "update",
+  CREATE_OR_UPDATE = "create_or_update",
+}

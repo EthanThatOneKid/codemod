@@ -27,6 +27,9 @@ import type { GitHubPRResult } from "./pr/mod.ts";
 import { createPR } from "./pr/create.ts";
 import { GitHubCodemod } from "./tree/types.ts";
 
+// TODO: Make builder for each step to distinguish preop options from
+// postop options.
+
 export class GitHubCodemodBuilder implements GitHubCodemodBuilderInterface {
   private readonly api: GitHubAPIClientInterface;
   private readonly codemods: Map<string, GitHubCodemod>;
