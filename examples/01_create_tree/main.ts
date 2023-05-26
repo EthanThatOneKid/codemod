@@ -5,7 +5,6 @@
 // deno run -A examples/01_create_tree/main.ts
 //
 
-import { GitHubCodemodBuilder } from "../../github/mod.ts";
 import { GITHUB_TOKEN } from "./env.ts";
 
 if (import.meta.main) {
@@ -13,13 +12,5 @@ if (import.meta.main) {
 }
 
 async function main() {
-  const result = await new GitHubCodemodBuilder({
-    owner: "EthanThatOneKid",
-    repo: "acmcsuf.com",
-    token: GITHUB_TOKEN,
-  })
-    .setText("hello_world.txt", "Hello, World!")
-    .createTree();
-
-  console.log({ result });
+  // TODO: Implement the example.
 }

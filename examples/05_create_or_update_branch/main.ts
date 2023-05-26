@@ -5,7 +5,6 @@
 // deno run -A examples/05_create_or_update_branch/main.ts
 //
 
-import { GitHubCodemodBuilder } from "../../github/mod.ts";
 import { GITHUB_TOKEN } from "./env.ts";
 
 if (import.meta.main) {
@@ -13,16 +12,5 @@ if (import.meta.main) {
 }
 
 async function main() {
-  const result = await new GitHubCodemodBuilder({
-    owner: "EthanThatOneKid",
-    repo: "acmcsuf.com",
-    token: GITHUB_TOKEN,
-  })
-    .setText("hello_world.txt", "Hello, World! 💖")
-    .createOrUpdateBranch({
-      message: "Add hello world",
-      newBranchName: "new-branch",
-    });
-
-  console.log({ result });
+  // TODO: Implement the example.
 }

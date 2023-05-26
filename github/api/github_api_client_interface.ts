@@ -186,7 +186,7 @@ export type GitHubAPIPullsPostResponse =
     "content"
   ]["application/json"];
 
-export type GitHubAPIPullsPullNumberPatchRequest =
+export type GitHubAPIPullPatchRequest =
   & { pull_number: number }
   & Exclude<
     paths["/repos/{owner}/{repo}/pulls/{pull_number}"]["patch"]["requestBody"],
@@ -195,7 +195,8 @@ export type GitHubAPIPullsPullNumberPatchRequest =
     "content"
   ]["application/json"];
 
-export type GitHubAPIPullsPullNumberPatchResponse =
-  paths["/repos/{owner}/{repo}/pulls/{pull_number}"]["patch"]["responses"][
+export type GitHubAPIPullPatchResponse =
+  & { pull_number: number }
+  & paths["/repos/{owner}/{repo}/pulls/{pull_number}"]["patch"]["responses"][
     "200"
   ]["content"]["application/json"];
