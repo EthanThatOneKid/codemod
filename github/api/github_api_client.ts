@@ -1,3 +1,4 @@
+import { errors } from "../../deps.ts";
 import type {
   GitHubAPIBlobsPostRequest,
   GitHubAPIBlobsPostResponse,
@@ -6,6 +7,10 @@ import type {
   GitHubAPIClientInterface,
   GitHubAPICommitsPostRequest,
   GitHubAPICommitsPostResponse,
+  GitHubAPIPullPatchRequest,
+  GitHubAPIPullPatchResponse,
+  GitHubAPIPullsGetRequest,
+  GitHubAPIPullsGetResponse,
   GitHubAPIPullsPostRequest,
   GitHubAPIPullsPostResponse,
   GitHubAPIRawFileGetRequest,
@@ -22,6 +27,7 @@ import {
   makeBranchURL,
   makeCommitsURL,
   makePullsURL,
+  makePullURL,
   makeRawFileURL,
   makeRefsURL,
   makeRefURL,
@@ -51,20 +57,37 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     this.fetch = fetcher;
   }
 
-  public async getRawFile(r: GitHubAPIRawFileGetRequest): Promise<Response> {
+  public async getRawFile(r: GitHubAPIRawFileGetRequest): Promise<string> {
     const url = makeRawFileURL(
       this.options.owner,
       this.options.repo,
       r.branch,
       r.path,
     );
-    return await this.fetch(url, {
+    const response = await this.fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         Authorization: `token ${this.options.token}`,
       },
     });
+
+    switch (response.status) {
+      case 200: {
+        return await response.text();
+      }
+
+      case 404: {
+        throw new errors.NotFound(await response.text());
+      }
+
+      default: {
+        throw new Error(
+          `Failed to get raw file ${this.options.owner}/${this.options.repo}/${r.branch}/${r.path}. ${await response
+            .text()}`,
+        );
+      }
+    }
   }
 
   public async getRepository(): Promise<GitHubAPIRepositoryGetResponse> {
@@ -77,13 +100,27 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       },
     });
 
-    if (response.status !== 200) {
-      throw new Error(
-        `Failed to get default branch for ${this.options.owner}/${this.options.repo}.`,
-      );
-    }
+    switch (response.status) {
+      case 200: {
+        return await response.json();
+      }
 
-    return await response.json();
+      case 301:
+      case 404: {
+        throw new errors.NotFound(await response.text());
+      }
+
+      case 403: {
+        throw new errors.Forbidden(await response.text());
+      }
+
+      default: {
+        throw new Error(
+          `Failed to get repository ${this.options.owner}/${this.options.repo}. ${await response
+            .text()}`,
+        );
+      }
+    }
   }
 
   public async getBranch(
@@ -102,13 +139,23 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       },
     });
 
-    if (response.status !== 200) {
-      throw new Error(
-        `Failed to get branch ${r.branch} for ${this.options.owner}/${this.options.repo}.`,
-      );
-    }
+    switch (response.status) {
+      case 200: {
+        return await response.json();
+      }
 
-    return await response.json();
+      case 301:
+      case 404: {
+        throw new errors.NotFound(await response.text());
+      }
+
+      default: {
+        throw new Error(
+          `Failed to get branch ${this.options.owner}/${this.options.repo}/${r.branch}. ${await response
+            .text()}`,
+        );
+      }
+    }
   }
 
   public async postBlobs(
@@ -127,13 +174,34 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       body: JSON.stringify(r),
     });
 
-    if (response.status !== 201) {
-      throw new Error(
-        `Failed to create blob for ${this.options.owner}/${this.options.repo}.`,
-      );
-    }
+    switch (response.status) {
+      case 201: {
+        return await response.json();
+      }
 
-    return await response.json();
+      case 403: {
+        throw new errors.Forbidden(await response.text());
+      }
+
+      case 404: {
+        throw new errors.NotFound(await response.text());
+      }
+
+      case 409: {
+        throw new errors.Conflict(await response.text());
+      }
+
+      case 422: {
+        throw new errors.UnprocessableEntity(await response.text());
+      }
+
+      default: {
+        throw new Error(
+          `Failed to create blob for ${this.options.owner}/${this.options.repo}. ${await response
+            .text()}`,
+        );
+      }
+    }
   }
 
   public async postTrees(
@@ -152,13 +220,30 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       body: JSON.stringify(r),
     });
 
-    if (response.status !== 201) {
-      throw new Error(
-        `Failed to create tree for ${this.options.owner}/${this.options.repo}.`,
-      );
-    }
+    switch (response.status) {
+      case 201: {
+        return await response.json();
+      }
 
-    return await response.json();
+      case 403: {
+        throw new errors.Forbidden(await response.text());
+      }
+
+      case 404: {
+        throw new errors.NotFound(await response.text());
+      }
+
+      case 422: {
+        throw new errors.UnprocessableEntity(await response.text());
+      }
+
+      default: {
+        throw new Error(
+          `Failed to create tree for ${this.options.owner}/${this.options.repo}. ${await response
+            .text()}`,
+        );
+      }
+    }
   }
 
   public async postCommits(
@@ -177,13 +262,26 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       body: JSON.stringify(r),
     });
 
-    if (response.status !== 201) {
-      throw new Error(
-        `Failed to create commit for ${this.options.owner}/${this.options.repo}.`,
-      );
-    }
+    switch (response.status) {
+      case 201: {
+        return await response.json();
+      }
 
-    return await response.json();
+      case 404: {
+        throw new errors.NotFound(await response.text());
+      }
+
+      case 422: {
+        throw new errors.UnprocessableEntity(await response.text());
+      }
+
+      default: {
+        throw new Error(
+          `Failed to create commit for ${this.options.owner}/${this.options.repo}. ${await response
+            .text()}`,
+        );
+      }
+    }
   }
 
   public async postRefs(
@@ -202,13 +300,22 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       body: JSON.stringify(r),
     });
 
-    if (response.status !== 201) {
-      throw new Error(
-        `Failed to create ref for ${this.options.owner}/${this.options.repo}.`,
-      );
-    }
+    switch (response.status) {
+      case 201: {
+        return await response.json();
+      }
 
-    return await response.json();
+      case 422: {
+        throw new errors.UnprocessableEntity(await response.text());
+      }
+
+      default: {
+        throw new Error(
+          `Failed to create ref for ${this.options.owner}/${this.options.repo}. ${await response
+            .text()}`,
+        );
+      }
+    }
   }
 
   public async patchRef(
@@ -228,13 +335,22 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       body: JSON.stringify(r),
     });
 
-    if (response.status !== 200) {
-      throw new Error(
-        `Failed to update ref for ${this.options.owner}/${this.options.repo}.`,
-      );
-    }
+    switch (response.status) {
+      case 200: {
+        return await response.json();
+      }
 
-    return await response.json();
+      case 422: {
+        throw new errors.UnprocessableEntity(await response.text());
+      }
+
+      default: {
+        throw new Error(
+          `Failed to update ref for ${this.options.owner}/${this.options.repo}. ${await response
+            .text()}`,
+        );
+      }
+    }
   }
 
   public async postPulls(
@@ -253,12 +369,143 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       body: JSON.stringify(r),
     });
 
-    if (response.status !== 201) {
+    switch (response.status) {
+      case 201: {
+        return await response.json();
+      }
+
+      case 403: {
+        throw new errors.Forbidden(await response.text());
+      }
+
+      case 422: {
+        throw new errors.UnprocessableEntity(await response.text());
+      }
+
+      default: {
+        throw new Error(
+          `Failed to create pull request for ${this.options.owner}/${this.options.repo}. ${await response
+            .text()}`,
+        );
+      }
+    }
+  }
+
+  public async getPulls(
+    r: GitHubAPIPullsGetRequest,
+  ): Promise<GitHubAPIPullsGetResponse> {
+    const url = makePullsURL(
+      this.options.owner,
+      this.options.repo,
+    );
+
+    if (r.base) {
+      url.searchParams.set("base", r.base);
+    }
+
+    if (r.direction) {
+      url.searchParams.set("direction", r.direction);
+    }
+
+    if (r.head) {
+      url.searchParams.set("head", r.head);
+    }
+
+    if (r.page) {
+      url.searchParams.set("page", r.page?.toString());
+    }
+
+    if (r.per_page) {
+      url.searchParams.set("per_page", r.per_page?.toString());
+    }
+
+    if (r.sort) {
+      url.searchParams.set("sort", r.sort);
+    }
+
+    if (r.state) {
+      url.searchParams.set("state", r.state);
+    }
+
+    const response = await this.fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `token ${this.options.token}`,
+      },
+    });
+
+    switch (response.status) {
+      case 200: {
+        return await response.json();
+      }
+
+      case 304: {
+        throw new Error("Not modified");
+      }
+
+      case 422: {
+        throw new errors.UnprocessableEntity(await response.text());
+      }
+
+      default: {
+        throw new Error(
+          `Failed to get pull requests for ${this.options.owner}/${this.options.repo}. ${await response
+            .text()}`,
+        );
+      }
+    }
+  }
+
+  public async patchPull(
+    r: GitHubAPIPullPatchRequest,
+  ): Promise<GitHubAPIPullPatchResponse> {
+    const pullsResult = await this.getPulls({ head: r.head, base: r.base });
+    if (pullsResult.length === 0) {
       throw new Error(
-        `Failed to create pull request for ${this.options.owner}/${this.options.repo}.`,
+        `Failed to find pull request for ${this.options.owner}/${this.options.repo}.`,
       );
     }
 
-    return await response.json();
+    if (pullsResult.length > 1) {
+      throw new Error(
+        `Found multiple pull requests for ${this.options.owner}/${this.options.repo}. This should not happen.`,
+      );
+    }
+
+    const url = makePullURL(
+      this.options.owner,
+      this.options.repo,
+      pullsResult[0].number,
+    );
+    const response = await this.fetch(url, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `token ${this.options.token}`,
+      },
+      body: JSON.stringify(r),
+    });
+
+    switch (response.status) {
+      case 200: {
+        return await response.json();
+      }
+
+      case 403: {
+        throw new errors.Forbidden(await response.text());
+      }
+
+      case 422: {
+        throw new errors.UnprocessableEntity(await response.text());
+      }
+
+      default: {
+        throw new Error(
+          `Failed to update pull request for ${this.options.owner}/${this.options.repo}. ${await response
+            .text()}`,
+        );
+      }
+    }
   }
 }

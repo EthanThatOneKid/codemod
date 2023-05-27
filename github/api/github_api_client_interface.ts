@@ -11,7 +11,7 @@ export interface GitHubAPIClientInterface {
   /**
    * getRawFile gets a raw file from the repository.
    */
-  getRawFile(r: GitHubAPIRawFileGetRequest): Promise<Response>;
+  getRawFile(r: GitHubAPIRawFileGetRequest): Promise<string>;
 
   /**
    * Gets the default branch name if not passed in by the user.
@@ -33,6 +33,9 @@ export interface GitHubAPIClientInterface {
 
   /**
    * Uploads a blob. The new blob SHA is returned.
+   *
+   * See:
+   * https://docs.github.com/en/rest/reference/git#create-a-blob
    */
   postBlobs(
     r: GitHubAPIBlobsPostRequest,
@@ -79,6 +82,14 @@ export interface GitHubAPIClientInterface {
   ): Promise<GitHubAPIRefPatchResponse>;
 
   /**
+   * getPulls gets a filtered list of PRs.
+   *
+   * See:
+   * https://docs.github.com/en/rest/reference/pulls#list-pull-requests
+   */
+  getPulls(r: GitHubAPIPullsGetRequest): Promise<GitHubAPIPullsGetResponse>;
+
+  /**
    * Creates a new PR. The new PR number is returned.
    *
    * See:
@@ -87,6 +98,16 @@ export interface GitHubAPIClientInterface {
   postPulls(
     r: GitHubAPIPullsPostRequest,
   ): Promise<GitHubAPIPullsPostResponse>;
+
+  /**
+   * Updates an existing PR.
+   *
+   * See:
+   * https://docs.github.com/en/rest/reference/pulls#update-a-pull-request
+   */
+  patchPull(
+    r: GitHubAPIPullPatchRequest,
+  ): Promise<GitHubAPIPullPatchResponse>;
 }
 
 export interface GitHubAPIRawFileGetRequest {
@@ -186,8 +207,16 @@ export type GitHubAPIPullsPostResponse =
     "content"
   ]["application/json"];
 
-export type GitHubAPIPullsPullNumberPatchRequest =
-  & { pull_number: number }
+export type GitHubAPIPullsGetRequest =
+  paths["/repos/{owner}/{repo}/pulls"]["get"]["parameters"]["query"];
+
+export type GitHubAPIPullsGetResponse =
+  paths["/repos/{owner}/{repo}/pulls"]["get"]["responses"]["200"][
+    "content"
+  ]["application/json"];
+
+export type GitHubAPIPullPatchRequest =
+  & { head: string }
   & Exclude<
     paths["/repos/{owner}/{repo}/pulls/{pull_number}"]["patch"]["requestBody"],
     undefined
@@ -195,7 +224,7 @@ export type GitHubAPIPullsPullNumberPatchRequest =
     "content"
   ]["application/json"];
 
-export type GitHubAPIPullsPullNumberPatchResponse =
+export type GitHubAPIPullPatchResponse =
   paths["/repos/{owner}/{repo}/pulls/{pull_number}"]["patch"]["responses"][
     "200"
   ]["content"]["application/json"];
