@@ -30,19 +30,14 @@ import {
  */
 export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
   implements GitHubCodemodBuilderInterface<M, R> {
-  private readonly api: GitHubAPIClientInterface;
-
   constructor(
-    private readonly options: GitHubAPIClientOptions,
     private readonly ops: GitHubOp<R, M>[] = [],
     private readonly fetcher: typeof fetch = fetch.bind(globalThis),
-  ) {
-    this.api = new GitHubAPIClient(options, fetcher);
-  }
+  ) {}
 
-  public async run(): Promise<R> {
+  public async run(options: GitHubAPIClientOptions): Promise<R> {
+    const api = new GitHubAPIClient(options, this.fetcher);
     const result: Array<R[number]> = [];
-
     for (const op of this.ops) {
       switch (op.type) {
         case GitHubOpType.MAP: {
@@ -57,18 +52,76 @@ export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
           const options = op.data instanceof Function
             ? await op.data(result as R)
             : op.data;
-          const response = await this.api.postTrees(options);
+          const response = await api.postTrees(options);
           result.push(response as R[number]);
           break;
         }
 
-        case GitHubOpType.CREATE_COMMIT:
-        case GitHubOpType.CREATE_BRANCH:
-        case GitHubOpType.UPDATE_BRANCH:
-        case GitHubOpType.CREATE_OR_UPDATE_BRANCH:
-        case GitHubOpType.CREATE_PR:
-        case GitHubOpType.UPDATE_PR:
-        case GitHubOpType.CREATE_OR_UPDATE_PR:
+        case GitHubOpType.CREATE_COMMIT: {
+          const options = op.data instanceof Function
+            ? await op.data(result as R)
+            : op.data;
+          const response = await api.postCommits(options);
+          result.push(response as R[number]);
+          break;
+        }
+
+        case GitHubOpType.CREATE_BRANCH: {
+          const options = op.data instanceof Function
+            ? await op.data(result as R)
+            : op.data;
+          const response = await api.postRefs(options);
+          result.push(response as R[number]);
+          break;
+        }
+
+        case GitHubOpType.UPDATE_BRANCH: {
+          const options = op.data instanceof Function
+            ? await op.data(result as R)
+            : op.data;
+          const response = await api.patchRef(options);
+          result.push(response as R[number]);
+          break;
+        }
+
+        // TODO: Implement.
+        case GitHubOpType.CREATE_OR_UPDATE_BRANCH: {
+          const options = op.data instanceof Function
+            ? await op.data(result as R)
+            : op.data;
+          const response = await api.postRefs(options);
+          result.push(response as R[number]);
+          break;
+        }
+
+        case GitHubOpType.CREATE_PR: {
+          const options = op.data instanceof Function
+            ? await op.data(result as R)
+            : op.data;
+          const response = await api.postPulls(options);
+          result.push(response as R[number]);
+          break;
+        }
+
+        // TODO: Implement.
+        case GitHubOpType.UPDATE_PR: {
+          const options = op.data instanceof Function
+            ? await op.data(result as R)
+            : op.data;
+          const response = await api.patchPull(options);
+          result.push(response as R[number]);
+          break;
+        }
+
+        // TODO: Implement.
+        case GitHubOpType.CREATE_OR_UPDATE_PR: {
+          const options = op.data instanceof Function
+            ? await op.data(result as R)
+            : op.data;
+          const response = await api.postPulls(options);
+          result.push(response as R[number]);
+          break;
+        }
       }
     }
 
@@ -76,7 +129,7 @@ export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
   }
 
   public clone(): GitHubCodemodBuilderInterface<M, R> {
-    return new GitHubCodemodBuilder<M, R>(this.options, this.ops, this.fetcher);
+    return new GitHubCodemodBuilder<M, R>(this.ops, this.fetcher);
   }
 
   public map(

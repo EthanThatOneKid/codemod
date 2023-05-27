@@ -1,4 +1,5 @@
 import {
+  GitHubAPIClientOptions,
   GitHubAPICommitsPostRequest,
   GitHubAPICommitsPostResponse,
   GitHubAPIPullPatchRequest,
@@ -31,7 +32,7 @@ export interface GitHubCodemodBuilderInterface<
   /**
    * run executes the builder.
    */
-  run(): Promise<R>;
+  run(options: GitHubAPIClientOptions): Promise<R>;
 
   /**
    * clone clones the builder as a new instance.
