@@ -1,13 +1,10 @@
+import type { GitHubAPIClientOptions } from "./github/api/mod.ts";
+import type { Generate } from "./github/types.ts";
 import type {
-  GitHubAPIClientOptions,
-  GitHubAPITreesPostRequest,
-} from "./api/mod.ts";
-import type {
-  Generate,
   GitHubCodemodBuilderInterface,
   GitHubOpResult,
-} from "./github_codemod_builder_interface.ts";
-import { GitHubCodemodBuilder } from "./github_codemod_builder.ts";
+} from "./github/mod.ts";
+import { GitHubCodemodBuilder } from "./github/mod.ts";
 
 export async function createGitHubCodemod<
   R extends GitHubOpResult[] = [],
@@ -15,7 +12,7 @@ export async function createGitHubCodemod<
   options: GitHubAPIClientOptions,
   builderOrBuilderGenerate: Generate<
     GitHubCodemodBuilderInterface<R>,
-    GitHubCodemodBuilderInterface
+    [GitHubCodemodBuilderInterface]
   >,
 ): Promise<GitHubOpResult[]> {
   const builder = builderOrBuilderGenerate instanceof Function

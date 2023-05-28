@@ -22,7 +22,7 @@ import {
   GitHubOpResult,
   GitHubOpType,
 } from "./github_codemod_builder_interface.ts";
-import { Append } from "./shared/types.ts";
+import { Append } from "./types.ts";
 
 /**
  * GitHubCodemodBuilder is a builder for building a GitHub codemod.
