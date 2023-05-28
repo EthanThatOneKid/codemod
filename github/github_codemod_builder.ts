@@ -11,7 +11,6 @@ import type {
 } from "./api/mod.ts";
 import { GitHubAPIClient } from "./api/mod.ts";
 import {
-  Append,
   GitHubAPICommitsPostRequestGenerate,
   GitHubAPIPullPatchRequestGenerate,
   GitHubAPIPullsPostRequestGenerate,
@@ -19,19 +18,19 @@ import {
   GitHubAPIRefsPostRequestGenerate,
   GitHubAPITreesPostRequestGenerate,
   GitHubCodemodBuilderInterface,
-  GitHubMapOpGenerate,
   GitHubOp,
   GitHubOpResult,
   GitHubOpType,
 } from "./github_codemod_builder_interface.ts";
+import { Append } from "./shared/types.ts";
 
 /**
  * GitHubCodemodBuilder is a builder for building a GitHub codemod.
  */
-export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
-  implements GitHubCodemodBuilderInterface<M, R> {
+export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
+  implements GitHubCodemodBuilderInterface<R> {
   constructor(
-    private readonly ops: GitHubOp<R, M>[] = [],
+    private readonly ops: GitHubOp<R>[] = [],
     private readonly fetcher: typeof fetch = fetch.bind(globalThis),
   ) {}
 
@@ -40,14 +39,6 @@ export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
     const result: Array<R[number]> = [];
     for (const op of this.ops) {
       switch (op.type) {
-        case GitHubOpType.MAP: {
-          const mapped = op.data instanceof Function
-            ? await op.data(result as R)
-            : op.data;
-          result.push(mapped as R[number]);
-          break;
-        }
-
         case GitHubOpType.CREATE_TREE: {
           const options = op.data instanceof Function
             ? await op.data(result as R)
@@ -128,24 +119,13 @@ export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
     return result as R;
   }
 
-  public clone(): GitHubCodemodBuilderInterface<M, R> {
-    return new GitHubCodemodBuilder<M, R>(this.ops, this.fetcher);
-  }
-
-  public map(
-    optionsOrOptionsGenerate: GitHubMapOpGenerate<M, R>,
-  ): GitHubCodemodBuilderInterface<M, Append<R, [M]>> {
-    this.ops.push({
-      type: GitHubOpType.MAP,
-      data: optionsOrOptionsGenerate,
-    });
-    return this as unknown as GitHubCodemodBuilderInterface<M, Append<R, [M]>>;
+  public clone(): GitHubCodemodBuilderInterface<R> {
+    return new GitHubCodemodBuilder<R>(this.ops, this.fetcher);
   }
 
   public createTree(
     optionsOrOptionsGenerate: GitHubAPITreesPostRequestGenerate<R>,
   ): GitHubCodemodBuilderInterface<
-    M,
     Append<R, [GitHubAPITreesPostResponse]>
   > {
     this.ops.push({
@@ -153,7 +133,6 @@ export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
       data: optionsOrOptionsGenerate,
     });
     return this as unknown as GitHubCodemodBuilderInterface<
-      M,
       Append<R, [GitHubAPITreesPostResponse]>
     >;
   }
@@ -161,7 +140,6 @@ export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
   public createCommit(
     optionsOrOptionsGenerate: GitHubAPICommitsPostRequestGenerate<R>,
   ): GitHubCodemodBuilderInterface<
-    M,
     Append<R, [GitHubAPICommitsPostResponse]>
   > {
     this.ops.push({
@@ -169,7 +147,6 @@ export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
       data: optionsOrOptionsGenerate,
     });
     return this as unknown as GitHubCodemodBuilderInterface<
-      M,
       Append<R, [GitHubAPICommitsPostResponse]>
     >;
   }
@@ -177,7 +154,6 @@ export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
   public createBranch(
     optionsOrOptionsGenerate: GitHubAPIRefsPostRequestGenerate<R>,
   ): GitHubCodemodBuilderInterface<
-    M,
     Append<R, [GitHubAPIRefsPostResponse]>
   > {
     this.ops.push({
@@ -185,7 +161,6 @@ export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
       data: optionsOrOptionsGenerate,
     });
     return this as unknown as GitHubCodemodBuilderInterface<
-      M,
       Append<R, [GitHubAPIRefsPostResponse]>
     >;
   }
@@ -193,7 +168,6 @@ export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
   public updateBranch(
     optionsOrOptionsGenerate: GitHubAPIRefPatchRequestGenerate<R>,
   ): GitHubCodemodBuilderInterface<
-    M,
     Append<R, [GitHubAPIRefPatchResponse]>
   > {
     this.ops.push({
@@ -201,7 +175,6 @@ export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
       data: optionsOrOptionsGenerate,
     });
     return this as unknown as GitHubCodemodBuilderInterface<
-      M,
       Append<R, [GitHubAPIRefPatchResponse]>
     >;
   }
@@ -209,7 +182,6 @@ export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
   public createOrUpdateBranch(
     optionsOrOptionsGenerate: GitHubAPIRefPatchRequestGenerate<R>,
   ): GitHubCodemodBuilderInterface<
-    M,
     Append<R, [GitHubAPIRefPatchResponse]>
   > {
     this.ops.push({
@@ -217,7 +189,6 @@ export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
       data: optionsOrOptionsGenerate,
     });
     return this as unknown as GitHubCodemodBuilderInterface<
-      M,
       Append<R, [GitHubAPIRefPatchResponse]>
     >;
   }
@@ -225,7 +196,6 @@ export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
   public createPR(
     optionsOrOptionsGenerate: GitHubAPIPullsPostRequestGenerate<R>,
   ): GitHubCodemodBuilderInterface<
-    M,
     Append<R, [GitHubAPIPullsPostResponse]>
   > {
     this.ops.push({
@@ -233,7 +203,6 @@ export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
       data: optionsOrOptionsGenerate,
     });
     return this as unknown as GitHubCodemodBuilderInterface<
-      M,
       Append<R, [GitHubAPIPullsPostResponse]>
     >;
   }
@@ -241,7 +210,6 @@ export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
   public updatePR(
     optionsOrOptionsGenerate: GitHubAPIPullPatchRequestGenerate<R>,
   ): GitHubCodemodBuilderInterface<
-    M,
     Append<R, [GitHubAPIPullPatchResponse]>
   > {
     this.ops.push({
@@ -249,7 +217,6 @@ export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
       data: optionsOrOptionsGenerate,
     });
     return this as unknown as GitHubCodemodBuilderInterface<
-      M,
       Append<R, [GitHubAPIPullPatchResponse]>
     >;
   }
@@ -257,7 +224,6 @@ export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
   public createOrUpdatePR(
     optionsOrOptionsGenerate: GitHubAPIPullPatchRequest,
   ): GitHubCodemodBuilderInterface<
-    M,
     Append<R, [GitHubAPIPullPatchResponse]>
   > {
     this.ops.push({
@@ -265,7 +231,6 @@ export class GitHubCodemodBuilder<M, R extends GitHubOpResult<M>[] = []>
       data: optionsOrOptionsGenerate,
     });
     return this as unknown as GitHubCodemodBuilderInterface<
-      M,
       Append<R, [GitHubAPIPullPatchResponse]>
     >;
   }

@@ -10,15 +10,14 @@ import type {
 import { GitHubCodemodBuilder } from "./github_codemod_builder.ts";
 
 export async function createGitHubCodemod<
-  M = never,
-  R extends GitHubOpResult<M>[] = [],
+  R extends GitHubOpResult[] = [],
 >(
   options: GitHubAPIClientOptions,
   builderOrBuilderGenerate: Generate<
-    GitHubCodemodBuilderInterface<M, R>,
-    GitHubCodemodBuilderInterface<M>
+    GitHubCodemodBuilderInterface<R>,
+    GitHubCodemodBuilderInterface
   >,
-): Promise<GitHubOpResult<M>[]> {
+): Promise<GitHubOpResult[]> {
   const builder = builderOrBuilderGenerate instanceof Function
     ? await builderOrBuilderGenerate(new GitHubCodemodBuilder())
     : builderOrBuilderGenerate;

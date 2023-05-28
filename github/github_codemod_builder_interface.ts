@@ -1,4 +1,4 @@
-import {
+import type {
   GitHubAPIClientOptions,
   GitHubAPICommitsPostRequest,
   GitHubAPICommitsPostResponse,
@@ -13,6 +13,7 @@ import {
   GitHubAPITreesPostRequest,
   GitHubAPITreesPostResponse,
 } from "./api/mod.ts";
+import type { Append, Generate } from "./shared/types.ts";
 
 /**
  * GitHubCodemodBuilderInterface is a protocol for building and executing a
@@ -20,14 +21,10 @@ import {
  */
 export interface GitHubCodemodBuilderInterface<
   /**
-   * M is the map result type.
-   */
-  M = never,
-  /**
    * R is the result type. By default, it is an empty tuple. As the instructions
    * are added, the result type is appended with the result of the instruction.
    */
-  R extends Array<GitHubOpResult<M>> = [],
+  R extends Array<GitHubOpResult> = [],
 > {
   /**
    * run executes the builder.
@@ -37,22 +34,14 @@ export interface GitHubCodemodBuilderInterface<
   /**
    * clone clones the builder as a new instance.
    */
-  clone(): GitHubCodemodBuilderInterface<M, R>;
-
-  /**
-   * map maps the result of the builder.
-   */
-  map(
-    optionsOrOptionsGenerate: GitHubMapOpGenerate<M, R>,
-  ): GitHubCodemodBuilderInterface<M, Append<R, [M]>>;
+  clone(): GitHubCodemodBuilderInterface<R>;
 
   /**
    * createTree adds a create GiHub tree action to the builder.
    */
   createTree(
-    optionsOrOptionsGenerate: GitHubAPITreesPostRequestGenerate<R>,
+    options: GitHubAPITreesPostRequestGenerate<R>,
   ): GitHubCodemodBuilderInterface<
-    M,
     Append<R, [GitHubAPITreesPostResponse]>
   >;
 
@@ -60,9 +49,8 @@ export interface GitHubCodemodBuilderInterface<
    * createCommit adds a create GiHub commit action to the builder.
    */
   createCommit(
-    optionsOrOptionsGenerate: GitHubAPICommitsPostRequestGenerate<R>,
+    options: GitHubAPICommitsPostRequestGenerate<R>,
   ): GitHubCodemodBuilderInterface<
-    M,
     Append<R, [GitHubAPICommitsPostResponse]>
   >;
 
@@ -70,9 +58,8 @@ export interface GitHubCodemodBuilderInterface<
    * createBranch adds a create GiHub branch action to the builder.
    */
   createBranch(
-    optionsOrOptionsGenerate: GitHubAPIRefsPostRequestGenerate<R>,
+    options: GitHubAPIRefsPostRequestGenerate<R>,
   ): GitHubCodemodBuilderInterface<
-    M,
     Append<R, [GitHubAPIRefsPostResponse]>
   >;
 
@@ -80,9 +67,8 @@ export interface GitHubCodemodBuilderInterface<
    * updateBranch adds a update GiHub branch action to the builder.
    */
   updateBranch(
-    optionsOrOptionsGenerate: GitHubAPIRefPatchRequestGenerate<R>,
+    options: GitHubAPIRefPatchRequestGenerate<R>,
   ): GitHubCodemodBuilderInterface<
-    M,
     Append<R, [GitHubAPIRefPatchResponse]>
   >;
 
@@ -90,9 +76,8 @@ export interface GitHubCodemodBuilderInterface<
    * createOrUpdateBranch adds a create or update GiHub branch action to the builder.
    */
   createOrUpdateBranch(
-    optionsOrOptionsGenerate: GitHubAPIRefPatchRequestGenerate<R>,
+    options: GitHubAPIRefPatchRequestGenerate<R>,
   ): GitHubCodemodBuilderInterface<
-    M,
     Append<R, [GitHubAPIRefPatchResponse]>
   >;
 
@@ -102,9 +87,8 @@ export interface GitHubCodemodBuilderInterface<
    * createPR adds a create GiHub PR action to the builder.
    */
   createPR(
-    optionsOrOptionsGenerate: GitHubAPIPullsPostRequestGenerate<R>,
+    options: GitHubAPIPullsPostRequestGenerate<R>,
   ): GitHubCodemodBuilderInterface<
-    M,
     Append<R, [GitHubAPIPullsPostResponse]>
   >;
 
@@ -112,9 +96,8 @@ export interface GitHubCodemodBuilderInterface<
    * updatePR adds a update GiHub PR action to the builder.
    */
   updatePR(
-    optionsOrOptionsGenerate: GitHubAPIPullPatchRequestGenerate<R>,
+    options: GitHubAPIPullPatchRequestGenerate<R>,
   ): GitHubCodemodBuilderInterface<
-    M,
     Append<R, [GitHubAPIPullPatchResponse]>
   >;
 
@@ -122,9 +105,8 @@ export interface GitHubCodemodBuilderInterface<
    * createOrUpdatePR adds a create or update GiHub PR action to the builder.
    */
   createOrUpdatePR(
-    optionsOrOptionsGenerate: GitHubAPIPullPatchRequest,
+    options: GitHubAPIPullPatchRequest,
   ): GitHubCodemodBuilderInterface<
-    M,
     Append<R, [GitHubAPIPullPatchResponse]>
   >;
 
@@ -132,16 +114,14 @@ export interface GitHubCodemodBuilderInterface<
 }
 
 /**
- * GitHubMapOpGenerate is a function executed as a map operation.
- */
-export type GitHubMapOpGenerate<M, R> = Generate<M, R>;
-
-/**
  * GitHubAPITreesPostRequestGenerate is a function to generate a GitHubAPITreesPostRequest.
  */
 export type GitHubAPITreesPostRequestGenerate<T> = Generate<
   GitHubAPITreesPostRequest,
-  T
+  [
+    GitHubCodemodCreateTreeBuilderInterface | undefined,
+    T | undefined,
+  ]
 >;
 
 /**
@@ -149,7 +129,10 @@ export type GitHubAPITreesPostRequestGenerate<T> = Generate<
  */
 export type GitHubAPICommitsPostRequestGenerate<T> = Generate<
   GitHubAPICommitsPostRequest,
-  T
+  [
+    GitHubCodemodCreateCommitBuilderInterface | undefined,
+    T | undefined,
+  ]
 >;
 
 /**
@@ -157,7 +140,10 @@ export type GitHubAPICommitsPostRequestGenerate<T> = Generate<
  */
 export type GitHubAPIRefsPostRequestGenerate<T> = Generate<
   GitHubAPIRefsPostRequest,
-  T
+  [
+    GitHubCodemodCreateBranchBuilderInterface | undefined,
+    T | undefined,
+  ]
 >;
 
 /**
@@ -165,7 +151,10 @@ export type GitHubAPIRefsPostRequestGenerate<T> = Generate<
  */
 export type GitHubAPIRefPatchRequestGenerate<T> = Generate<
   GitHubAPIRefPatchRequest,
-  T
+  [
+    GitHubCodemodUpdateBranchBuilderInterface | undefined,
+    T | undefined,
+  ]
 >;
 
 /**
@@ -173,7 +162,10 @@ export type GitHubAPIRefPatchRequestGenerate<T> = Generate<
  */
 export type GitHubAPIPullsPostRequestGenerate<T> = Generate<
   GitHubAPIPullsPostRequest,
-  T
+  [
+    GitHubCodemodCreatePRBuilderInterface | undefined,
+    T | undefined,
+  ]
 >;
 
 /**
@@ -181,14 +173,16 @@ export type GitHubAPIPullsPostRequestGenerate<T> = Generate<
  */
 export type GitHubAPIPullPatchRequestGenerate<T> = Generate<
   GitHubAPIPullPatchRequest,
-  T
+  [
+    GitHubCodemodUpdatePRBuilderInterface | undefined,
+    T | undefined,
+  ]
 >;
 
 /**
  * GitHubOp is a GitHub operation.
  */
-export type GitHubOp<R, M> =
-  | GitHubMapOp<R, M>
+export type GitHubOp<R> =
   | GitHubTreeOp<R>
   | GitHubCommitOp<R>
   | GitHubBranchOp<R>
@@ -197,22 +191,13 @@ export type GitHubOp<R, M> =
 /**
  * GitHubOpResult is a GitHub op result.
  */
-export type GitHubOpResult<M> =
-  | M
+export type GitHubOpResult =
   | GitHubAPITreesPostResponse
   | GitHubAPICommitsPostResponse
   | GitHubAPIRefsPostResponse
   | GitHubAPIRefPatchResponse
   | GitHubAPIPullsPostResponse
   | GitHubAPIPullPatchResponse;
-
-/**
- * GitHubMapOp is a map action.
- */
-export type GitHubMapOp<R, M> = {
-  type: GitHubOpType.MAP;
-  data: GitHubMapOpGenerate<M, R>;
-};
 
 /**
  * GitHubTreeOp is a GitHub tree operation.
@@ -266,12 +251,8 @@ export type GitHubPROp<R> =
 
 /**
  * GitHubOpType is a GitHub operation type.
- *
- * MAP is a special op type to map the result of the previous
- * operation to the next one.
  */
 export enum GitHubOpType {
-  MAP = "map",
   CREATE_TREE = "createTree",
   CREATE_COMMIT = "createCommit",
   CREATE_BRANCH = "createBranch",
@@ -281,21 +262,3 @@ export enum GitHubOpType {
   UPDATE_PR = "updatePR",
   CREATE_OR_UPDATE_PR = "createOrUpdatePR",
 }
-
-/**
- * Append appends a tuple to another tuple.
- *
- * @see
- * https://stackoverflow.com/questions/53985074/typescript-how-to-add-an-item-to-a-tuple#comment118209932_62561508
- */
-export type Append<I extends unknown[], T extends unknown[]> = [...T, ...I];
-
-/**
- * Generate is a helper type to generate a type from a type or a function.
- */
-export type Generate<T, U> =
-  | T
-  | (() => T)
-  | (() => Promise<T>)
-  | ((input: U) => T)
-  | ((input: U) => Promise<T>);
