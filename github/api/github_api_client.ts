@@ -57,7 +57,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     this.fetch = fetcher;
   }
 
-  public async getRawFile(r: GitHubAPIRawFileGetRequest): Promise<string> {
+  public async getRawText(r: GitHubAPIRawFileGetRequest): Promise<string> {
     const url = makeRawFileURL(
       this.options.owner,
       this.options.repo,
@@ -75,6 +75,39 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     switch (response.status) {
       case 200: {
         return await response.text();
+      }
+
+      case 404: {
+        throw new errors.NotFound(await response.text());
+      }
+
+      default: {
+        throw new Error(
+          `Failed to get raw file ${this.options.owner}/${this.options.repo}/${r.branch}/${r.path}. ${await response
+            .text()}`,
+        );
+      }
+    }
+  }
+
+  public async getRawBlob(r: GitHubAPIRawFileGetRequest): Promise<Blob> {
+    const url = makeRawFileURL(
+      this.options.owner,
+      this.options.repo,
+      r.branch,
+      r.path,
+    );
+    const response = await this.fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `token ${this.options.token}`,
+      },
+    });
+
+    switch (response.status) {
+      case 200: {
+        return await response.blob();
       }
 
       case 404: {

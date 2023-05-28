@@ -107,8 +107,7 @@ export async function uploadCodemodAsTreeItem(
     case GitHubCodemodType.EDIT_BLOB: {
       const blob = await api.postBlobs({
         encoding: "base64",
-        content: await api.getRawFile({ branch, path })
-          .then((response) => response.blob())
+        content: await api.getRawBlob({ branch, path })
           .then(codemod.fn)
           .then(stringFromBlob),
       });
@@ -123,8 +122,7 @@ export async function uploadCodemodAsTreeItem(
     case GitHubCodemodType.EDIT_TEXT: {
       const blob = await api.postBlobs({
         encoding: "utf-8",
-        content: await api.getRawFile({ branch, path })
-          .then((response) => response.text())
+        content: await api.getRawText({ branch, path })
           .then(codemod.fn),
       });
       return {
