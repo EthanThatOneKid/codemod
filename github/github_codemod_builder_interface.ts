@@ -13,12 +13,7 @@ import type {
   GitHubAPITreesPostRequest,
   GitHubAPITreesPostResponse,
 } from "./api/mod.ts";
-import { GitHubCodemodCreateBranchBuilderInterface } from "./github_codemod_create_branch_builder_interface.ts";
-import { GitHubCodemodCreateCommitBuilderInterface } from "./github_codemod_create_commit_builder_interface.ts";
-import { GitHubCodemodCreatePRBuilderInterface } from "./github_codemod_create_pr_builder_interface.ts";
-import { GitHubCodemodCreateTreeBuilderInterface } from "./github_codemod_create_tree_builder_interface.ts";
-import { GitHubCodemodUpdateBranchBuilderInterface } from "./github_codemod_update_branch_builder_interface.ts";
-import { GitHubCodemodUpdatePRBuilderInterface } from "./github_codemod_update_pr_builder_interface.ts";
+import type { GitHubCreateTreeBuilderInterface } from "./github_create_tree_builder_interface.ts";
 import type { Append, Generate } from "./types.ts";
 
 /**
@@ -47,6 +42,7 @@ export interface GitHubCodemodBuilderInterface<
    */
   createTree(
     optionsOrOptionsGenerate: GitHubAPITreesPostRequestGenerate<R>,
+    builderOrBuilderGenerate?: Generate<GitHubCreateTreeBuilderInterface, [R]>,
   ): GitHubCodemodBuilderInterface<
     Append<R, [GitHubAPITreesPostResponse]>
   >;
@@ -56,6 +52,10 @@ export interface GitHubCodemodBuilderInterface<
    */
   createCommit(
     optionsOrOptionsGenerate: GitHubAPICommitsPostRequestGenerate<R>,
+    builderOrBuilderGenerate?: Generate<
+      GitHubCreateCommitBuilderInterface,
+      [R]
+    >,
   ): GitHubCodemodBuilderInterface<
     Append<R, [GitHubAPICommitsPostResponse]>
   >;
@@ -65,6 +65,10 @@ export interface GitHubCodemodBuilderInterface<
    */
   createBranch(
     optionsOrOptionsGenerate: GitHubAPIRefsPostRequestGenerate<R>,
+    builderOrBuilderGenerate?: Generate<
+      GitHubCreateBranchBuilderInterface,
+      [R]
+    >,
   ): GitHubCodemodBuilderInterface<
     Append<R, [GitHubAPIRefsPostResponse]>
   >;
@@ -74,6 +78,10 @@ export interface GitHubCodemodBuilderInterface<
    */
   updateBranch(
     optionsOrOptionsGenerate: GitHubAPIRefPatchRequestGenerate<R>,
+    builderOrBuilderGenerate?: Generate<
+      GitHubUpdateBranchBuilderInterface,
+      [R]
+    >,
   ): GitHubCodemodBuilderInterface<
     Append<R, [GitHubAPIRefPatchResponse]>
   >;
@@ -83,6 +91,10 @@ export interface GitHubCodemodBuilderInterface<
    */
   createOrUpdateBranch(
     optionsOrOptionsGenerate: GitHubAPIRefPatchRequestGenerate<R>,
+    builderOrBuilderGenerate?: Generate<
+      GitHubUpdateBranchBuilderInterface,
+      [R]
+    >,
   ): GitHubCodemodBuilderInterface<
     Append<R, [GitHubAPIRefPatchResponse]>
   >;
@@ -94,6 +106,10 @@ export interface GitHubCodemodBuilderInterface<
    */
   createPR(
     optionsOrOptionsGenerate: GitHubAPIPullsPostRequestGenerate<R>,
+    builderOrBuilderGenerate?: Generate<
+      GitHubCreatePRBuilderInterface,
+      [R]
+    >,
   ): GitHubCodemodBuilderInterface<
     Append<R, [GitHubAPIPullsPostResponse]>
   >;
@@ -103,6 +119,10 @@ export interface GitHubCodemodBuilderInterface<
    */
   updatePR(
     optionsOrOptionsGenerate: GitHubAPIPullPatchRequestGenerate<R>,
+    builderOrBuilderGenerate?: Generate<
+      GitHubUpdatePRBuilderInterface,
+      [R]
+    >,
   ): GitHubCodemodBuilderInterface<
     Append<R, [GitHubAPIPullPatchResponse]>
   >;
@@ -112,6 +132,10 @@ export interface GitHubCodemodBuilderInterface<
    */
   createOrUpdatePR(
     optionsOrOptionsGenerate: GitHubAPIPullPatchRequestGenerate<R>,
+    builderOrBuilderGenerate?: Generate<
+      GitHubUpdatePRBuilderInterface,
+      [R]
+    >,
   ): GitHubCodemodBuilderInterface<
     Append<R, [GitHubAPIPullPatchResponse]>
   >;
@@ -124,10 +148,7 @@ export interface GitHubCodemodBuilderInterface<
  */
 export type GitHubAPITreesPostRequestGenerate<T> = Generate<
   GitHubAPITreesPostRequest,
-  [
-    GitHubCodemodCreateTreeBuilderInterface | undefined,
-    T | undefined,
-  ]
+  [T]
 >;
 
 /**
@@ -135,10 +156,7 @@ export type GitHubAPITreesPostRequestGenerate<T> = Generate<
  */
 export type GitHubAPICommitsPostRequestGenerate<T> = Generate<
   GitHubAPICommitsPostRequest,
-  [
-    GitHubCodemodCreateCommitBuilderInterface | undefined,
-    T | undefined,
-  ]
+  [T]
 >;
 
 /**
@@ -146,10 +164,7 @@ export type GitHubAPICommitsPostRequestGenerate<T> = Generate<
  */
 export type GitHubAPIRefsPostRequestGenerate<T> = Generate<
   GitHubAPIRefsPostRequest,
-  [
-    GitHubCodemodCreateBranchBuilderInterface | undefined,
-    T | undefined,
-  ]
+  [T]
 >;
 
 /**
@@ -157,10 +172,7 @@ export type GitHubAPIRefsPostRequestGenerate<T> = Generate<
  */
 export type GitHubAPIRefPatchRequestGenerate<T> = Generate<
   GitHubAPIRefPatchRequest,
-  [
-    GitHubCodemodUpdateBranchBuilderInterface | undefined,
-    T | undefined,
-  ]
+  [T]
 >;
 
 /**
@@ -168,10 +180,7 @@ export type GitHubAPIRefPatchRequestGenerate<T> = Generate<
  */
 export type GitHubAPIPullsPostRequestGenerate<T> = Generate<
   GitHubAPIPullsPostRequest,
-  [
-    GitHubCodemodCreatePRBuilderInterface | undefined,
-    T | undefined,
-  ]
+  [T]
 >;
 
 /**
@@ -179,10 +188,7 @@ export type GitHubAPIPullsPostRequestGenerate<T> = Generate<
  */
 export type GitHubAPIPullPatchRequestGenerate<T> = Generate<
   GitHubAPIPullPatchRequest,
-  [
-    GitHubCodemodUpdatePRBuilderInterface | undefined,
-    T | undefined,
-  ]
+  [T]
 >;
 
 /**

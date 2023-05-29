@@ -10,6 +10,7 @@ import type {
   GitHubAPITreesPostResponse,
 } from "./api/mod.ts";
 import { GitHubAPIClient } from "./api/mod.ts";
+import { Append } from "./types.ts";
 import {
   GitHubAPICommitsPostRequestGenerate,
   GitHubAPIPullPatchRequestGenerate,
@@ -22,7 +23,7 @@ import {
   GitHubOpResult,
   GitHubOpType,
 } from "./github_codemod_builder_interface.ts";
-import { Append } from "./types.ts";
+import { GitHubTreeBuilder } from "./github_tree_builder.ts";
 
 /**
  * GitHubCodemodBuilder is a builder for building a GitHub codemod.
@@ -41,7 +42,7 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
       switch (op.type) {
         case GitHubOpType.CREATE_TREE: {
           const options = op.data instanceof Function
-            ? await op.data(result as R)
+            ? await op.data(new GitHubTreeBuilder(), result as R)
             : op.data;
           const response = await api.postTrees(options);
           result.push(response as R[number]);
