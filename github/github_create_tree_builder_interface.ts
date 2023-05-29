@@ -21,8 +21,17 @@ export interface GitHubTreeBuilderInterface {
 
   /**
    * base sets the base tree SHA.
+   *
+   * Subsequent calls to base will override the previous base tree SHA.
    */
   base(shaOrSHAGenerate: Generate<string | undefined, []>): this;
+
+  /**
+   * ref sets the base tree SHA from a ref.
+   *
+   * This is a convenience method that overrides the base tree SHA.
+   */
+  ref(refOrRefGenerate: Generate<string, []>): this;
 
   /**
    * file sets a file blob.

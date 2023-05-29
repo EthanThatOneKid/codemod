@@ -1,7 +1,7 @@
 import type { GitHubAPICommitsPostRequest } from "./api/mod.ts";
 import type { GitHubCreateCommitBuilderInterface } from "./github_create_commit_builder_interface.ts";
 import type { Generate } from "./generate.ts";
-import { generate } from "./generate.ts";
+import { generateObject } from "./generate.ts";
 
 /**
  * GitHubCreateCommitBuilder is a builder for a GitHub create commit request.
@@ -15,9 +15,7 @@ export class GitHubCreateCommitBuilder
   #committer: Generate<GitHubAPICommitsPostRequest["committer"], []>;
   #signature: Generate<string | undefined, []>;
 
-  constructor(
-    private readonly options: GitHubAPICommitsPostRequest,
-  ) {
+  constructor(options: GitHubAPICommitsPostRequest) {
     this.#message = options.message;
     this.#tree = options.tree;
     this.#parents = options.parents;
@@ -27,21 +25,21 @@ export class GitHubCreateCommitBuilder
   }
 
   public async run(): Promise<GitHubAPICommitsPostRequest> {
-    // TODO: Use Promise.all to run all the generate functions in parallel.
-    const message = await generate(this.#message);
-    const tree = await generate(this.#tree);
-    const parents = await generate(this.#parents);
-    const author = await generate(this.#author);
-    const committer = await generate(this.#committer);
-    const signature = await generate(this.#signature);
-    return {
-      message,
-      tree,
-      parents,
-      author,
-      committer,
-      signature,
-    };
+    return await generateObject({
+      message: this.#message,
+      tree: this.#tree,
+      parents: this.#parents,
+      author: this.#author,
+      committer: this.#committer,
+      signature: this.#signature,
+    }, {
+      message: [],
+      tree: [],
+      parents: [],
+      author: [],
+      committer: [],
+      signature: [],
+    });
   }
 
   public message(messageOrMessageGenerate: Generate<string, []>): this {
