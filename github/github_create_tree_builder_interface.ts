@@ -1,23 +1,18 @@
 import type { JSONPatchOperation } from "../deps.ts";
 import type { GitHubAPITreesPostRequest } from "./api/mod.ts";
-import type { Generate } from "./types.ts";
+import type { Generate } from "./generate.ts";
 
 /**
- * GitHubCreateTreeBuilderInterface is an interface for a
- * GitHubCreateTreeBuilder.
+ * GitHubTreeBuilderInterface is an interface for a
+ * GitHubTreeBuilder.
  *
  * @see https://docs.github.com/en/rest/reference/git#create-a-tree
  */
-export interface GitHubCreateTreeBuilderInterface {
+export interface GitHubTreeBuilderInterface {
   /**
    * run executes the builder.
    */
   run(): Promise<GitHubAPITreesPostRequest>;
-
-  /**
-   * clone clones the builder.
-   */
-  clone(): this;
 
   /**
    * clear clears the tree.
@@ -27,7 +22,7 @@ export interface GitHubCreateTreeBuilderInterface {
   /**
    * base sets the base tree SHA.
    */
-  base(shaOrSHAGenerate: Generate<string, []>): this;
+  base(shaOrSHAGenerate: Generate<string | undefined, []>): this;
 
   /**
    * file sets a file blob.
@@ -39,6 +34,8 @@ export interface GitHubCreateTreeBuilderInterface {
 
   /**
    * text sets a text blob.
+   *
+   * @todo https://youtu.be/nwHqXtk6LHA
    */
   text(
     path: string,
@@ -99,4 +96,106 @@ export interface GitHubCreateTreeBuilderInterface {
    * delete deletes a file.
    */
   delete(path: string): this;
+}
+
+/**
+ * GitHubTreeOpType is a type for a GitHub create tree operation type.
+ */
+export enum GitHubTreeOpType {
+  FILE = "file",
+  TEXT = "text",
+  JSON_PATCH = "json_patch",
+  EXECUTABLE = "executable",
+  SUBDIRECTORY = "subdirectory",
+  SUBMODULE = "submodule",
+  SYMLINK = "symlink",
+  RENAME = "rename",
+  DELETE = "delete",
+}
+
+/**
+ * GitHubTreeOp is a GitHub tree operation.
+ */
+export type GitHubTreeOp =
+  | GitHubTreeFileOp
+  | GitHubTreeTextOp
+  | GitHubTreeJSONPatchOp
+  | GitHubTreeExecutableOp
+  | GitHubTreeSubdirectoryOp
+  | GitHubTreeSubmoduleOp
+  | GitHubTreeSymlinkOp
+  | GitHubTreeRenameOp
+  | GitHubTreeDeleteOp;
+
+/**
+ * GitHubTreeFileOp is a GitHub tree file operation.
+ */
+export interface GitHubTreeFileOp {
+  type: GitHubTreeOpType.FILE;
+  data: Generate<Blob, [Blob]>;
+}
+
+/**
+ * GitHubTreeTextOp is a GitHub tree text operation.
+ */
+export interface GitHubTreeTextOp {
+  type: GitHubTreeOpType.TEXT;
+  data: Generate<string, [string]>;
+}
+
+/**
+ * GitHubTreeJSONPatchOp is a GitHub tree JSON patch operation.
+ */
+export interface GitHubTreeJSONPatchOp {
+  type: GitHubTreeOpType.JSON_PATCH;
+  data: Generate<JSONPatchOperation[], [string]>;
+  deserializeJSON: Generate<(content: string) => unknown, [string]>;
+  serializeJSON: Generate<(value: unknown) => string, [string]>;
+}
+
+/**
+ * GitHubTreeExecutableOp is a GitHub tree executable operation.
+ */
+export interface GitHubTreeExecutableOp {
+  type: GitHubTreeOpType.EXECUTABLE;
+  data: Generate<Blob, [Blob]>;
+}
+
+/**
+ * GitHubTreeSubdirectoryOp is a GitHub tree subdirectory operation.
+ */
+export interface GitHubTreeSubdirectoryOp {
+  type: GitHubTreeOpType.SUBDIRECTORY;
+  data: Generate<string, []>;
+}
+
+/**
+ * GitHubTreeSubmoduleOp is a GitHub tree submodule operation.
+ */
+export interface GitHubTreeSubmoduleOp {
+  type: GitHubTreeOpType.SUBMODULE;
+  data: Generate<string, []>;
+}
+
+/**
+ * GitHubTreeSymlinkOp is a GitHub tree symlink operation.
+ */
+export interface GitHubTreeSymlinkOp {
+  type: GitHubTreeOpType.SYMLINK;
+  data: Generate<Blob, [Blob]>;
+}
+
+/**
+ * GitHubTreeRenameOp is a GitHub tree rename operation.
+ */
+export interface GitHubTreeRenameOp {
+  type: GitHubTreeOpType.RENAME;
+  data: Generate<string, [string]>;
+}
+
+/**
+ * GitHubTreeDeleteOp is a GitHub tree delete operation.
+ */
+export interface GitHubTreeDeleteOp {
+  type: GitHubTreeOpType.DELETE;
 }

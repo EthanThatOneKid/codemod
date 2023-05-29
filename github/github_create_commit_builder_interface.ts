@@ -1,5 +1,5 @@
 import type { GitHubAPICommitsPostRequest } from "./api/mod.ts";
-import type { Generate } from "./types.ts";
+import type { Generate } from "./generate.ts";
 
 /**
  * GitHubCreateCommitBuilderInterface is an interface for a
@@ -12,11 +12,6 @@ export interface GitHubCreateCommitBuilderInterface {
    * run executes the builder.
    */
   run(): Promise<GitHubAPICommitsPostRequest>;
-
-  /**
-   * clone clones the builder.
-   */
-  clone(): this;
 
   /**
    * message sets the commit message.

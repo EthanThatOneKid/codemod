@@ -1,5 +1,5 @@
 import type { GitHubAPIRefPatchRequest } from "./api/mod.ts";
-import type { Generate } from "./types.ts";
+import type { Generate } from "./generate.ts";
 
 /**
  * GitHubUpdateBranchBuilderInterface is an interface for a
@@ -12,11 +12,6 @@ export interface GitHubUpdateBranchBuilderInterface {
    * run executes the builder.
    */
   run(): Promise<GitHubAPIRefPatchRequest>;
-
-  /**
-   * clone clones the builder.
-   */
-  clone(): this;
 
   /**
    * sha sets the commit or tree SHA.

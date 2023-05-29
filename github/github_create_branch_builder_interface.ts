@@ -1,5 +1,5 @@
 import type { GitHubAPIRefsPostRequest } from "./api/mod.ts";
-import type { Generate } from "./types.ts";
+import type { Generate } from "./generate.ts";
 
 /**
  * GitHubCreateBranchBuilderInterface is an interface for a
@@ -12,11 +12,6 @@ export interface GitHubCreateBranchBuilderInterface {
    * run executes the builder.
    */
   run(): Promise<GitHubAPIRefsPostRequest>;
-
-  /**
-   * clone clones the builder.
-   */
-  clone(): this;
 
   /**
    * ref sets the ref.
