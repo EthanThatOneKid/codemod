@@ -20,6 +20,9 @@ export interface GitHubAPIClientInterface {
 
   /**
    * getContents gets a file from the repository.
+   *
+   * See:
+   * https://docs.github.com/en/rest/reference/repos#get-repository-content
    */
   getContents(
     r: GitHubAPIContentsGetRequest,

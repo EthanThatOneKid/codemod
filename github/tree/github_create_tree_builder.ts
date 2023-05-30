@@ -2,9 +2,11 @@ import type { JSONPatchOperation } from "../../deps.ts";
 import { applyJSONPatch, errors } from "../../deps.ts";
 import type {
   GitHubAPIClientInterface,
+  GitHubAPIClientOptions,
   GitHubAPITreesPostRequest,
 } from "../api/mod.ts";
-import { Generate, Generated, generateObject } from "../shared/generate.ts";
+import { GitHubAPIClient } from "../api/mod.ts";
+import type { Generate } from "../shared/generate.ts";
 import { generate } from "../shared/generate.ts";
 import type {
   GitHubCreateTreeBuilderInterface,
@@ -28,8 +30,6 @@ export class GitHubCreateTreeBuilder
   implements GitHubCreateTreeBuilderInterface {
   #base: Generate<string | undefined, []>;
   #tree: Map<string, GitHubTreeOp> = new Map();
-
-  constructor(private readonly api: GitHubAPIClientInterface) {}
 
   public clear(): this {
     this.#tree = new Map();
@@ -134,12 +134,14 @@ export class GitHubCreateTreeBuilder
     return this;
   }
 
-  public async run(): Promise<GitHubAPITreesPostRequest> {
+  public async run(
+    options: GitHubAPIClientOptions,
+  ): Promise<GitHubAPITreesPostRequest> {
+    const api = new GitHubAPIClient(options, fetch.bind(globalThis));
     const ref = await generate(this.#base) ??
-      (await this.api.getRepository()).default_branch;
-    const baseTreeSHA =
-      (await this.api.getBranch({ ref })).commit.commit.tree.sha;
-    const tree = await doTreeOps(this.api, ref, this.#tree);
+      (await api.getRepository()).default_branch;
+    const baseTreeSHA = (await api.getBranch({ ref })).commit.commit.tree.sha;
+    const tree = await doTreeOps(api, ref, this.#tree);
     return makeGitHubAPITreesPostRequest(baseTreeSHA, tree);
   }
 }
@@ -148,11 +150,11 @@ export class GitHubCreateTreeBuilder
  * makeGitHubAPITreesPostRequest creates a GitHub API trees post request.
  */
 export function makeGitHubAPITreesPostRequest(
-  baseTree: string | undefined,
+  baseTreeSHA: string | undefined,
   tree: GitHubAPITreesPostRequest["tree"],
 ): GitHubAPITreesPostRequest {
   return {
-    base_tree: baseTree,
+    base_tree: baseTreeSHA,
     tree,
   };
 }
@@ -166,17 +168,16 @@ export function doTreeOps(
   tree: Map<string, GitHubTreeOp>,
 ): Promise<GitHubAPITreesPostRequest["tree"]> {
   const ops = [...tree.entries()];
-  const opPromises = ops.reduce(
-    (tree, [path, op]) => tree.concat(doTreeOp(api, ref, path, op)),
-    [] as Array<Promise<GitHubAPITreesPostRequest["tree"][number]>>,
-  );
-  return Promise.all(opPromises);
+  const opPromises = ops
+    .map(([path, op]) => doTreeOp(api, ref, path, op));
+  return Promise.all(opPromises)
+    .then((trees) => trees.flat());
 }
 
 /**
  * doTreeOp does a tree operation.
  */
-export async function doTreeOp(
+export function doTreeOp(
   api: GitHubAPIClientInterface,
   ref: string,
   path: string,
@@ -218,6 +219,10 @@ export async function doTreeOp(
     case GitHubTreeOpType.DELETE: {
       return doTreeDeleteOp(path);
     }
+
+    default: {
+      throw new Error(`Unknown tree operation type`);
+    }
   }
 }
 
@@ -243,12 +248,14 @@ export async function doTreeFileOp(
     encoding: "base64",
     content,
   });
-  return [{
-    mode: "100644",
-    path,
-    sha: createdBlob.sha,
-    type: "blob",
-  }];
+  return [
+    {
+      mode: "100644",
+      path,
+      sha: createdBlob.sha,
+      type: "blob",
+    },
+  ];
 }
 
 /**
@@ -268,12 +275,14 @@ export async function doTreeTextOp(
       return Promise.reject(error);
     });
   const text = await generate(op.data, existingText);
-  return [{
-    mode: "100644",
-    path,
-    content: text,
-    type: "blob",
-  }];
+  return [
+    {
+      mode: "100644",
+      path,
+      content: text,
+      type: "blob",
+    },
+  ];
 }
 
 /**
@@ -289,12 +298,14 @@ export async function doTreeJSONPatchOp(
   const deserializedJSON = op.data.deserializeJSON(existingText);
   const patchedJSON = applyJSONPatch(deserializedJSON, patches);
   const serializedJSON = op.data.serializeJSON(patchedJSON);
-  return [{
-    mode: "100644",
-    path,
-    content: serializedJSON,
-    type: "blob",
-  }];
+  return [
+    {
+      mode: "100644",
+      path,
+      content: serializedJSON,
+      type: "blob",
+    },
+  ];
 }
 
 /**
@@ -306,12 +317,14 @@ export async function doTreeExecutableOp(
 ): Promise<GitHubAPITreesPostRequest["tree"]> {
   const blob = await generate(op.data);
   const content = await stringFromBlob(blob);
-  return [{
-    mode: "100755",
-    path,
-    content,
-    type: "blob",
-  }];
+  return [
+    {
+      mode: "100755",
+      path,
+      content,
+      type: "blob",
+    },
+  ];
 }
 
 /**
@@ -322,12 +335,14 @@ export async function doTreeSubdirectoryOp(
   op: GitHubTreeSubdirectoryOp,
 ): Promise<GitHubAPITreesPostRequest["tree"]> {
   const sha = await generate(op.data);
-  return [{
-    mode: "040000",
-    path,
-    sha,
-    type: "tree",
-  }];
+  return [
+    {
+      mode: "040000",
+      path,
+      sha,
+      type: "tree",
+    },
+  ];
 }
 
 /**
@@ -338,12 +353,14 @@ export async function doTreeSubmoduleOp(
   op: GitHubTreeSubmoduleOp,
 ): Promise<GitHubAPITreesPostRequest["tree"]> {
   const sha = await generate(op.data);
-  return [{
-    mode: "160000",
-    path,
-    sha,
-    type: "commit",
-  }];
+  return [
+    {
+      mode: "160000",
+      path,
+      sha,
+      type: "commit",
+    },
+  ];
 }
 
 /**
@@ -355,12 +372,14 @@ export async function doTreeSymlinkOp(
 ): Promise<GitHubAPITreesPostRequest["tree"]> {
   const blob = await generate(op.data);
   const content = await stringFromBlob(blob);
-  return [{
-    mode: "120000",
-    path,
-    content,
-    type: "blob",
-  }];
+  return [
+    {
+      mode: "120000",
+      path,
+      content,
+      type: "blob",
+    },
+  ];
 }
 
 /**
@@ -374,38 +393,50 @@ export async function doTreeRenameOp(
 ): Promise<GitHubAPITreesPostRequest["tree"]> {
   const oldPath = path;
   const newPath = op.data;
-  const contents = await api.getContents({ path: oldPath, ref });
+  const contents = await api.getContents({ path: oldPath, ref })
+    .catch((error) => {
+      if (error instanceof errors.NotFound) {
+        return null;
+      }
 
-  // TODO: Figure this out.
-  //
-
-  if ((contents as { length: number | undefined }).length !== undefined) {
-    throw new Error("Cannot rename a directory");
+      return Promise.reject(error);
+    });
+  if (contents === null) {
+    throw new Error("Cannot rename a non-existent file");
   }
-  const sha = contents;
-  return [{
-    path: newPath,
-    mode: "100644",
-    type: "blob",
-    sha: sha,
-  }, {
-    path: oldPath,
-    mode: "100644",
-    type: "blob",
-    sha: null,
-  }];
+
+  if (Array.isArray(contents)) {
+    throw new Error("Cannot operate on a directory");
+  }
+
+  return [
+    {
+      path: newPath,
+      mode: "100644",
+      type: "blob",
+      sha: contents.sha,
+    },
+    {
+      path: oldPath,
+      mode: "100644",
+      type: "blob",
+      sha: null,
+    },
+  ];
 }
 
 /**
  * doTreeDeleteOp does a delete operation for a create tree builder.
  */
-export async function doTreeDeleteOp(
+export function doTreeDeleteOp(
   path: string,
 ): Promise<GitHubAPITreesPostRequest["tree"]> {
-  return [{
-    path,
-    mode: "100644",
-    type: "blob",
-    sha: null,
-  }];
+  return Promise.resolve([
+    {
+      path,
+      mode: "100644",
+      type: "blob",
+      sha: null,
+    },
+  ]);
 }

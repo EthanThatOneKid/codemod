@@ -1,5 +1,6 @@
 import type { GitHubAPIClientOptions } from "./github/api/mod.ts";
-import type { Generate } from "./github/types.ts";
+import type { Generate } from "./github/shared/generate.ts";
+import { generate } from "./github/shared/generate.ts";
 import type {
   GitHubCodemodBuilderInterface,
   GitHubOpResult,
@@ -15,9 +16,10 @@ export async function createGitHubCodemod<
     [GitHubCodemodBuilderInterface]
   >,
 ): Promise<GitHubOpResult[]> {
-  const builder = builderOrBuilderGenerate instanceof Function
-    ? await builderOrBuilderGenerate(new GitHubCodemodBuilder())
-    : builderOrBuilderGenerate;
+  const builder = await generate(
+    builderOrBuilderGenerate,
+    new GitHubCodemodBuilder(),
+  );
   return await builder.run(options);
 }
 
@@ -33,14 +35,8 @@ export const codemod = () =>
     },
     (builder) =>
       builder
-        .createTree(() =>
-          createGitHubTree(treeOptions, (treeBuilder) =>
-            treeBuilder
-              .setText("LICENSE", "MIT License")
-              .editText(
-                "README.md",
-                (content) => content.replace("Deno", "DenoLand"),
-              ))
+        .createTree(
+          (_, tree) => tree.addFile("README.md", "Hello, World!"),
         )
         .createCommit(({ 0: tree }) => ({
           message: "Hello, World!",

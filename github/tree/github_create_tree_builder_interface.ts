@@ -1,5 +1,8 @@
 import type { JSONPatchOperation } from "../../deps.ts";
-import type { GitHubAPITreesPostRequest } from "../api/mod.ts";
+import type {
+  GitHubAPIClientOptions,
+  GitHubAPITreesPostRequest,
+} from "../api/mod.ts";
 import type { Generate } from "../shared/generate.ts";
 
 /**
@@ -12,7 +15,9 @@ export interface GitHubCreateTreeBuilderInterface {
   /**
    * run executes the builder.
    */
-  run(): Promise<GitHubAPITreesPostRequest>;
+  run(
+    options: GitHubAPIClientOptions,
+  ): Promise<GitHubAPITreesPostRequest>;
 
   /**
    * clear clears the tree.

@@ -8,9 +8,9 @@ import type {
   GitHubAPIRefPatchResponse,
   GitHubAPIRefsPostResponse,
   GitHubAPITreesPostResponse,
-} from "./api/mod.ts";
-import { GitHubAPIClient } from "./api/mod.ts";
-import { Append } from "./types.ts";
+} from "../api/mod.ts";
+import { GitHubAPIClient } from "../api/mod.ts";
+import { Append } from "../shared/append.ts";
 import {
   GitHubAPICommitsPostRequestGenerate,
   GitHubAPIPullPatchRequestGenerate,
@@ -23,7 +23,8 @@ import {
   GitHubOpResult,
   GitHubOpType,
 } from "./github_codemod_builder_interface.ts";
-import { GitHubTreeBuilder } from "./github_tree_builder.ts";
+import { GitHubCreateTreeBuilder } from "../tree/github_create_tree_builder.ts";
+import { generate } from "../shared/generate.ts";
 
 /**
  * GitHubCodemodBuilder is a builder for building a GitHub codemod.
@@ -41,9 +42,15 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
     for (const op of this.ops) {
       switch (op.type) {
         case GitHubOpType.CREATE_TREE: {
-          const options = op.data instanceof Function
-            ? await op.data(new GitHubTreeBuilder(), result as R)
-            : op.data;
+          const options = await generate(op.data, result as R);
+          const request = options !== undefined ? options : await generate();
+          if (options !== undefined) {
+          }
+
+          // const options = op.data instanceof Function
+          //   ? await op.data(new GitHubCreateTreeBuilder(), result as R)
+          //   : op.data;
+          const request = generate();
           const response = await api.postTrees(options);
           result.push(response as R[number]);
           break;
@@ -118,10 +125,6 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
     }
 
     return result as R;
-  }
-
-  public clone(): GitHubCodemodBuilderInterface<R> {
-    return new GitHubCodemodBuilder<R>(this.ops, this.fetcher);
   }
 
   public createTree(

@@ -12,9 +12,10 @@ import type {
   GitHubAPIRefsPostResponse,
   GitHubAPITreesPostRequest,
   GitHubAPITreesPostResponse,
-} from "./api/mod.ts";
-import type { GitHubCreateTreeBuilderInterface } from "./github_create_tree_builder_interface.ts";
-import type { Append, Generate } from "./types.ts";
+} from "../api/mod.ts";
+import type { GitHubCreateTreeBuilderInterface } from "../tree/github_create_tree_builder_interface.ts";
+import type { Generate } from "../shared/generate.ts";
+import type { Append } from "../shared/append.ts";
 
 /**
  * GitHubCodemodBuilderInterface is a protocol for building and executing a
@@ -33,16 +34,11 @@ export interface GitHubCodemodBuilderInterface<
   run(options: GitHubAPIClientOptions): Promise<R>;
 
   /**
-   * clone clones the builder as a new instance.
-   */
-  clone(): GitHubCodemodBuilderInterface<R>;
-
-  /**
    * createTree adds a create GiHub tree action to the builder.
    */
   createTree(
-    optionsOrOptionsGenerate: GitHubAPITreesPostRequestGenerate<R>,
-    builderOrBuilderGenerate?: Generate<GitHubCreateTreeBuilderInterface, [R]>,
+    optionsOrOptionsGenerate: GitHubTreeOp<R>["options"],
+    builderOrBuilderGenerate?: GitHubTreeOp<R>["builder"],
   ): GitHubCodemodBuilderInterface<
     Append<R, [GitHubAPITreesPostResponse]>
   >;
@@ -51,11 +47,8 @@ export interface GitHubCodemodBuilderInterface<
    * createCommit adds a create GiHub commit action to the builder.
    */
   createCommit(
-    optionsOrOptionsGenerate: GitHubAPICommitsPostRequestGenerate<R>,
-    builderOrBuilderGenerate?: Generate<
-      GitHubCreateCommitBuilderInterface,
-      [R]
-    >,
+    optionsOrOptionsGenerate: GitHubTreeOp<R>["options"],
+    builderOrBuilderGenerate?: GitHubTreeOp<R>["builder"],
   ): GitHubCodemodBuilderInterface<
     Append<R, [GitHubAPICommitsPostResponse]>
   >;
@@ -64,11 +57,8 @@ export interface GitHubCodemodBuilderInterface<
    * createBranch adds a create GiHub branch action to the builder.
    */
   createBranch(
-    optionsOrOptionsGenerate: GitHubAPIRefsPostRequestGenerate<R>,
-    builderOrBuilderGenerate?: Generate<
-      GitHubCreateBranchBuilderInterface,
-      [R]
-    >,
+    optionsOrOptionsGenerate: GitHubTreeOp<R>["options"],
+    builderOrBuilderGenerate?: GitHubTreeOp<R>["builder"],
   ): GitHubCodemodBuilderInterface<
     Append<R, [GitHubAPIRefsPostResponse]>
   >;
@@ -77,11 +67,8 @@ export interface GitHubCodemodBuilderInterface<
    * updateBranch adds a update GiHub branch action to the builder.
    */
   updateBranch(
-    optionsOrOptionsGenerate: GitHubAPIRefPatchRequestGenerate<R>,
-    builderOrBuilderGenerate?: Generate<
-      GitHubUpdateBranchBuilderInterface,
-      [R]
-    >,
+    optionsOrOptionsGenerate: GitHubTreeOp<R>["options"],
+    builderOrBuilderGenerate?: GitHubTreeOp<R>["builder"],
   ): GitHubCodemodBuilderInterface<
     Append<R, [GitHubAPIRefPatchResponse]>
   >;
@@ -90,11 +77,8 @@ export interface GitHubCodemodBuilderInterface<
    * createOrUpdateBranch adds a create or update GiHub branch action to the builder.
    */
   createOrUpdateBranch(
-    optionsOrOptionsGenerate: GitHubAPIRefPatchRequestGenerate<R>,
-    builderOrBuilderGenerate?: Generate<
-      GitHubUpdateBranchBuilderInterface,
-      [R]
-    >,
+    optionsOrOptionsGenerate: GitHubTreeOp<R>["options"],
+    builderOrBuilderGenerate?: GitHubTreeOp<R>["builder"],
   ): GitHubCodemodBuilderInterface<
     Append<R, [GitHubAPIRefPatchResponse]>
   >;
@@ -105,11 +89,8 @@ export interface GitHubCodemodBuilderInterface<
    * createPR adds a create GiHub PR action to the builder.
    */
   createPR(
-    optionsOrOptionsGenerate: GitHubAPIPullsPostRequestGenerate<R>,
-    builderOrBuilderGenerate?: Generate<
-      GitHubCreatePRBuilderInterface,
-      [R]
-    >,
+    optionsOrOptionsGenerate: GitHubTreeOp<R>["options"],
+    builderOrBuilderGenerate?: GitHubTreeOp<R>["builder"],
   ): GitHubCodemodBuilderInterface<
     Append<R, [GitHubAPIPullsPostResponse]>
   >;
@@ -118,11 +99,8 @@ export interface GitHubCodemodBuilderInterface<
    * updatePR adds a update GiHub PR action to the builder.
    */
   updatePR(
-    optionsOrOptionsGenerate: GitHubAPIPullPatchRequestGenerate<R>,
-    builderOrBuilderGenerate?: Generate<
-      GitHubUpdatePRBuilderInterface,
-      [R]
-    >,
+    optionsOrOptionsGenerate: GitHubPROp<R>["options"],
+    builderOrBuilderGenerate?: GitHubTreeOp<R>["builder"],
   ): GitHubCodemodBuilderInterface<
     Append<R, [GitHubAPIPullPatchResponse]>
   >;
@@ -131,11 +109,8 @@ export interface GitHubCodemodBuilderInterface<
    * createOrUpdatePR adds a create or update GiHub PR action to the builder.
    */
   createOrUpdatePR(
-    optionsOrOptionsGenerate: GitHubAPIPullPatchRequestGenerate<R>,
-    builderOrBuilderGenerate?: Generate<
-      GitHubUpdatePRBuilderInterface,
-      [R]
-    >,
+    optionsOrOptionsGenerate: GitHubTreeOp<R>["options"],
+    builderOrBuilderGenerate?: GitHubTreeOp<R>["builder"],
   ): GitHubCodemodBuilderInterface<
     Append<R, [GitHubAPIPullPatchResponse]>
   >;
@@ -147,7 +122,7 @@ export interface GitHubCodemodBuilderInterface<
  * GitHubAPITreesPostRequestGenerate is a function to generate a GitHubAPITreesPostRequest.
  */
 export type GitHubAPITreesPostRequestGenerate<T> = Generate<
-  GitHubAPITreesPostRequest,
+  GitHubAPITreesPostRequest | undefined,
   [T]
 >;
 
@@ -216,7 +191,11 @@ export type GitHubOpResult =
  */
 export type GitHubTreeOp<R> = {
   type: GitHubOpType.CREATE_TREE;
-  data: GitHubAPITreesPostRequestGenerate<R>;
+  options: GitHubAPITreesPostRequestGenerate<R>;
+  builder: Generate<
+    GitHubCreateTreeBuilderInterface,
+    [GitHubCreateTreeBuilderInterface, R]
+  >;
 };
 
 /**
