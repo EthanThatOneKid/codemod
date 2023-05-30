@@ -19,6 +19,13 @@ export interface GitHubAPIClientInterface {
   getRawBlob(r: GitHubAPIRawFileGetRequest): Promise<Blob>;
 
   /**
+   * getContents gets a file from the repository.
+   */
+  getContents(
+    r: GitHubAPIContentsGetRequest,
+  ): Promise<GitHubAPIContentsGetResponse>;
+
+  /**
    * Gets the default branch name if not passed in by the user.
    *
    * See:
@@ -116,8 +123,8 @@ export interface GitHubAPIClientInterface {
 }
 
 export interface GitHubAPIRawFileGetRequest {
-  branch: string;
   path: string;
+  ref?: string;
 }
 
 export type GitHubAPIRepositoryGetResponse =
@@ -125,9 +132,19 @@ export type GitHubAPIRepositoryGetResponse =
     "application/json"
   ];
 
+export interface GitHubAPIContentsGetRequest {
+  path: string;
+  ref?: string;
+}
+
+export type GitHubAPIContentsGetResponse =
+  paths["/repos/{owner}/{repo}/contents/{path}"]["get"]["responses"]["200"][
+    "content"
+  ]["application/json"];
+
 export interface GitHubAPIBranchGetRequest {
-  /** branch is the branch passed as the path parameter. */
-  branch: string;
+  /** ref is the branch name passed as the path parameter. */
+  ref: string;
 }
 
 export type GitHubAPIBranchGetResponse =
@@ -147,7 +164,7 @@ export type GitHubAPIBlobsPostResponse =
 
 export interface GitHubAPITreeGetRequest {
   /** tree_sha is the tree SHA passed as the path parameter. */
-  treeSHA: string;
+  tree_sha: string;
 
   /** recursive is the recursive flag passed as the query parameter. */
   recursive?: boolean;

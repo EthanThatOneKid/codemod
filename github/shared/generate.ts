@@ -21,7 +21,7 @@ export type ArgsOf<T> = T extends Generate<unknown, infer U> ? U : never;
  * generateObject generates an object from a value or a function.
  */
 export async function generateObject<
-  T extends { [K in keyof T]: Generate<T[keyof T], ArgsOf<T[keyof T]>> },
+  T extends { [K in keyof T]: Generate<unknown, unknown[]> },
 >(
   object: T,
   argsMap: { [K in keyof T]: ArgsOf<T[K]> },
@@ -30,16 +30,13 @@ export async function generateObject<
     keyof T,
     Generate<T[keyof T], ArgsOf<T[keyof T]>>,
   ][];
-  const promises = entries.map(async ([key, value]) => {
-    const args = argsMap[key];
-    return [
-      key,
-      await generate(
-        value,
-        ...args,
-      ),
-    ] as const;
-  });
+  const promises = entries.map(([key, value]) =>
+    (async () => {
+      const args = argsMap[key];
+      const generated = await generate(value, ...args);
+      return [key, generated] as const;
+    })()
+  );
   const generatedEntries = await Promise.all(promises);
   return Object.fromEntries(generatedEntries) as {
     [K in keyof T]: Generated<T[K]>;

@@ -7,6 +7,8 @@ import type {
   GitHubAPIClientInterface,
   GitHubAPICommitsPostRequest,
   GitHubAPICommitsPostResponse,
+  GitHubAPIContentsGetRequest,
+  GitHubAPIContentsGetResponse,
   GitHubAPIPullPatchRequest,
   GitHubAPIPullPatchResponse,
   GitHubAPIPullsGetRequest,
@@ -26,6 +28,7 @@ import {
   makeBlobsURL,
   makeBranchURL,
   makeCommitsURL,
+  makeContentsURL,
   makePullsURL,
   makePullURL,
   makeRawFileURL,
@@ -58,10 +61,11 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
   }
 
   public async getRawText(r: GitHubAPIRawFileGetRequest): Promise<string> {
+    const ref = r.ref ?? (await this.getRepository()).default_branch;
     const url = makeRawFileURL(
       this.options.owner,
       this.options.repo,
-      r.branch,
+      ref,
       r.path,
     );
     const response = await this.fetch(url, {
@@ -83,7 +87,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
 
       default: {
         throw new Error(
-          `Failed to get raw file ${this.options.owner}/${this.options.repo}/${r.branch}/${r.path}. ${await response
+          `Failed to get raw file ${this.options.owner}/${this.options.repo}/${ref}/${r.path}. ${await response
             .text()}`,
         );
       }
@@ -91,10 +95,11 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
   }
 
   public async getRawBlob(r: GitHubAPIRawFileGetRequest): Promise<Blob> {
+    const ref = r.ref ?? (await this.getRepository()).default_branch;
     const url = makeRawFileURL(
       this.options.owner,
       this.options.repo,
-      r.branch,
+      ref,
       r.path,
     );
     const response = await this.fetch(url, {
@@ -116,7 +121,47 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
 
       default: {
         throw new Error(
-          `Failed to get raw file ${this.options.owner}/${this.options.repo}/${r.branch}/${r.path}. ${await response
+          `Failed to get raw file ${this.options.owner}/${this.options.repo}/${ref}/${r.path}. ${await response
+            .text()}`,
+        );
+      }
+    }
+  }
+
+  public async getContents(
+    r: GitHubAPIContentsGetRequest,
+  ): Promise<GitHubAPIContentsGetResponse> {
+    const url = makeContentsURL(
+      this.options.owner,
+      this.options.repo,
+      r.ref,
+      r.path,
+    );
+    const response = await this.fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `token ${this.options.token}`,
+      },
+    });
+
+    switch (response.status) {
+      case 200: {
+        return await response.json();
+      }
+
+      case 302:
+      case 404: {
+        throw new errors.NotFound(await response.text());
+      }
+
+      case 403: {
+        throw new errors.Forbidden(await response.text());
+      }
+
+      default: {
+        throw new Error(
+          `Failed to get contents ${this.options.owner}/${this.options.repo}/${r.path}. ${await response
             .text()}`,
         );
       }
@@ -162,7 +207,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     const url = makeBranchURL(
       this.options.owner,
       this.options.repo,
-      r.branch,
+      r.ref,
     );
     const response = await this.fetch(url, {
       method: "GET",
@@ -184,7 +229,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
 
       default: {
         throw new Error(
-          `Failed to get branch ${this.options.owner}/${this.options.repo}/${r.branch}. ${await response
+          `Failed to get branch ${this.options.owner}/${this.options.repo}/${r.ref}. ${await response
             .text()}`,
         );
       }

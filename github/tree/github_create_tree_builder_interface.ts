@@ -20,18 +20,11 @@ export interface GitHubCreateTreeBuilderInterface {
   clear(): this;
 
   /**
-   * base sets the base tree SHA.
+   * base sets the base ref or SHA.
    *
-   * Subsequent calls to base will override the previous base tree SHA.
+   * Subsequent calls to base will override the previous value.
    */
   base(shaOrSHAGenerate: Generate<string | undefined, []>): this;
-
-  /**
-   * ref sets the base tree SHA from a ref.
-   *
-   * This is a convenience method that overrides the base tree SHA.
-   */
-  ref(refOrRefGenerate: Generate<string, []>): this;
 
   /**
    * file sets a file blob.
@@ -43,8 +36,6 @@ export interface GitHubCreateTreeBuilderInterface {
 
   /**
    * text sets a text blob.
-   *
-   * @todo https://youtu.be/nwHqXtk6LHA
    */
   text(
     path: string,
@@ -57,8 +48,8 @@ export interface GitHubCreateTreeBuilderInterface {
   jsonPatch<T>(
     path: string,
     patchesOrPatchesGenerate: Generate<JSONPatchOperation[], [string]>,
-    deserializeJSON: Generate<(content: string) => T, [string]>,
-    serializeJSON: Generate<(value: T) => string, [string]>,
+    deserializeJSON: (content: string) => T,
+    serializeJSON: (value: T) => string,
   ): this;
 
   /**
@@ -96,10 +87,7 @@ export interface GitHubCreateTreeBuilderInterface {
   /**
    * rename renames a file.
    */
-  rename(
-    path: string,
-    pathOrPathGenerate: Generate<string, [string]>,
-  ): this;
+  rename(oldPath: string, newPath: string): this;
 
   /**
    * delete deletes a file.
@@ -157,9 +145,11 @@ export interface GitHubTreeTextOp {
  */
 export interface GitHubTreeJSONPatchOp {
   type: GitHubTreeOpType.JSON_PATCH;
-  data: Generate<JSONPatchOperation[], [string]>;
-  deserializeJSON: Generate<(content: string) => unknown, [string]>;
-  serializeJSON: Generate<(value: unknown) => string, [string]>;
+  data: {
+    patches: Generate<JSONPatchOperation[], [string]>;
+    deserializeJSON: (content: string) => unknown;
+    serializeJSON: (value: unknown) => string;
+  };
 }
 
 /**
@@ -167,7 +157,7 @@ export interface GitHubTreeJSONPatchOp {
  */
 export interface GitHubTreeExecutableOp {
   type: GitHubTreeOpType.EXECUTABLE;
-  data: Generate<Blob, [Blob]>;
+  data: Generate<Blob, []>;
 }
 
 /**
@@ -191,7 +181,7 @@ export interface GitHubTreeSubmoduleOp {
  */
 export interface GitHubTreeSymlinkOp {
   type: GitHubTreeOpType.SYMLINK;
-  data: Generate<Blob, [Blob]>;
+  data: Generate<Blob, []>;
 }
 
 /**
@@ -199,7 +189,7 @@ export interface GitHubTreeSymlinkOp {
  */
 export interface GitHubTreeRenameOp {
   type: GitHubTreeOpType.RENAME;
-  data: Generate<string, [string]>;
+  data: string;
 }
 
 /**
