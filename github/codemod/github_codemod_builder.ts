@@ -42,200 +42,57 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
     for (const op of this.ops) {
       switch (op.type) {
         case GitHubOpType.CREATE_TREE: {
-          const options = await generate(op.data, result as R);
-          const request = options !== undefined ? options : await generate();
-          if (options !== undefined) {
-          }
-
-          // const options = op.data instanceof Function
-          //   ? await op.data(new GitHubCreateTreeBuilder(), result as R)
-          //   : op.data;
-          const request = generate();
+          const options = await generate(op.data, [...result] as R) ??
+            { tree: [] };
           const response = await api.postTrees(options);
           result.push(response as R[number]);
           break;
         }
 
         case GitHubOpType.CREATE_COMMIT: {
-          const options = op.data instanceof Function
-            ? await op.data(result as R)
-            : op.data;
+          const options = await generate(op.data, [...result] as R);
           const response = await api.postCommits(options);
           result.push(response as R[number]);
           break;
         }
 
         case GitHubOpType.CREATE_BRANCH: {
-          const options = op.data instanceof Function
-            ? await op.data(result as R)
-            : op.data;
+          const options = await generate(op.data, [...result] as R);
           const response = await api.postRefs(options);
           result.push(response as R[number]);
           break;
         }
 
-        case GitHubOpType.UPDATE_BRANCH: {
-          const options = op.data instanceof Function
-            ? await op.data(result as R)
-            : op.data;
+        case GitHubOpType.UPDATE_BRANCH:
+        case GitHubOpType.CREATE_OR_UPDATE_BRANCH: {
+          const options = await generate(op.data, [...result] as R);
           const response = await api.patchRef(options);
           result.push(response as R[number]);
           break;
         }
 
-        // TODO: Implement.
-        case GitHubOpType.CREATE_OR_UPDATE_BRANCH: {
-          const options = op.data instanceof Function
-            ? await op.data(result as R)
-            : op.data;
-          const response = await api.postRefs(options);
-          result.push(response as R[number]);
-          break;
-        }
-
         case GitHubOpType.CREATE_PR: {
-          const options = op.data instanceof Function
-            ? await op.data(result as R)
-            : op.data;
+          const options = await generate(op.data, [...result] as R);
           const response = await api.postPulls(options);
           result.push(response as R[number]);
           break;
         }
 
         // TODO: Implement.
-        case GitHubOpType.UPDATE_PR: {
-          const options = op.data instanceof Function
-            ? await op.data(result as R)
-            : op.data;
+        case GitHubOpType.UPDATE_PR:
+        case GitHubOpType.CREATE_OR_UPDATE_PR: {
+          const options = await generate(op.data, [...result] as R);
           const response = await api.patchPull(options);
           result.push(response as R[number]);
           break;
         }
 
-        // TODO: Implement.
-        case GitHubOpType.CREATE_OR_UPDATE_PR: {
-          const options = op.data instanceof Function
-            ? await op.data(result as R)
-            : op.data;
-          const response = await api.postPulls(options);
-          result.push(response as R[number]);
-          break;
+        default: {
+          throw new Error(`Unknown op type: ${JSON.stringify(op)}`);
         }
       }
     }
 
     return result as R;
-  }
-
-  public createTree(
-    optionsOrOptionsGenerate: GitHubAPITreesPostRequestGenerate<R>,
-  ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPITreesPostResponse]>
-  > {
-    this.ops.push({
-      type: GitHubOpType.CREATE_TREE,
-      data: optionsOrOptionsGenerate,
-    });
-    return this as unknown as GitHubCodemodBuilderInterface<
-      Append<R, [GitHubAPITreesPostResponse]>
-    >;
-  }
-
-  public createCommit(
-    optionsOrOptionsGenerate: GitHubAPICommitsPostRequestGenerate<R>,
-  ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPICommitsPostResponse]>
-  > {
-    this.ops.push({
-      type: GitHubOpType.CREATE_COMMIT,
-      data: optionsOrOptionsGenerate,
-    });
-    return this as unknown as GitHubCodemodBuilderInterface<
-      Append<R, [GitHubAPICommitsPostResponse]>
-    >;
-  }
-
-  public createBranch(
-    optionsOrOptionsGenerate: GitHubAPIRefsPostRequestGenerate<R>,
-  ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPIRefsPostResponse]>
-  > {
-    this.ops.push({
-      type: GitHubOpType.CREATE_BRANCH,
-      data: optionsOrOptionsGenerate,
-    });
-    return this as unknown as GitHubCodemodBuilderInterface<
-      Append<R, [GitHubAPIRefsPostResponse]>
-    >;
-  }
-
-  public updateBranch(
-    optionsOrOptionsGenerate: GitHubAPIRefPatchRequestGenerate<R>,
-  ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPIRefPatchResponse]>
-  > {
-    this.ops.push({
-      type: GitHubOpType.UPDATE_BRANCH,
-      data: optionsOrOptionsGenerate,
-    });
-    return this as unknown as GitHubCodemodBuilderInterface<
-      Append<R, [GitHubAPIRefPatchResponse]>
-    >;
-  }
-
-  public createOrUpdateBranch(
-    optionsOrOptionsGenerate: GitHubAPIRefPatchRequestGenerate<R>,
-  ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPIRefPatchResponse]>
-  > {
-    this.ops.push({
-      type: GitHubOpType.CREATE_OR_UPDATE_BRANCH,
-      data: optionsOrOptionsGenerate,
-    });
-    return this as unknown as GitHubCodemodBuilderInterface<
-      Append<R, [GitHubAPIRefPatchResponse]>
-    >;
-  }
-
-  public createPR(
-    optionsOrOptionsGenerate: GitHubAPIPullsPostRequestGenerate<R>,
-  ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPIPullsPostResponse]>
-  > {
-    this.ops.push({
-      type: GitHubOpType.CREATE_PR,
-      data: optionsOrOptionsGenerate,
-    });
-    return this as unknown as GitHubCodemodBuilderInterface<
-      Append<R, [GitHubAPIPullsPostResponse]>
-    >;
-  }
-
-  public updatePR(
-    optionsOrOptionsGenerate: GitHubAPIPullPatchRequestGenerate<R>,
-  ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPIPullPatchResponse]>
-  > {
-    this.ops.push({
-      type: GitHubOpType.UPDATE_PR,
-      data: optionsOrOptionsGenerate,
-    });
-    return this as unknown as GitHubCodemodBuilderInterface<
-      Append<R, [GitHubAPIPullPatchResponse]>
-    >;
-  }
-
-  public createOrUpdatePR(
-    optionsOrOptionsGenerate: GitHubAPIPullPatchRequest,
-  ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPIPullPatchResponse]>
-  > {
-    this.ops.push({
-      type: GitHubOpType.CREATE_OR_UPDATE_PR,
-      data: optionsOrOptionsGenerate,
-    });
-    return this as unknown as GitHubCodemodBuilderInterface<
-      Append<R, [GitHubAPIPullPatchResponse]>
-    >;
   }
 }
