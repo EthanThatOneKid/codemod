@@ -1,5 +1,5 @@
-import type { GitHubAPIRefsPostRequest } from "./api/mod.ts";
-import type { Generate } from "./generate.ts";
+import type { GitHubAPIRefsPostRequest } from "../api/mod.ts";
+import type { Generate } from "../shared/generate.ts";
 
 /**
  * GitHubCreateBranchBuilderInterface is an interface for a

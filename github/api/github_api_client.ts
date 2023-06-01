@@ -55,7 +55,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
 
   constructor(
     private readonly options: GitHubAPIClientOptions,
-    fetcher: typeof fetch,
+    fetcher: typeof fetch = fetch.bind(globalThis),
   ) {
     this.fetch = fetcher;
   }

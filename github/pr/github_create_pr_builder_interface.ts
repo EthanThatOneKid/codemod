@@ -1,12 +1,12 @@
-import type { GitHubAPIPullsPostRequest } from "./api/mod.ts";
+import type { GitHubAPIPullsPostRequest } from "../api/mod.ts";
 
 /**
- * GitHubCodemodCreatePRBuilderInterface is an interface for a
- * GitHubCodemodCreatePRBuilder.
+ * GitHubCreatePRBuilderInterface is an interface for a
+ * GitHubCreatePRBuilderInterface.
  *
  * @see https://docs.github.com/en/rest/reference/git#create-a-pull-request
  */
-export interface GitHubCodemodCreatePRBuilderInterface {
+export interface GitHubCreatePRBuilderInterface {
   /**
    * run executes the builder.
    */

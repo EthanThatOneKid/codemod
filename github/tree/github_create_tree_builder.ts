@@ -31,6 +31,19 @@ export class GitHubCreateTreeBuilder
   #base: Generate<string | undefined, []>;
   #tree: Map<string, GitHubTreeOp> = new Map();
 
+  constructor(
+    private readonly api: GitHubAPIClientInterface,
+  ) {}
+
+  public async run(): Promise<GitHubAPITreesPostRequest> {
+    const ref = await generate(this.#base) ??
+      (await this.api.getRepository()).default_branch;
+    const baseTreeSHA =
+      (await this.api.getBranch({ ref })).commit.commit.tree.sha;
+    const tree = await doTreeOps(this.api, ref, this.#tree);
+    return makeGitHubAPITreesPostRequest(baseTreeSHA, tree);
+  }
+
   public clear(): this {
     this.#tree = new Map();
     return this;
@@ -132,17 +145,6 @@ export class GitHubCreateTreeBuilder
   public delete(path: string): this {
     this.#tree.set(path, { type: GitHubTreeOpType.DELETE });
     return this;
-  }
-
-  public async run(
-    options: GitHubAPIClientOptions,
-  ): Promise<GitHubAPITreesPostRequest> {
-    const api = new GitHubAPIClient(options, fetch.bind(globalThis));
-    const ref = await generate(this.#base) ??
-      (await api.getRepository()).default_branch;
-    const baseTreeSHA = (await api.getBranch({ ref })).commit.commit.tree.sha;
-    const tree = await doTreeOps(api, ref, this.#tree);
-    return makeGitHubAPITreesPostRequest(baseTreeSHA, tree);
   }
 }
 

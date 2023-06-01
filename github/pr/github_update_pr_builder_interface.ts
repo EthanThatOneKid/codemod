@@ -1,11 +1,12 @@
-import type { GitHubAPIPullPatchResponse } from "./api/mod.ts";
+import type { GitHubAPIPullPatchResponse } from "../api/mod.ts";
 
 /**
- * GitHubCodemodUpdatePRBuilderInterface is an interface for a GitHubCodemodUpdatePRBuilder.
+ * GitHubUpdatePRBuilderInterface is an interface for a
+ * GitHubCodemodUpdatePRBuilder.
  *
  * @see https://docs.github.com/en/rest/reference/git#update-a-pull-request
  */
-export interface GitHubCodemodUpdatePRBuilderInterface {
+export interface GitHubUpdatePRBuilderInterface {
   /**
    * run executes the builder.
    */
