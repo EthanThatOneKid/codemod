@@ -27,8 +27,8 @@ export class GitHubCodemodCreateBranchBuilder
     return this;
   }
 
-  public async run(): Promise<GitHubAPIRefsPostRequest> {
-    return await generateObject({
+  public run(): Promise<GitHubAPIRefsPostRequest> {
+    return generateObject({
       ref: this.#ref,
       sha: this.#sha,
     }, {

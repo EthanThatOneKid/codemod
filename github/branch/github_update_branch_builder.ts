@@ -34,8 +34,8 @@ export class GitHubCodemodUpdateBranchBuilder
     return this;
   }
 
-  public async run(): Promise<GitHubAPIRefPatchRequest> {
-    return await generateObject({
+  public run(): Promise<GitHubAPIRefPatchRequest> {
+    return generateObject({
       ref: this.#ref,
       sha: this.#sha,
       force: this.#force,
