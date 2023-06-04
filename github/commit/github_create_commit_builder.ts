@@ -1,7 +1,7 @@
-import type { GitHubAPICommitsPostRequest } from "./api/mod.ts";
+import type { GitHubAPICommitsPostRequest } from "../api/mod.ts";
 import type { GitHubCreateCommitBuilderInterface } from "./github_create_commit_builder_interface.ts";
-import type { Generate } from "./generate.ts";
-import { generateObject } from "./generate.ts";
+import type { Generate } from "../shared/generate.ts";
+import { generateObject } from "../shared/generate.ts";
 
 /**
  * GitHubCreateCommitBuilder is a builder for a GitHub create commit request.
