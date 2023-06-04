@@ -1,6 +1,6 @@
-import type { GitHubAPIRefsPostRequest } from "./api/github_api_client_interface.ts";
-import type { Generate } from "./generate.ts";
-import { generateObject } from "./generate.ts";
+import type { GitHubAPIRefsPostRequest } from "../api/mod.ts";
+import type { Generate } from "../shared/generate.ts";
+import { generateObject } from "../shared/generate.ts";
 import type { GitHubCreateBranchBuilderInterface } from "./github_create_branch_builder_interface.ts";
 
 /**

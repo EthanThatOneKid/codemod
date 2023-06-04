@@ -1,5 +1,5 @@
-import type { GitHubAPICommitsPostRequest } from "./api/mod.ts";
-import type { Generate } from "./generate.ts";
+import type { GitHubAPICommitsPostRequest } from "../api/mod.ts";
+import type { Generate } from "../shared/generate.ts";
 
 /**
  * GitHubCreateCommitBuilderInterface is an interface for a
