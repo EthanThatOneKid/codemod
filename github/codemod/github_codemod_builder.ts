@@ -1,31 +1,33 @@
 import type {
   GitHubAPIClientOptions,
   GitHubAPICommitsPostRequest,
-  GitHubAPICommitsPostResponse,
   GitHubAPIPullPatchRequest,
-  GitHubAPIPullPatchResponse,
   GitHubAPIPullsPostRequest,
-  GitHubAPIPullsPostResponse,
   GitHubAPIRefPatchRequest,
-  GitHubAPIRefPatchResponse,
   GitHubAPIRefsPostRequest,
-  GitHubAPIRefsPostResponse,
-  GitHubAPITreesPostResponse,
 } from "../api/mod.ts";
 import { GitHubAPIClient } from "../api/mod.ts";
 import {
   GitHubBranchOp,
   GitHubCodemodBuilderInterface,
   GitHubCommitOp,
+  GitHubCreateBranchOpResult,
+  GitHubCreateCommitOpResult,
+  GitHubCreateOrUpdateBranchOpResult,
+  GitHubCreateOrUpdatePROpResult,
+  GitHubCreatePROpResult,
+  GitHubCreateTreeOpResult,
   GitHubOp,
   GitHubOpResult,
   GitHubOpResultOf,
   GitHubOpType,
   GitHubPROp,
   GitHubTreeOp,
+  GitHubUpdateBranchOpResult,
+  GitHubUpdatePROpResult,
 } from "./github_codemod_builder_interface.ts";
 import type { Append } from "../shared/append.ts";
-import type { Generate } from "../shared/generate.ts";
+import { Generate, generateObject } from "../shared/generate.ts";
 import { generate } from "../shared/generate.ts";
 import type { GitHubCreateTreeBuilderInterface } from "../tree/github_create_tree_builder_interface.ts";
 import { GitHubCreateTreeBuilder } from "../tree/github_create_tree_builder.ts";
@@ -130,7 +132,7 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
       [GitHubCreateTreeBuilderInterface, R]
     >,
   ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPITreesPostResponse]>
+    Append<R, [GitHubCreateTreeOpResult]>
   > {
     return this.op<GitHubTreeOp<R>>({
       type: GitHubOpType.CREATE_TREE,
@@ -152,7 +154,7 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
       [GitHubCreateCommitBuilderInterface, R]
     >,
   ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPICommitsPostResponse]>
+    Append<R, [GitHubCreateCommitOpResult]>
   > {
     return this.op<GitHubCommitOp<R>>({
       type: GitHubOpType.CREATE_COMMIT,
@@ -163,7 +165,7 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
         );
         const builder = await generate(
           builderOrBuilderGenerate,
-          new GitHubCreateCommitBuilder(options),
+          new GitHubCreateCommitBuilder(this.#api, options),
           [...result] as R,
         );
         if (!builder) {
@@ -182,7 +184,7 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
       [GitHubCreateBranchBuilderInterface, R]
     >,
   ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPIRefsPostResponse]>
+    Append<R, [GitHubCreateBranchOpResult]>
   > {
     return this.op<GitHubBranchOp<R>>({
       type: GitHubOpType.CREATE_BRANCH,
@@ -212,7 +214,7 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
       [GitHubUpdateBranchBuilderInterface, R]
     >,
   ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPIRefPatchResponse]>
+    Append<R, [GitHubUpdateBranchOpResult]>
   > {
     return this.op<GitHubBranchOp<R>>({
       type: GitHubOpType.UPDATE_BRANCH,
@@ -253,9 +255,45 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
       [GitHubUpdateBranchBuilderInterface, R]
     >,
   ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPIRefPatchResponse]>
+    Append<R, [GitHubCreateOrUpdateBranchOpResult]>
   > {
-    throw new Error("Not implemented");
+    return this.op<GitHubBranchOp<R>>({
+      type: GitHubOpType.CREATE_OR_UPDATE_BRANCH,
+      data: {
+        create: async (result: R) => {
+          const options = await generate(
+            createOptionsOrCreateOptionsGenerate,
+            [...result] as R,
+          );
+          const builder = await generate(
+            createBuilderOrCreateBuilderGenerate,
+            new GitHubCreateBranchBuilder(options),
+            [...result] as R,
+          );
+          if (!builder) {
+            return options;
+          }
+
+          return await builder.run();
+        },
+        update: async (result: R) => {
+          const options = await generate(
+            updateOptionsOrUpdateOptionsGenerate,
+            [...result] as R,
+          );
+          const builder = await generate(
+            updateBuilderOrUpdateBuilderGenerate,
+            new GitHubUpdateBranchBuilder(options),
+            [...result] as R,
+          );
+          if (!builder) {
+            return options;
+          }
+
+          return await builder.run();
+        },
+      },
+    });
   }
 
   public createPR(
@@ -265,7 +303,7 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
       [GitHubCreatePRBuilderInterface, R]
     >,
   ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPIPullsPostResponse]>
+    Append<R, [GitHubCreatePROpResult]>
   > {
     return this.op<GitHubPROp<R>>({
       type: GitHubOpType.CREATE_PR,
@@ -295,7 +333,7 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
       [GitHubUpdatePRBuilderInterface, R]
     >,
   ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPIPullPatchResponse]>
+    Append<R, [GitHubUpdatePROpResult]>
   > {
     return this.op<GitHubPROp<R>>({
       type: GitHubOpType.UPDATE_PR,
@@ -336,7 +374,7 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
       [GitHubUpdatePRBuilderInterface, R]
     >,
   ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPIPullPatchResponse]>
+    Append<R, [GitHubCreateOrUpdatePROpResult]>
   > {
     throw new Error("Not implemented");
   }

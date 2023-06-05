@@ -29,6 +29,11 @@ export interface GitHubCreateCommitBuilderInterface {
   parents(shasOrSHAsGenerate: Generate<string[], []>): this;
 
   /**
+   * base sets the base branch.
+   */
+  base(baseOrBaseGenerate: Generate<string, []>): this;
+
+  /**
    * author sets the author.
    */
   author(

@@ -12,6 +12,9 @@ if (import.meta.main) {
   await main();
 }
 
+// TODO: Reference
+// https://github.com/acmcsufoss/codemod/blob/e4b64c0cd1b50f4181efa8b0d923931a50aece91/github/commit/create.ts
+
 async function main() {
   const codemod = await createCodemod({
     owner: "EthanThatOneKid",

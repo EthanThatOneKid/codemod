@@ -1,5 +1,4 @@
 import type {
-  GitHubAPIClientOptions,
   GitHubAPICommitsPostRequest,
   GitHubAPICommitsPostResponse,
   GitHubAPIPullPatchRequest,
@@ -56,7 +55,7 @@ export interface GitHubCodemodBuilderInterface<
       [GitHubCreateTreeBuilderInterface, R]
     >,
   ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPITreesPostResponse]>
+    Append<R, [GitHubCreateTreeOpResult]>
   >;
 
   /**
@@ -69,7 +68,7 @@ export interface GitHubCodemodBuilderInterface<
       [GitHubCreateCommitBuilderInterface, R]
     >,
   ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPICommitsPostResponse]>
+    Append<R, [GitHubCreateCommitOpResult]>
   >;
 
   /**
@@ -82,7 +81,7 @@ export interface GitHubCodemodBuilderInterface<
       [GitHubCreateBranchBuilderInterface, R]
     >,
   ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPIRefsPostResponse]>
+    Append<R, [GitHubCreateBranchOpResult]>
   >;
 
   /**
@@ -95,7 +94,7 @@ export interface GitHubCodemodBuilderInterface<
       [GitHubUpdateBranchBuilderInterface, R]
     >,
   ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPIRefPatchResponse]>
+    Append<R, [GitHubUpdateBranchOpResult]>
   >;
 
   /**
@@ -119,7 +118,7 @@ export interface GitHubCodemodBuilderInterface<
       [GitHubUpdateBranchBuilderInterface, R]
     >,
   ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPIRefPatchResponse]>
+    Append<R, [GitHubCreateOrUpdateBranchOpResult]>
   >;
 
   /**
@@ -132,7 +131,7 @@ export interface GitHubCodemodBuilderInterface<
       [GitHubCreatePRBuilderInterface, R]
     >,
   ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPIPullsPostResponse]>
+    Append<R, [GitHubCreatePROpResult]>
   >;
 
   /**
@@ -145,7 +144,7 @@ export interface GitHubCodemodBuilderInterface<
       [GitHubUpdatePRBuilderInterface, R]
     >,
   ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPIPullPatchResponse]>
+    Append<R, [GitHubUpdatePROpResult]>
   >;
 
   /**
@@ -169,7 +168,7 @@ export interface GitHubCodemodBuilderInterface<
       [GitHubUpdatePRBuilderInterface, R]
     >,
   ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubAPIPullPatchResponse]>
+    Append<R, [GitHubCreateOrUpdatePROpResult]>
   >;
 }
 
@@ -206,6 +205,17 @@ export type GitHubAPIRefPatchRequestGenerate<T> = Generate<
 >;
 
 /**
+ * GitHubAPIRefsPostRequestAndGitHubAPIRefPatchRequestGenerate is a function to generate a
+ * GitHubAPIRefsPostRequest and GitHubAPIRefPatchRequest.
+ */
+export type GitHubAPIRefsPostRequestAndGitHubAPIRefPatchRequestGenerate<
+  T,
+> = Generate<{
+  create: GitHubAPIRefsPostRequest;
+  update: GitHubAPIRefPatchRequest;
+}, [T]>;
+
+/**
  * GitHubAPIPullsPostRequestGenerate is a function to generate a GitHubAPIPullsPostRequest.
  */
 export type GitHubAPIPullsPostRequestGenerate<T> = Generate<
@@ -222,6 +232,17 @@ export type GitHubAPIPullPatchRequestGenerate<T> = Generate<
 >;
 
 /**
+ * GitHubAPIPullsPostRequestAndGitHubAPIPullPatchRequestGenerate is a function to generate a
+ * GitHubAPIPullsPostRequest and GitHubAPIPullPatchRequest.
+ */
+export type GitHubAPIPullsPostRequestAndGitHubAPIPullPatchRequestGenerate<
+  T,
+> = Generate<{
+  create: GitHubAPIPullsPostRequest;
+  update: GitHubAPIPullPatchRequest;
+}, [T]>;
+
+/**
  * GitHubOp is a GitHub operation.
  */
 export type GitHubOp<R> =
@@ -234,23 +255,73 @@ export type GitHubOp<R> =
  * GitHubOpResult is a GitHub op result.
  */
 export type GitHubOpResult =
-  | GitHubAPITreesPostResponse
-  | GitHubAPICommitsPostResponse
-  | GitHubAPIRefsPostResponse
-  | GitHubAPIRefPatchResponse
-  | GitHubAPIPullsPostResponse
-  | GitHubAPIPullPatchResponse;
+  | GitHubCreateTreeOpResult
+  | GitHubCreateCommitOpResult
+  | GitHubCreateBranchOpResult
+  | GitHubUpdateBranchOpResult
+  | GitHubCreateOrUpdateBranchOpResult
+  | GitHubCreatePROpResult
+  | GitHubUpdatePROpResult
+  | GitHubCreateOrUpdatePROpResult;
+
+/**
+ * GitHubCreateTreeOpResult is a GitHub create tree op result.
+ */
+export type GitHubCreateTreeOpResult = GitHubAPITreesPostResponse;
+
+/**
+ * GitHubCreateCommitOpResult is a GitHub create commit tree op result.
+ */
+export type GitHubCreateCommitOpResult = GitHubAPICommitsPostResponse;
+
+/**
+ * GitHubCreateBranchOpResult is a GitHub create branch op result.
+ */
+export type GitHubCreateBranchOpResult = GitHubAPIRefsPostResponse;
+
+/**
+ * GitHubUpdateBranchOpResult is a GitHub update branch op result.
+ */
+export type GitHubUpdateBranchOpResult = GitHubAPIRefPatchResponse;
+
+/**
+ * GitHubCreateOrUpdateBranchOpResult is a GitHub create or update branch op result.
+ */
+export type GitHubCreateOrUpdateBranchOpResult =
+  | { type: GitHubOpType.CREATE_BRANCH; data: GitHubCreateBranchOpResult }
+  | { type: GitHubOpType.UPDATE_BRANCH; data: GitHubUpdateBranchOpResult };
+
+/**
+ * GitHubCreatePROpResult is a GitHub create PR op result.
+ */
+export type GitHubCreatePROpResult = GitHubAPIPullsPostResponse;
+
+/**
+ * GitHubUpdatePROpResult is a GitHub update PR op result.
+ */
+export type GitHubUpdatePROpResult = GitHubAPIPullPatchResponse;
+
+/**
+ * GitHubCreateOrUpdatePROpResult is a GitHub create or update PR op result.
+ */
+export type GitHubCreateOrUpdatePROpResult =
+  | { type: GitHubOpType.CREATE_PR; data: GitHubCreatePROpResult }
+  | { type: GitHubOpType.UPDATE_PR; data: GitHubUpdatePROpResult };
 
 /**
  * GitHubOpResultOf is the result of a GitHubOp.
  */
 export type GitHubOpResultOf<R, T extends GitHubOp<R>> = T extends
-  GitHubTreeOp<unknown[]> ? GitHubAPITreesPostResponse
-  : T extends GitHubCommitOp<unknown[]> ? GitHubAPICommitsPostResponse
-  : T extends GitHubBranchOp<unknown[]>
-    ? GitHubAPIRefsPostResponse | GitHubAPIRefPatchResponse
-  : T extends GitHubPROp<unknown[]>
-    ? GitHubAPIPullsPostResponse | GitHubAPIPullPatchResponse
+  GitHubTreeOp<unknown[]> ? GitHubCreateTreeOpResult
+  : T extends GitHubCommitOp<unknown[]> ? GitHubCreateCommitOpResult
+  : T extends GitHubBranchOp<unknown[]> ?
+      | GitHubCreateBranchOpResult
+      | GitHubUpdateBranchOpResult
+      | GitHubCreateOrUpdateBranchOpResult
+  : T extends GitHubPROp<unknown[]> ?
+      | GitHubCreatePROpResult
+      | GitHubUpdatePROpResult
+      | GitHubCreateOrUpdatePROpResult
   : never;
 
 /**
@@ -282,6 +353,13 @@ export type GitHubBranchOp<R> =
   | {
     type: GitHubOpType.UPDATE_BRANCH;
     data: GitHubAPIRefPatchRequestGenerate<R>;
+  }
+  | {
+    type: GitHubOpType.CREATE_OR_UPDATE_BRANCH;
+    data: {
+      create: GitHubAPIRefsPostRequestGenerate<R>;
+      update: GitHubAPIRefPatchRequestGenerate<R>;
+    };
   };
 
 /**
@@ -297,6 +375,13 @@ export type GitHubPROp<R> =
   | {
     type: GitHubOpType.UPDATE_PR;
     data: GitHubAPIPullPatchRequestGenerate<R>;
+  }
+  | {
+    type: GitHubOpType.CREATE_OR_UPDATE_PR;
+    data: {
+      create: GitHubAPIPullsPostRequestGenerate<R>;
+      update: GitHubAPIPullPatchRequestGenerate<R>;
+    };
   };
 
 /**
@@ -307,6 +392,8 @@ export enum GitHubOpType {
   CREATE_COMMIT = "createCommit",
   CREATE_BRANCH = "createBranch",
   UPDATE_BRANCH = "updateBranch",
+  CREATE_OR_UPDATE_BRANCH = "createOrUpdateBranch",
   CREATE_PR = "createPR",
   UPDATE_PR = "updatePR",
+  CREATE_OR_UPDATE_PR = "createOrUpdatePR",
 }
