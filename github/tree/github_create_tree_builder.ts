@@ -2,10 +2,8 @@ import type { JSONPatchOperation } from "../../deps.ts";
 import { applyJSONPatch, errors } from "../../deps.ts";
 import type {
   GitHubAPIClientInterface,
-  GitHubAPIClientOptions,
   GitHubAPITreesPostRequest,
 } from "../api/mod.ts";
-import { GitHubAPIClient } from "../api/mod.ts";
 import type { Generate } from "../shared/generate.ts";
 import { generate } from "../shared/generate.ts";
 import type {
