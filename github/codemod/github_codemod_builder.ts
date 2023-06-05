@@ -1,32 +1,44 @@
 import type {
   GitHubAPIClientOptions,
+  GitHubAPICommitsPostRequest,
   GitHubAPICommitsPostResponse,
+  GitHubAPIPullPatchRequest,
   GitHubAPIPullPatchResponse,
+  GitHubAPIPullsPostRequest,
   GitHubAPIPullsPostResponse,
+  GitHubAPIRefPatchRequest,
   GitHubAPIRefPatchResponse,
+  GitHubAPIRefsPostRequest,
   GitHubAPIRefsPostResponse,
   GitHubAPITreesPostResponse,
 } from "../api/mod.ts";
 import { GitHubAPIClient } from "../api/mod.ts";
 import {
+  GitHubBranchOp,
   GitHubCodemodBuilderInterface,
+  GitHubCommitOp,
   GitHubOp,
   GitHubOpResult,
   GitHubOpResultOf,
   GitHubOpType,
+  GitHubPROp,
   GitHubTreeOp,
 } from "./github_codemod_builder_interface.ts";
-// import { GitHubCreateTreeBuilder } from "../tree/github_create_tree_builder.ts";
 import type { Append } from "../shared/append.ts";
 import type { Generate } from "../shared/generate.ts";
 import { generate } from "../shared/generate.ts";
 import type { GitHubCreateTreeBuilderInterface } from "../tree/github_create_tree_builder_interface.ts";
 import { GitHubCreateTreeBuilder } from "../tree/github_create_tree_builder.ts";
-import type { GitHubCreateBranchBuilderInterface } from "../branch/github_create_branch_builder_interface.ts";
-import type { GitHubUpdateBranchBuilderInterface } from "../branch/github_update_branch_builder_interface.ts";
-import type { GitHubCreateCommitBuilderInterface } from "../commit/github_create_commit_builder_interface.ts";
-import type { GitHubCreatePRBuilderInterface } from "../pr/github_create_pr_builder_interface.ts";
-import type { GitHubUpdatePRBuilderInterface } from "../pr/github_update_pr_builder_interface.ts";
+import type { GitHubCreateCommitBuilderInterface } from "../commit/mod.ts";
+import { GitHubCreateCommitBuilder } from "../commit/mod.ts";
+import type { GitHubCreateBranchBuilderInterface } from "../branch/mod.ts";
+import { GitHubCreateBranchBuilder } from "../branch/mod.ts";
+import type { GitHubUpdateBranchBuilderInterface } from "../branch/mod.ts";
+import { GitHubUpdateBranchBuilder } from "../branch/mod.ts";
+import type { GitHubCreatePRBuilderInterface } from "../pr/mod.ts";
+import { GitHubCreatePRBuilder } from "../pr/mod.ts";
+import type { GitHubUpdatePRBuilderInterface } from "../pr/mod.ts";
+import { GitHubUpdatePRBuilder } from "../pr/mod.ts";
 
 /**
  * GitHubCodemodBuilder is a builder for building a GitHub codemod.
@@ -103,7 +115,7 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
 
   public op<T extends GitHubOp<R>>(
     opOrOpGenerate: Generate<T, [R]>,
-  ): GitHubCodemodBuilder<Append<R, [GitHubOpResultOf<R, T>]>> {
+  ): GitHubCodemodBuilderInterface<Append<R, [GitHubOpResultOf<R, T>]>> {
     this.ops.push(
       (result: R) => generate(opOrOpGenerate, [...result] as R),
     );
@@ -134,29 +146,109 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
   }
 
   public createCommit(
-    builderOrBuilderGenerate: Generate<
+    optionsOrOptionsGenerate: Generate<GitHubAPICommitsPostRequest, [R]>,
+    builderOrBuilderGenerate?: Generate<
       GitHubCreateCommitBuilderInterface,
       [GitHubCreateCommitBuilderInterface, R]
     >,
   ): GitHubCodemodBuilderInterface<
     Append<R, [GitHubAPICommitsPostResponse]>
   > {
-    throw new Error("Not implemented");
+    return this.op<GitHubCommitOp<R>>({
+      type: GitHubOpType.CREATE_COMMIT,
+      data: async (result: R) => {
+        const options = await generate(
+          optionsOrOptionsGenerate,
+          [...result] as R,
+        );
+        const builder = await generate(
+          builderOrBuilderGenerate,
+          new GitHubCreateCommitBuilder(options),
+          [...result] as R,
+        );
+        if (!builder) {
+          return options;
+        }
+
+        return await builder.run();
+      },
+    });
   }
 
   public createBranch(
-    builderOrBuilderGenerate: Generate<
+    optionsOrOptionsGenerate: Generate<GitHubAPIRefsPostRequest, [R]>,
+    builderOrBuilderGenerate?: Generate<
       GitHubCreateBranchBuilderInterface,
       [GitHubCreateBranchBuilderInterface, R]
     >,
   ): GitHubCodemodBuilderInterface<
     Append<R, [GitHubAPIRefsPostResponse]>
   > {
-    throw new Error("Not implemented");
+    return this.op<GitHubBranchOp<R>>({
+      type: GitHubOpType.CREATE_BRANCH,
+      data: async (result: R) => {
+        const options = await generate(
+          optionsOrOptionsGenerate,
+          [...result] as R,
+        );
+        const builder = await generate(
+          builderOrBuilderGenerate,
+          new GitHubCreateBranchBuilder(options),
+          [...result] as R,
+        );
+        if (!builder) {
+          return options;
+        }
+
+        return await builder.run();
+      },
+    });
   }
 
   public updateBranch(
-    builderOrBuilderGenerate: Generate<
+    optionsOrOptionsGenerate: Generate<GitHubAPIRefPatchRequest, [R]>,
+    builderOrBuilderGenerate?: Generate<
+      GitHubUpdateBranchBuilderInterface,
+      [GitHubUpdateBranchBuilderInterface, R]
+    >,
+  ): GitHubCodemodBuilderInterface<
+    Append<R, [GitHubAPIRefPatchResponse]>
+  > {
+    return this.op<GitHubBranchOp<R>>({
+      type: GitHubOpType.UPDATE_BRANCH,
+      data: async (result: R) => {
+        const options = await generate(
+          optionsOrOptionsGenerate,
+          [...result] as R,
+        );
+        const builder = await generate(
+          builderOrBuilderGenerate,
+          new GitHubUpdateBranchBuilder(options),
+          [...result] as R,
+        );
+        if (!builder) {
+          return options;
+        }
+
+        return await builder.run();
+      },
+    });
+  }
+
+  public createOrUpdateBranch(
+    createOptionsOrCreateOptionsGenerate: Generate<
+      GitHubAPIRefsPostRequest,
+      [R]
+    >,
+    updateOptionsOrUpdateOptionsGenerate: Generate<
+      GitHubAPIRefPatchRequest,
+      [R]
+    >,
+    createBuilderOrCreateBuilderGenerate?: Generate<
+      GitHubCreateBranchBuilderInterface,
+      [GitHubCreateBranchBuilderInterface, R]
+    >,
+    updateBuilderOrUpdateBuilderGenerate?: Generate<
       GitHubUpdateBranchBuilderInterface,
       [GitHubUpdateBranchBuilderInterface, R]
     >,
@@ -167,18 +259,79 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
   }
 
   public createPR(
-    builderOrBuilderGenerate: Generate<
+    optionsOrOptionsGenerate: Generate<GitHubAPIPullsPostRequest, [R]>,
+    builderOrBuilderGenerate?: Generate<
       GitHubCreatePRBuilderInterface,
       [GitHubCreatePRBuilderInterface, R]
     >,
   ): GitHubCodemodBuilderInterface<
     Append<R, [GitHubAPIPullsPostResponse]>
   > {
-    throw new Error("Not implemented");
+    return this.op<GitHubPROp<R>>({
+      type: GitHubOpType.CREATE_PR,
+      data: async (result: R) => {
+        const options = await generate(
+          optionsOrOptionsGenerate,
+          [...result] as R,
+        );
+        const builder = await generate(
+          builderOrBuilderGenerate,
+          new GitHubCreatePRBuilder(options),
+          [...result] as R,
+        );
+        if (!builder) {
+          return options;
+        }
+
+        return await builder.run();
+      },
+    });
   }
 
   public updatePR(
-    builderOrBuilderGenerate: Generate<
+    optionsOrOptionsGenerate: Generate<GitHubAPIPullPatchRequest, [R]>,
+    builderOrBuilderGenerate?: Generate<
+      GitHubUpdatePRBuilderInterface,
+      [GitHubUpdatePRBuilderInterface, R]
+    >,
+  ): GitHubCodemodBuilderInterface<
+    Append<R, [GitHubAPIPullPatchResponse]>
+  > {
+    return this.op<GitHubPROp<R>>({
+      type: GitHubOpType.UPDATE_PR,
+      data: async (result: R) => {
+        const options = await generate(
+          optionsOrOptionsGenerate,
+          [...result] as R,
+        );
+        const builder = await generate(
+          builderOrBuilderGenerate,
+          new GitHubUpdatePRBuilder(options),
+          [...result] as R,
+        );
+        if (!builder) {
+          return options;
+        }
+
+        return await builder.run();
+      },
+    });
+  }
+
+  public createOrUpdatePR(
+    createOptionsOrCreateOptionsGenerate: Generate<
+      GitHubAPIPullsPostRequest,
+      [R]
+    >,
+    updateOptionsOrUpdateOptionsGenerate: Generate<
+      GitHubAPIPullPatchRequest,
+      [R]
+    >,
+    createBuilderOrCreateBuilderGenerate?: Generate<
+      GitHubCreatePRBuilderInterface,
+      [GitHubCreatePRBuilderInterface, R]
+    >,
+    updateBuilderOrUpdateBuilderGenerate?: Generate<
       GitHubUpdatePRBuilderInterface,
       [GitHubUpdatePRBuilderInterface, R]
     >,

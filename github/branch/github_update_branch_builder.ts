@@ -4,10 +4,10 @@ import { generateObject } from "../shared/generate.ts";
 import type { GitHubUpdateBranchBuilderInterface } from "./github_update_branch_builder_interface.ts";
 
 /**
- * GitHubCodemodUpdateBranchBuilder is a builder for a
+ * GitHubUpdateBranchBuilder is a builder for a
  * GitHub branch update operation.
  */
-export class GitHubCodemodUpdateBranchBuilder
+export class GitHubUpdateBranchBuilder
   implements GitHubUpdateBranchBuilderInterface {
   #ref: Generate<string, []>;
   #sha: Generate<string, []>;

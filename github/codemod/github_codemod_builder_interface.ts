@@ -19,10 +19,8 @@ import { GitHubCreateTreeBuilderInterface } from "../tree/github_create_tree_bui
 import { GitHubCreateCommitBuilderInterface } from "../commit/github_create_commit_builder_interface.ts";
 import { GitHubCreateBranchBuilderInterface } from "../branch/github_create_branch_builder_interface.ts";
 import { GitHubUpdateBranchBuilderInterface } from "../branch/github_update_branch_builder_interface.ts";
-// import { GitHubCreateOrUpdateBranchBuilderInterface } from "../branch/github_create_or_update_branch_builder_interface.ts";
 import { GitHubCreatePRBuilderInterface } from "../pr/github_create_pr_builder_interface.ts";
 import { GitHubUpdatePRBuilderInterface } from "../pr/github_update_pr_builder_interface.ts";
-// import { GitHubCreateOrUpdatePullRequestBuilderInterface } from "../pr/github_create_or_update_pr_request_builder_interface.ts";
 
 /**
  * GitHubCodemodBuilderInterface is a protocol for building and executing a
@@ -65,7 +63,8 @@ export interface GitHubCodemodBuilderInterface<
    * createCommit adds a create GiHub commit action to the builder.
    */
   createCommit(
-    builderOrBuilderGenerate: Generate<
+    optionsOrOptionsGenerate: Generate<GitHubAPICommitsPostRequest, [R]>,
+    builderOrBuilderGenerate?: Generate<
       GitHubCreateCommitBuilderInterface,
       [GitHubCreateCommitBuilderInterface, R]
     >,
@@ -77,7 +76,8 @@ export interface GitHubCodemodBuilderInterface<
    * createBranch adds a create GiHub branch action to the builder.
    */
   createBranch(
-    builderOrBuilderGenerate: Generate<
+    optionsOrOptionsGenerate: Generate<GitHubAPIRefsPostRequest, [R]>,
+    builderOrBuilderGenerate?: Generate<
       GitHubCreateBranchBuilderInterface,
       [GitHubCreateBranchBuilderInterface, R]
     >,
@@ -89,7 +89,8 @@ export interface GitHubCodemodBuilderInterface<
    * updateBranch adds a update GiHub branch action to the builder.
    */
   updateBranch(
-    builderOrBuilderGenerate: Generate<
+    optionsOrOptionsGenerate: Generate<GitHubAPIRefPatchRequest, [R]>,
+    builderOrBuilderGenerate?: Generate<
       GitHubUpdateBranchBuilderInterface,
       [GitHubUpdateBranchBuilderInterface, R]
     >,
@@ -100,20 +101,33 @@ export interface GitHubCodemodBuilderInterface<
   /**
    * createOrUpdateBranch adds a create or update GiHub branch action to the builder.
    */
-  // createOrUpdateBranch(
-  //   builderOrBuilderGenerate: Generate<
-  //     GitHubCreateOrUpdateBranchBuilderInterface,
-  //     [GitHubCreateOrUpdateBranchBuilderInterface, R]
-  //   >,
-  // ): GitHubCodemodBuilderInterface<
-  //   Append<R, [GitHubAPIRefPatchResponse]>
-  // >;
+  createOrUpdateBranch(
+    createOptionsOrCreateOptionsGenerate: Generate<
+      GitHubAPIRefsPostRequest,
+      [R]
+    >,
+    updateOptionsOrUpdateOptionsGenerate: Generate<
+      GitHubAPIRefPatchRequest,
+      [R]
+    >,
+    createBuilderOrCreateBuilderGenerate?: Generate<
+      GitHubCreateBranchBuilderInterface,
+      [GitHubCreateBranchBuilderInterface, R]
+    >,
+    updateBuilderOrUpdateBuilderGenerate?: Generate<
+      GitHubUpdateBranchBuilderInterface,
+      [GitHubUpdateBranchBuilderInterface, R]
+    >,
+  ): GitHubCodemodBuilderInterface<
+    Append<R, [GitHubAPIRefPatchResponse]>
+  >;
 
   /**
    * createPR adds a create GiHub PR action to the builder.
    */
   createPR(
-    builderOrBuilderGenerate: Generate<
+    optionsOrOptionsGenerate: Generate<GitHubAPIPullsPostRequest, [R]>,
+    builderOrBuilderGenerate?: Generate<
       GitHubCreatePRBuilderInterface,
       [GitHubCreatePRBuilderInterface, R]
     >,
@@ -125,7 +139,8 @@ export interface GitHubCodemodBuilderInterface<
    * updatePR adds a update GiHub PR action to the builder.
    */
   updatePR(
-    builderOrBuilderGenerate: Generate<
+    optionsOrOptionsGenerate: Generate<GitHubAPIPullPatchRequest, [R]>,
+    builderOrBuilderGenerate?: Generate<
       GitHubUpdatePRBuilderInterface,
       [GitHubUpdatePRBuilderInterface, R]
     >,
@@ -136,14 +151,26 @@ export interface GitHubCodemodBuilderInterface<
   /**
    * createOrUpdatePR adds a create or update GiHub PR action to the builder.
    */
-  // createOrUpdatePR(
-  //   builderOrBuilderGenerate: Generate<
-  //     GitHubCreateOrUpdatePRBuilderInterface,
-  //     [GitHubCreateOrUpdatePRBuilderInterface, R]
-  //   >,
-  // ): GitHubCodemodBuilderInterface<
-  //   Append<R, [GitHubAPIPullPatchResponse]>
-  // >;
+  createOrUpdatePR(
+    createOptionsOrCreateOptionsGenerate: Generate<
+      GitHubAPIPullsPostRequest,
+      [R]
+    >,
+    updateOptionsOrUpdateOptionsGenerate: Generate<
+      GitHubAPIPullPatchRequest,
+      [R]
+    >,
+    createBuilderOrCreateBuilderGenerate?: Generate<
+      GitHubCreatePRBuilderInterface,
+      [GitHubCreatePRBuilderInterface, R]
+    >,
+    updateBuilderOrUpdateBuilderGenerate?: Generate<
+      GitHubUpdatePRBuilderInterface,
+      [GitHubUpdatePRBuilderInterface, R]
+    >,
+  ): GitHubCodemodBuilderInterface<
+    Append<R, [GitHubAPIPullPatchResponse]>
+  >;
 }
 
 /**
