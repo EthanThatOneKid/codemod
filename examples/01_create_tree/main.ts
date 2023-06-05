@@ -6,11 +6,19 @@
 //
 
 import { GITHUB_TOKEN } from "./env.ts";
+import { createCodemod } from "../../github/mod.ts";
 
 if (import.meta.main) {
   await main();
 }
 
 async function main() {
-  // TODO: Implement the example.
+  const codemod = await createCodemod({
+    owner: "EthanThatOneKid",
+    repo: "acmcsuf.com",
+    token: GITHUB_TOKEN,
+  }, (builder) =>
+    builder
+      .createTree((tree) => tree.text("README.md", "Hello, World!")));
+  console.log(JSON.stringify(codemod, null, 2));
 }

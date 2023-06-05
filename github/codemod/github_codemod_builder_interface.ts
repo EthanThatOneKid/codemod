@@ -36,7 +36,7 @@ export interface GitHubCodemodBuilderInterface<
   /**
    * run executes the builder.
    */
-  run(options: GitHubAPIClientOptions): Promise<R>;
+  run(): Promise<R>;
 
   /**
    * op adds a GitHubOp to the builder.

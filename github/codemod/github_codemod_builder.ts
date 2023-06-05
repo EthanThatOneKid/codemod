@@ -48,8 +48,8 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
   #api: GitHubAPIClient;
 
   constructor(
-    private readonly ops: Array<(result: R) => Promise<GitHubOp<R>>> = [],
     private readonly options: GitHubAPIClientOptions,
+    private readonly ops: Array<(result: R) => Promise<GitHubOp<R>>> = [],
     private readonly fetcher: typeof fetch = fetch.bind(globalThis),
   ) {
     this.#api = new GitHubAPIClient(options, fetcher);
