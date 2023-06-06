@@ -91,6 +91,7 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
 
         case GitHubOpType.UPDATE_BRANCH: {
           const options = await generate(op.data, [...result] as R);
+          console.log({ options });
           const response = await api.patchRef(options);
           result.push(response);
           break;
@@ -256,7 +257,7 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
       GitHubAPIRefsPostRequest,
       [R]
     >,
-    updateOptionsOrUpdateOptionsGenerate: Generate<
+    updateOptionsOrUpdateOptionsGenerate?: Generate<
       GitHubAPIRefPatchRequest,
       [R]
     >,
@@ -292,7 +293,8 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
         },
         update: async (result: R) => {
           const options = await generate(
-            updateOptionsOrUpdateOptionsGenerate,
+            updateOptionsOrUpdateOptionsGenerate ??
+              createOptionsOrCreateOptionsGenerate,
             [...result] as R,
           );
           const builder = await generate(
@@ -375,7 +377,7 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
       GitHubAPIPullsPostRequest,
       [R]
     >,
-    updateOptionsOrUpdateOptionsGenerate: Generate<
+    updateOptionsOrUpdateOptionsGenerate?: Generate<
       GitHubAPIPullPatchRequest,
       [R]
     >,
@@ -411,7 +413,8 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
         },
         update: async (result: R) => {
           const options = await generate(
-            updateOptionsOrUpdateOptionsGenerate,
+            updateOptionsOrUpdateOptionsGenerate ??
+              createOptionsOrCreateOptionsGenerate,
             [...result] as R,
           );
           const builder = await generate(

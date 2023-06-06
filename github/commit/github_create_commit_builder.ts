@@ -14,7 +14,8 @@ export class GitHubCreateCommitBuilder
   #message: Generate<string, []>;
   #tree: Generate<string, []>;
   #parents: Generate<string[] | undefined, []>;
-  #base: Generate<string | undefined, []>;
+  #parentRef: Generate<string | undefined, []>;
+  #defaultParent: Generate<boolean, []> = false;
   #author: Generate<GitHubAPICommitsPostRequest["author"], []>;
   #committer: Generate<GitHubAPICommitsPostRequest["committer"], []>;
   #signature: Generate<string | undefined, []>;
@@ -37,14 +38,18 @@ export class GitHubCreateCommitBuilder
 
     // If base is specified, generate the base tree SHA.
     if (parents.length === 0) {
-      const ref = await generate(this.#base);
-      if (ref !== undefined) {
-        const baseTreeSHA =
-          (await this.api.getBranch({ ref })).commit.commit.tree.sha;
-        parents.push(baseTreeSHA);
+      const usingDefault = await generate(this.#defaultParent);
+      const parentRef = !usingDefault
+        ? await generate(this.#parentRef)
+        : (await this.api.getRepository()).default_branch;
+      if (parentRef !== undefined) {
+        const parentCommitSHA =
+          (await this.api.getBranch({ ref: parentRef })).commit.sha;
+        parents.push(parentCommitSHA);
       }
     }
 
+    // If defaultBase is specified, generate the default base tree SHA.
     return await generateObject({
       message: this.#message,
       tree: this.#tree,
@@ -79,8 +84,15 @@ export class GitHubCreateCommitBuilder
     return this;
   }
 
-  public base(baseOrBaseGenerate: Generate<string, []>): this {
-    this.#base = baseOrBaseGenerate;
+  public parentRef(parentRefOrParentGenerate: Generate<string, []>): this {
+    this.#parentRef = parentRefOrParentGenerate;
+    return this;
+  }
+
+  public defaultParent(
+    defaultParenteOrDefaultParentGenerate?: Generate<boolean, []>,
+  ): this {
+    this.#defaultParent = defaultParenteOrDefaultParentGenerate ?? true;
     return this;
   }
 

@@ -29,9 +29,18 @@ export interface GitHubCreateCommitBuilderInterface {
   parents(shasOrSHAsGenerate: Generate<string[], []>): this;
 
   /**
-   * base sets the base branch.
+   * parentRef sets the parent to the specified ref.
+   *
+   * Subsequent calls to parent will override the previous value.
    */
-  base(baseOrBaseGenerate: Generate<string, []>): this;
+  parentRef(parentRefOrParentGenerate: Generate<string | undefined, []>): this;
+
+  /**
+   * defaultParent sets the parent to the default repository branch.
+   */
+  defaultParent(
+    defaultParentOrDefaultParentGenerate?: Generate<boolean, []>,
+  ): this;
 
   /**
    * author sets the author.

@@ -20,11 +20,20 @@ export interface GitHubCreateTreeBuilderInterface {
   clear(): this;
 
   /**
-   * base sets the base ref or SHA.
+   * base sets the base commit SHA.
+   *
+   * Subsequent calls to baseRef will override the previous value.
+   */
+  base(shaOrSHAGenerate: Generate<string, []>): this;
+
+  // TODO: Think of a better name for baseRef.
+
+  /**
+   * baseRef sets the base ref.
    *
    * Subsequent calls to base will override the previous value.
    */
-  base(shaOrSHAGenerate: Generate<string | undefined, []>): this;
+  baseRef(baseRefOrBaseRefGenerate: Generate<string | undefined, []>): this;
 
   /**
    * file sets a file blob.

@@ -27,6 +27,7 @@ import { stringFromBlob } from "./base64.ts";
 export class GitHubCreateTreeBuilder
   implements GitHubCreateTreeBuilderInterface {
   #base: Generate<string | undefined, []>;
+  #baseRef: Generate<string | undefined, []>;
   #tree: Map<string, GitHubTreeOp> = new Map();
 
   constructor(
@@ -34,12 +35,12 @@ export class GitHubCreateTreeBuilder
   ) {}
 
   public async run(): Promise<GitHubAPITreesPostRequest> {
-    const ref = await generate(this.#base) ??
+    let treeSHA = await generate(this.#base);
+    const ref = await generate(this.#baseRef) ??
       (await this.api.getRepository()).default_branch;
-    const baseTreeSHA =
-      (await this.api.getBranch({ ref })).commit.commit.tree.sha;
+    treeSHA ??= (await this.api.getBranch({ ref })).commit.commit.tree.sha;
     const tree = await doTreeOps(this.api, ref, this.#tree);
-    return makeGitHubAPITreesPostRequest(baseTreeSHA, tree);
+    return makeGitHubAPITreesPostRequest(treeSHA, tree);
   }
 
   public clear(): this {
@@ -49,6 +50,13 @@ export class GitHubCreateTreeBuilder
 
   public base(shaOrSHAGenerate: Generate<string | undefined, []>): this {
     this.#base = shaOrSHAGenerate;
+    return this;
+  }
+
+  public baseRef(
+    baseRefOrBaseRefGenerate: Generate<string | undefined, []>,
+  ): this {
+    this.#baseRef = baseRefOrBaseRefGenerate;
     return this;
   }
 

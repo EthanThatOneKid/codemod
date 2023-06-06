@@ -105,7 +105,7 @@ export interface GitHubCodemodBuilderInterface<
       GitHubAPIRefsPostRequest,
       [R]
     >,
-    updateOptionsOrUpdateOptionsGenerate: Generate<
+    updateOptionsOrUpdateOptionsGenerate?: Generate<
       GitHubAPIRefPatchRequest,
       [R]
     >,
@@ -155,7 +155,7 @@ export interface GitHubCodemodBuilderInterface<
       GitHubAPIPullsPostRequest,
       [R]
     >,
-    updateOptionsOrUpdateOptionsGenerate: Generate<
+    updateOptionsOrUpdateOptionsGenerate?: Generate<
       GitHubAPIPullPatchRequest,
       [R]
     >,
