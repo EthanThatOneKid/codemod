@@ -246,10 +246,14 @@ export type GitHubAPIPullsPostRequestAndGitHubAPIPullPatchRequestGenerate<
  * GitHubOp is a GitHub operation.
  */
 export type GitHubOp<R> =
-  | GitHubTreeOp<R>
-  | GitHubCommitOp<R>
-  | GitHubBranchOp<R>
-  | GitHubPROp<R>;
+  | GitHubCreateTreeOp<R>
+  | GitHubCreateCommitOp<R>
+  | GitHubCreateBranchOp<R>
+  | GitHubUpdateBranchOp<R>
+  | GitHubCreateOrUpdateBranchOp<R>
+  | GitHubCreatePROp<R>
+  | GitHubUpdatePROp<R>
+  | GitHubCreateOrUpdatePROp<R>;
 
 /**
  * GitHubOpResult is a GitHub op result.
@@ -312,77 +316,86 @@ export type GitHubCreateOrUpdatePROpResult =
  * GitHubOpResultOf is the result of a GitHubOp.
  */
 export type GitHubOpResultOf<R, T extends GitHubOp<R>> = T extends
-  GitHubTreeOp<unknown[]> ? GitHubCreateTreeOpResult
-  : T extends GitHubCommitOp<unknown[]> ? GitHubCreateCommitOpResult
-  : T extends GitHubBranchOp<unknown[]> ?
-      | GitHubCreateBranchOpResult
-      | GitHubUpdateBranchOpResult
-      | GitHubCreateOrUpdateBranchOpResult
-  : T extends GitHubPROp<unknown[]> ?
-      | GitHubCreatePROpResult
-      | GitHubUpdatePROpResult
-      | GitHubCreateOrUpdatePROpResult
+  GitHubCreateTreeOp<R> ? GitHubCreateTreeOpResult
+  : T extends GitHubCreateCommitOp<R> ? GitHubCreateCommitOpResult
+  : T extends GitHubCreateBranchOp<R> ? GitHubCreateBranchOpResult
+  : T extends GitHubUpdateBranchOp<R> ? GitHubUpdateBranchOpResult
+  : T extends GitHubCreateOrUpdateBranchOp<R>
+    ? GitHubCreateOrUpdateBranchOpResult
+  : T extends GitHubCreatePROp<R> ? GitHubCreatePROpResult
+  : T extends GitHubUpdatePROp<R> ? GitHubUpdatePROpResult
+  : T extends GitHubCreateOrUpdatePROp<R> ? GitHubCreateOrUpdatePROpResult
   : never;
 
 /**
- * GitHubTreeOp is a GitHub tree operation.
+ * GitHubCreateTreeOp is a GitHub tree operation.
  */
-export type GitHubTreeOp<R> = {
+export type GitHubCreateTreeOp<R> = {
   type: GitHubOpType.CREATE_TREE;
   data: GitHubAPITreesPostRequestGenerate<R>;
 };
 
 /**
- * GitHubCommitOp is a GitHub commit operation.
+ * GitHubCreateCommitOp is a GitHub commit operation.
  */
-export type GitHubCommitOp<R> = {
+export type GitHubCreateCommitOp<R> = {
   type: GitHubOpType.CREATE_COMMIT;
   data: GitHubAPICommitsPostRequestGenerate<R>;
 };
 
 /**
- * GitHubBranchOp is a GitHub branch operation.
- *
- * TODO: Add delete branch.
+ * GitHubCreateBranchOp is a GitHub branch operation.
  */
-export type GitHubBranchOp<R> =
-  | {
-    type: GitHubOpType.CREATE_BRANCH;
-    data: GitHubAPIRefsPostRequestGenerate<R>;
-  }
-  | {
-    type: GitHubOpType.UPDATE_BRANCH;
-    data: GitHubAPIRefPatchRequestGenerate<R>;
-  }
-  | {
-    type: GitHubOpType.CREATE_OR_UPDATE_BRANCH;
-    data: {
-      create: GitHubAPIRefsPostRequestGenerate<R>;
-      update: GitHubAPIRefPatchRequestGenerate<R>;
-    };
-  };
+export type GitHubCreateBranchOp<R> = {
+  type: GitHubOpType.CREATE_BRANCH;
+  data: GitHubAPIRefsPostRequestGenerate<R>;
+};
 
 /**
- * GitHubPROp is a PR action.
- *
- * TODO: Add delete PR.
+ * GitHubUpdateBranchOp is a GitHub branch operation.
  */
-export type GitHubPROp<R> =
-  | {
-    type: GitHubOpType.CREATE_PR;
-    data: GitHubAPIPullsPostRequestGenerate<R>;
-  }
-  | {
-    type: GitHubOpType.UPDATE_PR;
-    data: GitHubAPIPullPatchRequestGenerate<R>;
-  }
-  | {
-    type: GitHubOpType.CREATE_OR_UPDATE_PR;
-    data: {
-      create: GitHubAPIPullsPostRequestGenerate<R>;
-      update: GitHubAPIPullPatchRequestGenerate<R>;
-    };
+export type GitHubUpdateBranchOp<R> = {
+  type: GitHubOpType.UPDATE_BRANCH;
+  data: GitHubAPIRefPatchRequestGenerate<R>;
+};
+
+/**
+ * GitHubCreateOrUpdateBranchOp is a GitHub branch operation.
+ */
+export type GitHubCreateOrUpdateBranchOp<R> = {
+  type: GitHubOpType.CREATE_OR_UPDATE_BRANCH;
+  data: {
+    create: GitHubAPIRefsPostRequestGenerate<R>;
+    update: GitHubAPIRefPatchRequestGenerate<R>;
   };
+};
+
+/**
+ * GitHubCreatePROp is a PR action.
+ */
+export type GitHubCreatePROp<R> = {
+  type: GitHubOpType.CREATE_PR;
+  data: GitHubAPIPullsPostRequestGenerate<R>;
+};
+
+/**
+ * GitHubUpdatePROp is a PR action.
+ */
+export type GitHubUpdatePROp<R> = {
+  type: GitHubOpType.UPDATE_PR;
+  data: GitHubAPIPullPatchRequestGenerate<R>;
+};
+
+/**
+ * GitHubCreateOrUpdatePROp is a PR action.
+ */
+export type GitHubCreateOrUpdatePROp<R> = {
+  type: GitHubOpType.CREATE_OR_UPDATE_PR;
+  data: {
+    create: GitHubAPIPullsPostRequestGenerate<R>;
+    update: GitHubAPIPullPatchRequestGenerate<R>;
+  };
+};
 
 /**
  * GitHubOpType is a GitHub operation type.
