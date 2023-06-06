@@ -443,7 +443,7 @@ export async function doTreeRenameOp(
       path: newPath,
       mode: "100644",
       type: "blob",
-      content: contents.content,
+      sha: contents.sha,
     },
   ];
 }
