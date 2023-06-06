@@ -1,3 +1,4 @@
+import { errors } from "../../deps.ts";
 import type {
   GitHubAPIClientOptions,
   GitHubAPICommitsPostRequest,
@@ -91,15 +92,43 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
 
         case GitHubOpType.UPDATE_BRANCH: {
           const options = await generate(op.data, [...result] as R);
-          console.log({ options });
           const response = await api.patchRef(options);
           result.push(response);
           break;
         }
 
         case GitHubOpType.CREATE_OR_UPDATE_BRANCH: {
-          // TODO: Implement this. Check existing branch.
-          throw new Error("Not implemented");
+          const createOptions = await generate(
+            op.data.create,
+            [...result] as R,
+          );
+          const branch = await api.getBranch({ ref: createOptions.ref })
+            .catch((error) => {
+              if (error instanceof errors.NotFound) {
+                return undefined;
+              }
+
+              throw error;
+            });
+          if (branch) {
+            const updateOptions = await generate(
+              op.data.update,
+              [...result] as R,
+            );
+            const response = await api.patchRef(updateOptions);
+            result.push({
+              type: GitHubOpType.UPDATE_BRANCH,
+              data: response,
+            });
+            break;
+          }
+
+          const response = await api.postRefs(createOptions);
+          result.push({
+            type: GitHubOpType.CREATE_BRANCH,
+            data: response,
+          });
+          break;
         }
 
         case GitHubOpType.CREATE_PR: {
@@ -117,8 +146,40 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
         }
 
         case GitHubOpType.CREATE_OR_UPDATE_PR: {
-          // TODO: Implement this. Check existing PR.
-          throw new Error("Not implemented");
+          const createOptions = await generate(
+            op.data.create,
+            [...result] as R,
+          );
+          const pr = await api.getPulls({
+            base: createOptions.base,
+            head: createOptions.head,
+          })
+            .catch((error) => {
+              if (error instanceof errors.NotFound) {
+                return undefined;
+              }
+
+              throw error;
+            });
+          if (pr) {
+            const updateOptions = await generate(
+              op.data.update,
+              [...result] as R,
+            );
+            const response = await api.patchPull(updateOptions);
+            result.push({
+              type: GitHubOpType.UPDATE_PR,
+              data: response,
+            });
+            break;
+          }
+
+          const response = await api.postPulls(createOptions);
+          result.push({
+            type: GitHubOpType.CREATE_PR,
+            data: response,
+          });
+          break;
         }
 
         default: {

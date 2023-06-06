@@ -26,7 +26,7 @@ import { stringFromBlob } from "./base64.ts";
  */
 export class GitHubCreateTreeBuilder
   implements GitHubCreateTreeBuilderInterface {
-  #base: Generate<string | undefined, []>;
+  #baseTree: Generate<string | undefined, []>;
   #baseRef: Generate<string | undefined, []>;
   #tree: Map<string, GitHubTreeOp> = new Map();
 
@@ -35,12 +35,12 @@ export class GitHubCreateTreeBuilder
   ) {}
 
   public async run(): Promise<GitHubAPITreesPostRequest> {
-    let treeSHA = await generate(this.#base);
+    let sha = await generate(this.#baseTree);
     const ref = await generate(this.#baseRef) ??
       (await this.api.getRepository()).default_branch;
-    treeSHA ??= (await this.api.getBranch({ ref })).commit.commit.tree.sha;
+    sha ??= (await this.api.getBranch({ ref })).commit.commit.tree.sha;
     const tree = await doTreeOps(this.api, ref, this.#tree);
-    return makeGitHubAPITreesPostRequest(treeSHA, tree);
+    return makeGitHubAPITreesPostRequest(sha, tree);
   }
 
   public clear(): this {
@@ -48,8 +48,12 @@ export class GitHubCreateTreeBuilder
     return this;
   }
 
-  public base(shaOrSHAGenerate: Generate<string | undefined, []>): this {
-    this.#base = shaOrSHAGenerate;
+  public baseTree(
+    shaOrSHAGenerate: Generate<string | undefined, []>,
+    baseRefOrBaseRefGenerate: Generate<string | undefined, []>,
+  ): this {
+    this.#baseTree = shaOrSHAGenerate;
+    this.#baseRef = baseRefOrBaseRefGenerate;
     return this;
   }
 
@@ -193,15 +197,15 @@ export function doTreeOp(
 ): Promise<GitHubAPITreesPostRequest["tree"]> {
   switch (op.type) {
     case GitHubTreeOpType.FILE: {
-      return doTreeFileOp(api, path, op);
+      return doTreeFileOp(api, ref, path, op);
     }
 
     case GitHubTreeOpType.TEXT: {
-      return doTreeTextOp(api, path, op);
+      return doTreeTextOp(api, ref, path, op);
     }
 
     case GitHubTreeOpType.JSON_PATCH: {
-      return doTreeJSONPatchOp(api, path, op);
+      return doTreeJSONPatchOp(api, ref, path, op);
     }
 
     case GitHubTreeOpType.EXECUTABLE: {
@@ -239,10 +243,11 @@ export function doTreeOp(
  */
 export async function doTreeFileOp(
   api: GitHubAPIClientInterface,
+  ref: string | undefined,
   path: string,
   op: GitHubTreeFileOp,
 ): Promise<GitHubAPITreesPostRequest["tree"]> {
-  const existingBlob = await api.getRawBlob({ path })
+  const existingBlob = await api.getRawBlob({ path, ref })
     .catch((error) => {
       if (error instanceof errors.NotFound) {
         return new Blob();
@@ -271,10 +276,11 @@ export async function doTreeFileOp(
  */
 export async function doTreeTextOp(
   api: GitHubAPIClientInterface,
+  ref: string | undefined,
   path: string,
   op: GitHubTreeTextOp,
 ): Promise<GitHubAPITreesPostRequest["tree"]> {
-  const existingText = await api.getRawText({ path })
+  const existingText = await api.getRawText({ path, ref })
     .catch((error) => {
       if (error instanceof errors.NotFound) {
         return "";
@@ -298,10 +304,11 @@ export async function doTreeTextOp(
  */
 export async function doTreeJSONPatchOp(
   api: GitHubAPIClientInterface,
+  ref: string | undefined,
   path: string,
   op: GitHubTreeJSONPatchOp,
 ): Promise<GitHubAPITreesPostRequest["tree"]> {
-  const existingText = await api.getRawText({ path });
+  const existingText = await api.getRawText({ path, ref });
   const patches = await generate(op.data.patches, existingText);
   const deserializedJSON = op.data.deserializeJSON(existingText);
   const patchedJSON = applyJSONPatch(deserializedJSON, patches);
@@ -407,7 +414,7 @@ export async function doTreeRenameOp(
         return null;
       }
 
-      return Promise.reject(error);
+      throw error;
     });
   if (contents === null) {
     throw new Error("Cannot rename a non-existent file");
@@ -417,18 +424,26 @@ export async function doTreeRenameOp(
     throw new Error("Cannot operate on a directory");
   }
 
+  if (contents.type === "symlink") {
+    throw new Error("Cannot operate on a symlink");
+  }
+
+  if (contents.type === "submodule") {
+    throw new Error("Cannot operate on a submodule");
+  }
+
   return [
-    {
-      path: newPath,
-      mode: "100644",
-      type: "blob",
-      sha: contents.sha,
-    },
     {
       path: oldPath,
       mode: "100644",
       type: "blob",
       sha: null,
+    },
+    {
+      path: newPath,
+      mode: "100644",
+      type: "blob",
+      content: contents.content,
     },
   ];
 }

@@ -21,8 +21,11 @@ async function main() {
     builder
       .createTree((tree) =>
         tree
-          .base("new-branch")
-          .text("README.md", (content) => content.replace("Hello", "Hi"))
+          .baseRef("new-branch")
+          .text(
+            "README.md",
+            (content) => content ? content.replace("Hello", "Hi") : "Hi world!",
+          )
       )
       .createCommit(
         ({ 0: tree }) => ({ message: "Reword README.md", tree: tree.sha }),
@@ -30,14 +33,14 @@ async function main() {
       )
       .createTree((tree) =>
         tree
-          .base("new-branch")
+          .baseRef("new-branch")
           .rename("README.md", "README.txt")
       )
       .createCommit(
         ({ 2: tree }) => ({ message: "Rename README.md", tree: tree.sha }),
         (commit) => commit.parentRef("new-branch"),
       )
-      .updateBranch(({ 1: commit }) => ({
+      .updateBranch(({ 3: commit }) => ({
         ref: "heads/new-branch",
         sha: commit.sha,
       })));
