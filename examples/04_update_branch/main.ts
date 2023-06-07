@@ -13,11 +13,7 @@ if (import.meta.main) {
 }
 
 async function main() {
-  const codemod = await createCodemod({
-    owner: "EthanThatOneKid",
-    repo: "acmcsuf.com",
-    token: GITHUB_TOKEN,
-  }, (builder) =>
+  const codemod = await createCodemod((builder) =>
     builder
       .createTree((tree) =>
         tree
@@ -31,6 +27,10 @@ async function main() {
       .updateBranch(({ 1: commit }) => ({
         ref: "heads/new-branch",
         sha: commit.sha,
-      })));
+      })), {
+    owner: "EthanThatOneKid",
+    repo: "acmcsuf.com",
+    token: GITHUB_TOKEN,
+  });
   console.log(JSON.stringify(codemod, null, 2));
 }

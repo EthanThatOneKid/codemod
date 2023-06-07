@@ -6,11 +6,31 @@
 //
 
 import { GITHUB_TOKEN } from "./env.ts";
+import { createCodemod } from "../../github/mod.ts";
 
 if (import.meta.main) {
   await main();
 }
 
 async function main() {
-  // TODO: Implement the example.
+  const codemod = await createCodemod((builder) =>
+    builder
+      .createTree((tree) =>
+        tree
+          .baseRef("new-branch")
+          .text("main.ts", "console.log('Hello, world!');\n")
+      )
+      .createCommit(
+        ({ 0: tree }) => ({ message: "Add main.ts", tree: tree.sha }),
+        (commit) => commit.parentRef("new-branch"),
+      )
+      .createOrUpdateBranch(({ 1: commit }) => ({
+        ref: "heads/new-branch",
+        sha: commit.sha,
+      })), {
+    owner: "EthanThatOneKid",
+    repo: "acmcsuf.com",
+    token: GITHUB_TOKEN,
+  });
+  console.log(JSON.stringify(codemod, null, 2));
 }

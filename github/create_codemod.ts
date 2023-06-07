@@ -8,11 +8,11 @@ import type { Generate } from "./shared/generate.ts";
 import { generate } from "./shared/generate.ts";
 
 export async function createCodemod<R extends GitHubOpResult[]>(
-  options: GitHubAPIClientOptions,
   builderOrBuilderGenerate: Generate<
     GitHubCodemodBuilderInterface<R>,
     [GitHubCodemodBuilderInterface]
   >,
+  options: GitHubAPIClientOptions,
 ): Promise<R> {
   const builder = await generate(
     builderOrBuilderGenerate,

@@ -13,12 +13,12 @@ if (import.meta.main) {
 }
 
 async function main() {
-  const codemod = await createCodemod({
+  const codemod = await createCodemod((builder) =>
+    builder
+      .createTree((tree) => tree.text("README.md", "Hello, World!")), {
     owner: "EthanThatOneKid",
     repo: "acmcsuf.com",
     token: GITHUB_TOKEN,
-  }, (builder) =>
-    builder
-      .createTree((tree) => tree.text("README.md", "Hello, World!")));
+  });
   console.log(JSON.stringify(codemod, null, 2));
 }
