@@ -22,7 +22,7 @@ async function main() {
       )
       .createBranch(
         ({ 1: commit }) => ({
-          ref: "refs/heads/new-branch",
+          ref: "new-branch",
           sha: commit.sha,
         }),
       ), {

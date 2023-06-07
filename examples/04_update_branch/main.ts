@@ -25,7 +25,7 @@ async function main() {
         (commit) => commit.parentRef("new-branch"),
       )
       .updateBranch(({ 1: commit }) => ({
-        ref: "heads/new-branch",
+        ref: "new-branch",
         sha: commit.sha,
       })), {
     owner: "EthanThatOneKid",

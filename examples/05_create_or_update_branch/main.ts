@@ -18,14 +18,14 @@ async function main() {
       .createTree((tree) =>
         tree
           .baseRef("new-branch")
-          .text("main.ts", "console.log('Hello, world!');\n")
+          .text("main.ts", "console.log('Hello, world!!!');\n")
       )
       .createCommit(
         ({ 0: tree }) => ({ message: "Add main.ts", tree: tree.sha }),
         (commit) => commit.parentRef("new-branch"),
       )
       .createOrUpdateBranch(({ 1: commit }) => ({
-        ref: "heads/new-branch",
+        ref: "new-branch",
         sha: commit.sha,
       })), {
     owner: "EthanThatOneKid",

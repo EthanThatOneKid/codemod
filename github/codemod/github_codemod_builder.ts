@@ -85,6 +85,9 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
 
         case GitHubOpType.CREATE_BRANCH: {
           const options = await generate(op.data, [...result] as R);
+          if (!options.ref.startsWith("refs/heads/")) {
+            options.ref = `refs/heads/${options.ref}`;
+          }
           const response = await api.postRefs(options);
           result.push(response);
           break;
@@ -92,6 +95,10 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
 
         case GitHubOpType.UPDATE_BRANCH: {
           const options = await generate(op.data, [...result] as R);
+          if (!options.ref.startsWith("heads/")) {
+            options.ref = `heads/${options.ref}`;
+          }
+
           const response = await api.patchRef(options);
           result.push(response);
           break;
@@ -115,6 +122,9 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
               op.data.update,
               [...result] as R,
             );
+            if (!updateOptions.ref.startsWith("heads/")) {
+              updateOptions.ref = `heads/${updateOptions.ref}`;
+            }
             const response = await api.patchRef(updateOptions);
             result.push({
               type: GitHubOpType.UPDATE_BRANCH,
@@ -123,6 +133,9 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
             break;
           }
 
+          if (!createOptions.ref.startsWith("refs/heads/")) {
+            createOptions.ref = `refs/heads/${createOptions.ref}`;
+          }
           const response = await api.postRefs(createOptions);
           result.push({
             type: GitHubOpType.CREATE_BRANCH,
@@ -133,6 +146,11 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
 
         case GitHubOpType.CREATE_PR: {
           const options = await generate(op.data, [...result] as R);
+          if (!options.base) {
+            options.base = (await this.#api.getRepository()).default_branch;
+          }
+
+          console.log({ options });
           const response = await api.postPulls(options);
           result.push(response);
           break;
