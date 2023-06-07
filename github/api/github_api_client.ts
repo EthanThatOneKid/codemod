@@ -505,6 +505,8 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       url.searchParams.set("state", r.state);
     }
 
+    console.log(url.toString()); // TODO: Remove this line.
+
     const response = await this.fetch(url, {
       method: "GET",
       headers: {
@@ -538,23 +540,10 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
   public async patchPull(
     r: GitHubAPIPullPatchRequest,
   ): Promise<GitHubAPIPullPatchResponse> {
-    const pullsResult = await this.getPulls({ head: r.head, base: r.base });
-    if (pullsResult.length === 0) {
-      throw new Error(
-        `Failed to find pull request for ${this.options.owner}/${this.options.repo}.`,
-      );
-    }
-
-    if (pullsResult.length > 1) {
-      throw new Error(
-        `Found multiple pull requests for ${this.options.owner}/${this.options.repo}. This should not happen.`,
-      );
-    }
-
     const url = makePullURL(
       this.options.owner,
       this.options.repo,
-      pullsResult[0].number,
+      r.number,
     );
     const response = await this.fetch(url, {
       method: "PATCH",

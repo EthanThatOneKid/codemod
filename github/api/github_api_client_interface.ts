@@ -241,7 +241,7 @@ export type GitHubAPIPullsGetResponse =
   ]["application/json"];
 
 export type GitHubAPIPullPatchRequest =
-  & { head: string }
+  & { number: number }
   & Exclude<
     paths["/repos/{owner}/{repo}/pulls/{pull_number}"]["patch"]["requestBody"],
     undefined

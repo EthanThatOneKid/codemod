@@ -36,9 +36,9 @@ export interface GitHubUpdatePRBuilderInterface {
   base(baseOrBaseGenerate: Generate<string, []>): this;
 
   /**
-   * head sets the head of the pull request.
+   * number sets the number of the pull request.
    */
-  head(headOrHeadGenerate: Generate<string, []>): this;
+  number(numberOrNumberGenerate: Generate<number, []>): this;
 
   /**
    * maintainerCanModify sets the maintainer_can_modify of the pull request.

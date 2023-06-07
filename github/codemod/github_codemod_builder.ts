@@ -163,6 +163,7 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
           break;
         }
 
+        // TODO: Fix this case.
         case GitHubOpType.CREATE_OR_UPDATE_PR: {
           const createOptions = await generate(
             op.data.create,
@@ -491,18 +492,44 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
           return await builder.run();
         },
         update: async (result: R) => {
-          const options = await generate(
-            updateOptionsOrUpdateOptionsGenerate ??
-              createOptionsOrCreateOptionsGenerate,
-            [...result] as R,
-          );
+          // let updateOptions = await generate(
+          //   updateOptionsOrUpdateOptionsGenerate,
+          //   [...result] as R,
+          // );
+          // if (!updateOptions) {
+          //   const createOptions = await generate(
+          //     createOptionsOrCreateOptionsGenerate,
+          //     [...result] as R,
+          //   );
+          //   const existingPRs = await this.#api.getPulls({
+          //     head: createOptions.head,
+          //   });
+          //   Deno.writeTextFileSync(
+          //     "existingPRs.json",
+          //     JSON.stringify(existingPRs, null, 2),
+          //   ); // TODO: Delete this.
+          //   if (existingPRs.length === 0) {
+          //     throw new Error(`No PR found for ${createOptions.head}`);
+          //   }
+          //   if (existingPRs.length > 1) {
+          //     throw new Error(
+          //       `More than one PR found for ${createOptions.head}`,
+          //     );
+          //   }
+
+          //   updateOptions = {
+          //     ...createOptions,
+          //     number: existingPRs[0].number,
+          //   };
+          // }
+
           const builder = await generate(
             updateBuilderOrUpdateBuilderGenerate,
-            new GitHubUpdatePRBuilder(options),
+            new GitHubUpdatePRBuilder(updateOptions),
             [...result] as R,
           );
           if (!builder) {
-            return options;
+            return updateOptions;
           }
 
           return await builder.run();

@@ -5,7 +5,7 @@ import type { GitHubUpdatePRBuilderInterface } from "./github_update_pr_builder_
 
 export class GitHubUpdatePRBuilder implements GitHubUpdatePRBuilderInterface {
   #title: Generate<string | undefined, []>;
-  #head: Generate<string, []>;
+  #number: Generate<number, []>;
   #body: Generate<string | undefined, []>;
   #state: Generate<GitHubAPIPullPatchRequest["state"], []>;
   #base: Generate<string | undefined, []>;
@@ -13,7 +13,7 @@ export class GitHubUpdatePRBuilder implements GitHubUpdatePRBuilderInterface {
 
   constructor(options: GitHubAPIPullPatchRequest) {
     this.#title = options.title;
-    this.#head = options.head;
+    this.#number = options.number;
     this.#body = options.body;
     this.#state = options.state;
     this.#base = options.base;
@@ -23,14 +23,14 @@ export class GitHubUpdatePRBuilder implements GitHubUpdatePRBuilderInterface {
   public run(): Promise<GitHubAPIPullPatchRequest> {
     return generateObject({
       title: this.#title,
-      head: this.#head,
+      number: this.#number,
       body: this.#body,
       state: this.#state,
       base: this.#base,
       maintainer_can_modify: this.#maintainerCanModify,
     }, {
       title: [],
-      head: [],
+      number: [],
       body: [],
       state: [],
       base: [],
@@ -43,8 +43,8 @@ export class GitHubUpdatePRBuilder implements GitHubUpdatePRBuilderInterface {
     return this;
   }
 
-  public head(headOrHeadGenerate: Generate<string, []>): this {
-    this.#head = headOrHeadGenerate;
+  public number(numberOrNumberGenerate: Generate<number, []>): this {
+    this.#number = numberOrNumberGenerate;
     return this;
   }
 
