@@ -62,8 +62,8 @@ export interface GitHubCreateTreeBuilderInterface {
   jsonPatch<T>(
     path: string,
     patchesOrPatchesGenerate: Generate<JSONPatchOperation[], [string]>,
-    deserializeJSON: (content: string) => T,
-    serializeJSON: (value: T) => string,
+    deserializeJSON?: (content: string) => T,
+    serializeJSON?: (value: T) => string,
   ): this;
 
   /**

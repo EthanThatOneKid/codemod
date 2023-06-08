@@ -86,15 +86,16 @@ export class GitHubCreateTreeBuilder
   public jsonPatch<T>(
     path: string,
     patchesOrPatchesGenerate: Generate<JSONPatchOperation[], [string]>,
-    deserializeJSON: (content: string) => T,
-    serializeJSON: (value: T) => string,
+    deserializeJSON?: (content: string) => T,
+    serializeJSON?: (value: T) => string,
   ): this {
     this.#tree.set(path, {
       type: GitHubTreeOpType.JSON_PATCH,
       data: {
         patches: patchesOrPatchesGenerate,
-        deserializeJSON,
-        serializeJSON: serializeJSON as (value: unknown) => string,
+        deserializeJSON: deserializeJSON ?? JSON.parse,
+        serializeJSON: serializeJSON as (value: unknown) => string ??
+          JSON.stringify,
       },
     });
     return this;

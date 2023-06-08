@@ -1,3 +1,4 @@
+import { errors } from "../../deps.ts";
 import type {
   GitHubAPIClientInterface,
   GitHubAPICommitsPostRequest,
@@ -38,14 +39,24 @@ export class GitHubCreateCommitBuilder
 
     // If base is specified, generate the base tree SHA.
     if (parents.length === 0) {
-      const usingDefault = await generate(this.#defaultParent);
-      const parentRef = !usingDefault
-        ? await generate(this.#parentRef)
-        : (await this.api.getRepository()).default_branch;
-      if (parentRef !== undefined) {
-        const parentCommitSHA =
-          (await this.api.getBranch({ ref: parentRef })).commit.sha;
-        parents.push(parentCommitSHA);
+      const usingDefaultParent = await generate(this.#defaultParent);
+      const parentRef = await generate(this.#parentRef);
+
+      if (!usingDefaultParent && !parentRef) {
+        throw new Error("Parent ref is undefined.");
+      }
+
+      const ref = parentRef || (await this.api.getRepository()).default_branch;
+      const parent = await this.api.getBranch({ ref }).catch((error) => {
+        if (error instanceof errors.NotFound) {
+          return undefined;
+        }
+
+        throw error;
+      });
+
+      if (parent) {
+        parents.push(parent.commit.sha);
       }
     }
 

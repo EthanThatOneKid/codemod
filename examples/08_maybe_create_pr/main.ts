@@ -16,11 +16,24 @@ async function main() {
   const codemod = await createCodemod((builder) =>
     builder
       .createTree((tree) =>
-        tree.text("main.ts", "console.log('Hello, world!');")
+        tree.text(
+          "main.ts",
+          `console.log('Hello, world! ${
+            Math.random().toString(32).slice(2)
+          }');\n`,
+        )
       )
-      .createCommit(
-        ({ 0: tree }) => ({ message: "Add main.ts", tree: tree.sha }),
-      )
+      .createCommit(({ 0: tree }) => ({
+        message: "Add main.ts",
+        tree: tree.sha,
+      }), (commit) =>
+        commit
+          .parentRef("new-branch")
+          .defaultParent())
+      .createOrUpdateBranch(({ 1: commit }) => ({
+        ref: "new-branch",
+        sha: commit.sha,
+      }))
       .maybeCreatePR({
         title: "Add main.ts",
         body: "This PR adds main.ts.",
