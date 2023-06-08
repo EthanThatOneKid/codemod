@@ -13,14 +13,20 @@ import { generate } from "./shared/generate.ts";
  * @example
  * ```ts
  * const codemod = await createCodemod((builder) =>
- *  builder
- *   .updatePR({
- *    title: "Updated title",
- *    number: 27,
- *  }), {
- *  owner: "EthanThatOneKid",
- *  repo: "pomo",
- *  token: GITHUB_TOKEN,
+ *   builder
+ *     .createTree((tree) => tree.text("main.ts", "console.log('Hello, world!');"))
+ *     .createCommit(
+ *       ({ 0: tree }) => ({ message: "Add main.ts", tree: tree.sha }),
+ *     )
+ *     .maybeCreatePR({
+ *       title: "Add main.ts",
+ *       body: "This PR adds main.ts.",
+ *       head: "new-branch",
+ *       base: "",
+ *     }), {
+ *   owner: "EthanThatOneKid",
+ *   repo: "pomo",
+ *   token: GITHUB_TOKEN,
  * });
  * ```
  */

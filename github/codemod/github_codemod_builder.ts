@@ -20,6 +20,8 @@ import {
   GitHubCreatePROpResult,
   GitHubCreateTreeOp,
   GitHubCreateTreeOpResult,
+  GitHubMaybeCreatePROp,
+  GitHubMaybeCreatePROpResult,
   GitHubOp,
   GitHubOpResult,
   GitHubOpResultOf,
@@ -142,14 +144,21 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
           break;
         }
 
-        case GitHubOpType.CREATE_PR: {
+        case GitHubOpType.CREATE_PR:
+        case GitHubOpType.MAYBE_CREATE_PR: {
           const options = await generate(op.data, [...result] as R);
           if (!options.base) {
             options.base = (await this.#api.getRepository()).default_branch;
           }
 
-          console.log({ options });
-          const response = await api.postPulls(options);
+          const response = await api.postPulls(options)
+            .catch((error) => {
+              if (error instanceof errors.UnprocessableEntity) {
+                return undefined;
+              }
+
+              throw error;
+            });
           result.push(response);
           break;
         }
@@ -363,6 +372,36 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
   > {
     return this.op<GitHubCreatePROp<R>>({
       type: GitHubOpType.CREATE_PR,
+      data: async (result: R) => {
+        const options = await generate(
+          optionsOrOptionsGenerate,
+          [...result] as R,
+        );
+        const builder = await generate(
+          builderOrBuilderGenerate,
+          new GitHubCreatePRBuilder(options),
+          [...result] as R,
+        );
+        if (!builder) {
+          return options;
+        }
+
+        return await builder.run();
+      },
+    });
+  }
+
+  public maybeCreatePR(
+    optionsOrOptionsGenerate: Generate<GitHubAPIPullsPostRequest, [R]>,
+    builderOrBuilderGenerate?: Generate<
+      GitHubCreatePRBuilderInterface,
+      [GitHubCreatePRBuilderInterface, R]
+    >,
+  ): GitHubCodemodBuilderInterface<
+    Append<R, [GitHubMaybeCreatePROpResult]>
+  > {
+    return this.op<GitHubMaybeCreatePROp<R>>({
+      type: GitHubOpType.MAYBE_CREATE_PR,
       data: async (result: R) => {
         const options = await generate(
           optionsOrOptionsGenerate,

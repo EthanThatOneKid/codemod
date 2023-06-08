@@ -135,6 +135,19 @@ export interface GitHubCodemodBuilderInterface<
   >;
 
   /**
+   * maybeCreatePR adds a create GitHub PR action that tries to create a PR.
+   */
+  maybeCreatePR(
+    optionsOrOptionsGenerate: Generate<GitHubAPIPullsPostRequest, [R]>,
+    builderOrBuilderGenerate?: Generate<
+      GitHubCreatePRBuilderInterface,
+      [GitHubCreatePRBuilderInterface, R]
+    >,
+  ): GitHubCodemodBuilderInterface<
+    Append<R, [GitHubMaybeCreatePROpResult]>
+  >;
+
+  /**
    * updatePR adds a update GiHub PR action to the builder.
    */
   updatePR(
@@ -217,6 +230,7 @@ export type GitHubOp<R> =
   | GitHubUpdateBranchOp<R>
   | GitHubCreateOrUpdateBranchOp<R>
   | GitHubCreatePROp<R>
+  | GitHubMaybeCreatePROp<R>
   | GitHubUpdatePROp<R>;
 
 /**
@@ -229,6 +243,7 @@ export type GitHubOpResult =
   | GitHubUpdateBranchOpResult
   | GitHubCreateOrUpdateBranchOpResult
   | GitHubCreatePROpResult
+  | GitHubMaybeCreatePROpResult
   | GitHubUpdatePROpResult
   | GitHubCreateOrUpdatePROpResult;
 
@@ -265,6 +280,13 @@ export type GitHubCreateOrUpdateBranchOpResult =
 export type GitHubCreatePROpResult = GitHubAPIPullsPostResponse;
 
 /**
+ * GitHubMaybeCreatePROpResult is a GitHub maybe create PR op result.
+ */
+export type GitHubMaybeCreatePROpResult =
+  | GitHubCreatePROpResult
+  | undefined;
+
+/**
  * GitHubUpdatePROpResult is a GitHub update PR op result.
  */
 export type GitHubUpdatePROpResult = GitHubAPIPullPatchResponse;
@@ -287,6 +309,7 @@ export type GitHubOpResultOf<R, T extends GitHubOp<R>> = T extends
   : T extends GitHubCreateOrUpdateBranchOp<R>
     ? GitHubCreateOrUpdateBranchOpResult
   : T extends GitHubCreatePROp<R> ? GitHubCreatePROpResult
+  : T extends GitHubMaybeCreatePROp<R> ? GitHubMaybeCreatePROpResult
   : T extends GitHubUpdatePROp<R> ? GitHubUpdatePROpResult
   : never;
 
@@ -342,6 +365,14 @@ export type GitHubCreatePROp<R> = {
 };
 
 /**
+ * GitHubMaybeCreatePROp is a PR action.
+ */
+export type GitHubMaybeCreatePROp<R> = {
+  type: GitHubOpType.MAYBE_CREATE_PR;
+  data: GitHubAPIPullsPostRequestGenerate<R>;
+};
+
+/**
  * GitHubUpdatePROp is a PR action.
  */
 export type GitHubUpdatePROp<R> = {
@@ -359,5 +390,6 @@ export enum GitHubOpType {
   UPDATE_BRANCH = "updateBranch",
   CREATE_OR_UPDATE_BRANCH = "createOrUpdateBranch",
   CREATE_PR = "createPR",
+  MAYBE_CREATE_PR = "maybeCreatePR",
   UPDATE_PR = "updatePR",
 }
