@@ -17,8 +17,7 @@ async function main() {
     builder
       .updatePR({
         title: "Updated title",
-        head: "new-branch-9w85zo8wdr7",
-        base: "",
+        number: 27,
       }), {
     owner: "EthanThatOneKid",
     repo: "pomo",

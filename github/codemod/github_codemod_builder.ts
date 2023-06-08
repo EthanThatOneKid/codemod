@@ -16,8 +16,6 @@ import {
   GitHubCreateCommitOpResult,
   GitHubCreateOrUpdateBranchOp,
   GitHubCreateOrUpdateBranchOpResult,
-  GitHubCreateOrUpdatePROp,
-  GitHubCreateOrUpdatePROpResult,
   GitHubCreatePROp,
   GitHubCreatePROpResult,
   GitHubCreateTreeOp,
@@ -160,44 +158,6 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
           const options = await generate(op.data, [...result] as R);
           const response = await api.patchPull(options);
           result.push(response);
-          break;
-        }
-
-        // TODO: Fix this case.
-        case GitHubOpType.CREATE_OR_UPDATE_PR: {
-          const createOptions = await generate(
-            op.data.create,
-            [...result] as R,
-          );
-          const pr = await api.getPulls({
-            base: createOptions.base,
-            head: createOptions.head,
-          })
-            .catch((error) => {
-              if (error instanceof errors.NotFound) {
-                return undefined;
-              }
-
-              throw error;
-            });
-          if (pr) {
-            const updateOptions = await generate(
-              op.data.update,
-              [...result] as R,
-            );
-            const response = await api.patchPull(updateOptions);
-            result.push({
-              type: GitHubOpType.UPDATE_PR,
-              data: response,
-            });
-            break;
-          }
-
-          const response = await api.postPulls(createOptions);
-          result.push({
-            type: GitHubOpType.CREATE_PR,
-            data: response,
-          });
           break;
         }
 
@@ -448,92 +408,6 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
         }
 
         return await builder.run();
-      },
-    });
-  }
-
-  public createOrUpdatePR(
-    createOptionsOrCreateOptionsGenerate: Generate<
-      GitHubAPIPullsPostRequest,
-      [R]
-    >,
-    updateOptionsOrUpdateOptionsGenerate?: Generate<
-      GitHubAPIPullPatchRequest,
-      [R]
-    >,
-    createBuilderOrCreateBuilderGenerate?: Generate<
-      GitHubCreatePRBuilderInterface,
-      [GitHubCreatePRBuilderInterface, R]
-    >,
-    updateBuilderOrUpdateBuilderGenerate?: Generate<
-      GitHubUpdatePRBuilderInterface,
-      [GitHubUpdatePRBuilderInterface, R]
-    >,
-  ): GitHubCodemodBuilderInterface<
-    Append<R, [GitHubCreateOrUpdatePROpResult]>
-  > {
-    return this.op<GitHubCreateOrUpdatePROp<R>>({
-      type: GitHubOpType.CREATE_OR_UPDATE_PR,
-      data: {
-        create: async (result: R) => {
-          const options = await generate(
-            createOptionsOrCreateOptionsGenerate,
-            [...result] as R,
-          );
-          const builder = await generate(
-            createBuilderOrCreateBuilderGenerate,
-            new GitHubCreatePRBuilder(options),
-            [...result] as R,
-          );
-          if (!builder) {
-            return options;
-          }
-
-          return await builder.run();
-        },
-        update: async (result: R) => {
-          // let updateOptions = await generate(
-          //   updateOptionsOrUpdateOptionsGenerate,
-          //   [...result] as R,
-          // );
-          // if (!updateOptions) {
-          //   const createOptions = await generate(
-          //     createOptionsOrCreateOptionsGenerate,
-          //     [...result] as R,
-          //   );
-          //   const existingPRs = await this.#api.getPulls({
-          //     head: createOptions.head,
-          //   });
-          //   Deno.writeTextFileSync(
-          //     "existingPRs.json",
-          //     JSON.stringify(existingPRs, null, 2),
-          //   ); // TODO: Delete this.
-          //   if (existingPRs.length === 0) {
-          //     throw new Error(`No PR found for ${createOptions.head}`);
-          //   }
-          //   if (existingPRs.length > 1) {
-          //     throw new Error(
-          //       `More than one PR found for ${createOptions.head}`,
-          //     );
-          //   }
-
-          //   updateOptions = {
-          //     ...createOptions,
-          //     number: existingPRs[0].number,
-          //   };
-          // }
-
-          const builder = await generate(
-            updateBuilderOrUpdateBuilderGenerate,
-            new GitHubUpdatePRBuilder(updateOptions),
-            [...result] as R,
-          );
-          if (!builder) {
-            return updateOptions;
-          }
-
-          return await builder.run();
-        },
       },
     });
   }
