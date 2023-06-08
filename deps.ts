@@ -6,3 +6,5 @@ export {
   applyPatch as applyJSONPatch,
   type Operation as JSONPatchOperation,
 } from "https://esm.sh/fast-json-patch@3.1.1";
+
+export * from "https://deno.land/std@0.190.0/dotenv/mod.ts";

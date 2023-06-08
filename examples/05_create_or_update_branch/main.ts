@@ -15,11 +15,14 @@ if (import.meta.main) {
 async function main() {
   const codemod = await createCodemod((builder) =>
     builder
-      .createTree((tree) =>
-        tree
+      .createTree((tree) => {
+        const content = `console.log('Hello, world!!! ${
+          Math.random().toString(32).slice(2)
+        }');\n`;
+        return tree
           .baseRef("new-branch")
-          .text("main.ts", "console.log('Hello, world!!!');\n")
-      )
+          .text("main.ts", content);
+      })
       .createCommit(
         ({ 0: tree }) => ({ message: "Add main.ts", tree: tree.sha }),
         (commit) => commit.parentRef("new-branch"),
