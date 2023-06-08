@@ -505,8 +505,6 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       url.searchParams.set("state", r.state);
     }
 
-    console.log(url.toString()); // TODO: Remove this line.
-
     const response = await this.fetch(url, {
       method: "GET",
       headers: {
