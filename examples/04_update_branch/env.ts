@@ -1,4 +1,6 @@
-import "https://deno.land/x/dotenv@v3.2.2/load.ts";
+import { load } from "../../deps.ts";
+
+await load();
 
 /**
  * GITHUB_TOKEN authenticates the GitHubAPIClient.
