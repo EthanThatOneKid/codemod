@@ -5,24 +5,32 @@
 // deno run -A examples/04_update_branch/main.ts
 //
 
-import { GitHubCodemodBuilder } from "../../github/mod.ts";
 import { GITHUB_TOKEN } from "./env.ts";
+import { createCodemod } from "../../github/mod.ts";
 
 if (import.meta.main) {
   await main();
 }
 
 async function main() {
-  const result = await new GitHubCodemodBuilder({
+  const codemod = await createCodemod((builder) =>
+    builder
+      .createTree((tree) =>
+        tree
+          .baseRef("new-branch")
+          .rename("README.md", "README.txt")
+      )
+      .createCommit(
+        ({ 0: tree }) => ({ message: "Rename README.md", tree: tree.sha }),
+        (commit) => commit.parentRef("new-branch"),
+      )
+      .updateBranch(({ 1: commit }) => ({
+        ref: "new-branch",
+        sha: commit.sha,
+      })), {
     owner: "EthanThatOneKid",
     repo: "acmcsuf.com",
     token: GITHUB_TOKEN,
-  })
-    .setText("hello_world.txt", "Hello, World!!!")
-    .updateBranch({
-      message: "Add hello world",
-      baseBranchName: "new-branch",
-    });
-
-  console.log({ result });
+  });
+  console.log(JSON.stringify(codemod, null, 2));
 }

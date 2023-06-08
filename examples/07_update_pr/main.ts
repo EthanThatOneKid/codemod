@@ -1,8 +1,8 @@
 // File:
-// Demonstrates how to create a tree using the GitHub API.
+// Demonstrates how to update a pull request using the GitHub API.
 //
 // Run:
-// deno run -A examples/01_create_tree/main.ts
+// deno run -A examples/07_update_pr/main.ts
 //
 
 import { GITHUB_TOKEN } from "./env.ts";
@@ -15,9 +15,12 @@ if (import.meta.main) {
 async function main() {
   const codemod = await createCodemod((builder) =>
     builder
-      .createTree((tree) => tree.text("README.md", "Hello, World!")), {
+      .updatePR({
+        title: "Updated title",
+        number: 27,
+      }), {
     owner: "EthanThatOneKid",
-    repo: "acmcsuf.com",
+    repo: "pomo",
     token: GITHUB_TOKEN,
   });
   console.log(JSON.stringify(codemod, null, 2));

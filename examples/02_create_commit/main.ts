@@ -5,23 +5,24 @@
 // deno run -A examples/02_create_commit/main.ts
 //
 
-import { GitHubCodemodBuilder } from "../../github/mod.ts";
 import { GITHUB_TOKEN } from "./env.ts";
+import { createCodemod } from "../../github/mod.ts";
 
 if (import.meta.main) {
   await main();
 }
 
 async function main() {
-  const result = await new GitHubCodemodBuilder({
+  const codemod = await createCodemod((builder) =>
+    builder
+      .createTree((tree) => tree.text("README.md", "Hello, World!"))
+      .createCommit(({ 0: tree }) => ({
+        message: "Create README.md",
+        tree: tree.sha,
+      })), {
     owner: "EthanThatOneKid",
     repo: "acmcsuf.com",
     token: GITHUB_TOKEN,
-  })
-    .setText("hello_world.txt", "Hello, World!")
-    .createCommit({
-      message: "Add hello world",
-    });
-
-  console.log({ result });
+  });
+  console.log(JSON.stringify(codemod, null, 2));
 }
