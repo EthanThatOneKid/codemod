@@ -15,7 +15,8 @@ export class GitHubCreateCommitBuilder
   #message: Generate<string, []>;
   #tree: Generate<string, []>;
   #parents: Generate<string[] | undefined, []>;
-  #parentRef: Generate<string | undefined, []>;
+  #parentRef: Generate<string | undefined | null, []>;
+  #fallbackRefs: Generate<string | undefined, []>[] = [];
   #defaultParent: Generate<boolean, []> = false;
   #author: Generate<GitHubAPICommitsPostRequest["author"], []>;
   #committer: Generate<GitHubAPICommitsPostRequest["committer"], []>;
@@ -95,8 +96,12 @@ export class GitHubCreateCommitBuilder
     return this;
   }
 
-  public parentRef(parentRefOrParentGenerate: Generate<string, []>): this {
+  public parentRef(
+    parentRefOrParentGenerate: Generate<string | undefined | null, []>,
+    ...fallbackRefs: Generate<string | undefined, []>[]
+  ): this {
     this.#parentRef = parentRefOrParentGenerate;
+    this.#fallbackRefs = fallbackRefs;
     return this;
   }
 
