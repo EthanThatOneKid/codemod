@@ -20,25 +20,35 @@ export interface GitHubCreateTreeBuilderInterface {
   clear(): this;
 
   /**
-   * base sets the base commit tree SHA.
+   * baseRef sets the base reference for a branch.
    *
-   * Subsequent calls to baseRef will override the previous value.
+   * The `baseRef` function allows for setting the base reference of a branch
+   * in a software development context. By calling this function, subsequent
+   * calls can override the previous value set for the base reference. The
+   * function takes two parameters:
+   * - `refOrRefGenerate` (optional): This parameter accepts a generator
+   *   function that returns a candidate branch name or reference. The
+   *   return type of this function can be a string, undefined, or null.
+   * - `fallbackRefs` (optional): An array of generator functions that return
+   *   candidate branch names or references. The return type for each generator
+   *   function can be a string or undefined.
    *
-   * When left unset, the base tree is the tree of the base ref.
+   * The expected return types convey specific meanings:
+   * - If the return type is a string, it indicates a valid candidate branch
+   *   name or reference to be used.
+   * - If the return type is undefined, it suggests using a fallback reference
+   *   or the default branch.
+   * - If the return type is null, it signifies the creation of a completely
+   *   empty new branch.
+   *
+   * Overall, the `baseRef` function serves the purpose of specifying and
+   * overriding the base reference for a branch, with different return types
+   * conveying different actions related to branch handling.
    */
-  baseTree(
-    shaOrSHAGenerate: Generate<string, []>,
-    baseRefOrBaseRefGenerate: Generate<string | undefined, []>,
+  baseRef(
+    refOrRefGenerate?: Generate<string | undefined | null, []>,
+    ...fallbackRefs: Generate<string | undefined, []>[]
   ): this;
-
-  /**
-   * baseRef sets the base ref.
-   *
-   * Subsequent calls to base will override the previous value.
-   *
-   * When left unset, the base ref is the default branch.
-   */
-  baseRef(baseRefOrBaseRefGenerate: Generate<string | undefined, []>): this;
 
   /**
    * file sets a file blob.

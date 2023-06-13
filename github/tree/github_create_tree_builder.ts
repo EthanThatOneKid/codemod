@@ -26,8 +26,8 @@ import { stringFromBlob } from "./base64.ts";
  */
 export class GitHubCreateTreeBuilder
   implements GitHubCreateTreeBuilderInterface {
-  #baseTree: Generate<string | undefined, []>;
-  #baseRef: Generate<string | undefined, []>;
+  #baseRef: Generate<string | undefined | null, []>;
+  #fallbackRefs: Generate<string | undefined, []>[] = [];
   #tree: Map<string, GitHubTreeOp> = new Map();
 
   constructor(
@@ -35,10 +35,33 @@ export class GitHubCreateTreeBuilder
   ) {}
 
   public async run(): Promise<GitHubAPITreesPostRequest> {
-    let sha = await generate(this.#baseTree);
-    const ref = await generate(this.#baseRef) ??
-      (await this.api.getRepository()).default_branch;
-    sha ??= (await this.api.getBranch({ ref })).commit.commit.tree.sha;
+    let ref = await generate(this.#baseRef);
+    let sha: string | undefined;
+
+    // Use fallback refs if the base ref is undefined.
+    const fallbackRefs = this.#fallbackRefs.slice();
+    do {
+      sha = !ref ? undefined : (
+        await this.api.getBranch({ ref }).catch((error) => {
+          if (error instanceof errors.NotFound) {
+            return undefined;
+          }
+
+          throw error;
+        })
+      )?.commit.commit.tree.sha;
+
+      if (sha !== undefined) {
+        break;
+      }
+
+      ref = await generate(fallbackRefs.shift() ?? (() => undefined));
+    } while (sha === undefined && fallbackRefs.length > 0);
+
+    // Set ref to undefined if the base ref is null.
+    ref ??= undefined;
+
+    // Generate a tree.
     const tree = await doTreeOps(this.api, ref, this.#tree);
     return makeGitHubAPITreesPostRequest(sha, tree);
   }
@@ -48,19 +71,12 @@ export class GitHubCreateTreeBuilder
     return this;
   }
 
-  public baseTree(
-    shaOrSHAGenerate: Generate<string | undefined, []>,
-    baseRefOrBaseRefGenerate: Generate<string | undefined, []>,
-  ): this {
-    this.#baseTree = shaOrSHAGenerate;
-    this.#baseRef = baseRefOrBaseRefGenerate;
-    return this;
-  }
-
   public baseRef(
-    baseRefOrBaseRefGenerate: Generate<string | undefined, []>,
+    refOrRefGenerate?: Generate<string | undefined | null, []>,
+    ...fallbackRefs: Generate<string | undefined, []>[]
   ): this {
-    this.#baseRef = baseRefOrBaseRefGenerate;
+    this.#baseRef = refOrRefGenerate;
+    this.#fallbackRefs = fallbackRefs;
     return this;
   }
 
@@ -177,7 +193,7 @@ export function makeGitHubAPITreesPostRequest(
  */
 export function doTreeOps(
   api: GitHubAPIClientInterface,
-  ref: string,
+  ref: string | undefined,
   tree: Map<string, GitHubTreeOp>,
 ): Promise<GitHubAPITreesPostRequest["tree"]> {
   const ops = [...tree.entries()];
@@ -192,7 +208,7 @@ export function doTreeOps(
  */
 export function doTreeOp(
   api: GitHubAPIClientInterface,
-  ref: string,
+  ref: string | undefined,
   path: string,
   op: GitHubTreeOp,
 ): Promise<GitHubAPITreesPostRequest["tree"]> {
@@ -403,7 +419,7 @@ export async function doTreeSymlinkOp(
  */
 export async function doTreeRenameOp(
   api: GitHubAPIClientInterface,
-  ref: string,
+  ref: string | undefined,
   path: string,
   op: GitHubTreeRenameOp,
 ): Promise<GitHubAPITreesPostRequest["tree"]> {
