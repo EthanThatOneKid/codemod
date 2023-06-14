@@ -38,26 +38,41 @@ export class GitHubCreateCommitBuilder
     // Parents are an empty array if not specified.
     const parents = await generate(this.#parents) ?? [];
 
-    // If base is specified, generate the base tree SHA.
+    // If parents is empty, generate the parent SHA.
     if (parents.length === 0) {
       const usingDefaultParent = await generate(this.#defaultParent);
-      const parentRef = await generate(this.#parentRef);
+      let parentRef = await generate(this.#parentRef);
+      let sha: string | undefined;
 
-      if (!usingDefaultParent && !parentRef) {
+      // Use fallback refs if parentRef is undefined.
+      const fallbackRefs = this.#fallbackRefs.slice();
+      do {
+        sha = !parentRef ? undefined : (
+          await this.api.getBranch({ ref: parentRef }).catch((error) => {
+            if (error instanceof errors.NotFound) {
+              return undefined;
+            }
+
+            throw error;
+          })
+        )?.commit.commit.tree.sha;
+
+        // If sha is defined, break out of the loop.
+        if (sha !== undefined) {
+          break;
+        }
+
+        parentRef = await generate(fallbackRefs.shift() ?? (() => undefined));
+      } while (!sha && fallbackRefs.length > 0);
+
+      // If using default parent and parentRef is undefined, throw an error.
+      if (!usingDefaultParent && !parentRef && parentRef !== null) {
         throw new Error("Parent ref is undefined.");
       }
 
-      const ref = parentRef || (await this.api.getRepository()).default_branch;
-      const parent = await this.api.getBranch({ ref }).catch((error) => {
-        if (error instanceof errors.NotFound) {
-          return undefined;
-        }
-
-        throw error;
-      });
-
-      if (parent) {
-        parents.push(parent.commit.sha);
+      // If sha is undefined, throw an error.
+      if (sha) {
+        parents.push(sha);
       }
     }
 
