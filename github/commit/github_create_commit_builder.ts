@@ -55,7 +55,7 @@ export class GitHubCreateCommitBuilder
 
             throw error;
           })
-        )?.commit.commit.tree.sha;
+        )?.commit.sha;
 
         // If sha is defined, break out of the loop.
         if (sha !== undefined) {

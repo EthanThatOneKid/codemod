@@ -25,7 +25,10 @@ async function main() {
       })
       .createCommit(
         ({ 0: tree }) => ({ message: "Add main.ts", tree: tree.sha }),
-        (commit) => commit.parentRef("new-branch"),
+        (commit) =>
+          commit
+            .parentRef("new-branch")
+            .defaultParent(),
       )
       .createOrUpdateBranch(({ 1: commit }) => ({
         ref: "new-branch",
