@@ -17,7 +17,6 @@ export class GitHubCreateCommitBuilder
   #parents: Generate<string[] | undefined, []>;
   #parentRef: Generate<string | undefined | null, []>;
   #fallbackRefs: Generate<string | undefined, []>[] = [];
-  #defaultParent: Generate<boolean, []> = false;
   #author: Generate<GitHubAPICommitsPostRequest["author"], []>;
   #committer: Generate<GitHubAPICommitsPostRequest["committer"], []>;
   #signature: Generate<string | undefined, []>;
@@ -37,11 +36,10 @@ export class GitHubCreateCommitBuilder
   public async run(): Promise<GitHubAPICommitsPostRequest> {
     // Parents are an empty array if not specified.
     const parents = await generate(this.#parents) ?? [];
+    let parentRef = await generate(this.#parentRef);
 
     // If parents is empty, generate the parent SHA.
-    if (parents.length === 0) {
-      const usingDefaultParent = await generate(this.#defaultParent);
-      let parentRef = await generate(this.#parentRef);
+    if (parents.length === 0 && parentRef !== null) {
       let sha: string | undefined;
 
       // Use fallback refs if parentRef is undefined.
@@ -65,15 +63,12 @@ export class GitHubCreateCommitBuilder
         parentRef = await generate(fallbackRefs.shift() ?? (() => undefined));
       } while (!sha && fallbackRefs.length > 0);
 
-      // If using default parent and parentRef is undefined, throw an error.
-      if (!usingDefaultParent && !parentRef && parentRef !== null) {
-        throw new Error("Parent ref is undefined.");
+      if (!sha) {
+        parentRef = (await this.api.getRepository()).default_branch;
+        sha = (await this.api.getBranch({ ref: parentRef })).commit.sha;
       }
 
-      // If sha is undefined, throw an error.
-      if (sha) {
-        parents.push(sha);
-      }
+      parents.push(sha);
     }
 
     // If defaultBase is specified, generate the default base tree SHA.
@@ -117,13 +112,6 @@ export class GitHubCreateCommitBuilder
   ): this {
     this.#parentRef = parentRefOrParentGenerate;
     this.#fallbackRefs = fallbackRefs;
-    return this;
-  }
-
-  public defaultParent(
-    defaultParenteOrDefaultParentGenerate?: Generate<boolean, []>,
-  ): this {
-    this.#defaultParent = defaultParenteOrDefaultParentGenerate ?? true;
     return this;
   }
 

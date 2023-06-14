@@ -39,13 +39,6 @@ export interface GitHubCreateCommitBuilderInterface {
   ): this;
 
   /**
-   * defaultParent sets the parent to the default repository branch.
-   */
-  defaultParent(
-    defaultParentOrDefaultParentGenerate?: Generate<boolean, []>,
-  ): this;
-
-  /**
    * author sets the author.
    */
   author(

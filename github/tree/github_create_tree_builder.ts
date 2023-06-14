@@ -38,28 +38,35 @@ export class GitHubCreateTreeBuilder
     let ref = await generate(this.#baseRef);
     let sha: string | undefined;
 
-    // Use fallback refs if the base ref is undefined.
-    const fallbackRefs = this.#fallbackRefs.slice();
-    do {
-      sha = !ref ? undefined : (
-        await this.api.getBranch({ ref }).catch((error) => {
-          if (error instanceof errors.NotFound) {
-            return undefined;
-          }
+    // Henceforth, ref is undefined if it is null.
+    if (ref === null) {
+      ref = undefined;
+    } else {
+      // Use fallback refs if the base ref is undefined.
+      const fallbackRefs = this.#fallbackRefs.slice();
+      do {
+        sha = !ref ? undefined : (
+          await this.api.getBranch({ ref }).catch((error) => {
+            if (error instanceof errors.NotFound) {
+              return undefined;
+            }
 
-          throw error;
-        })
-      )?.commit.commit.tree.sha;
+            throw error;
+          })
+        )?.commit.commit.tree.sha;
 
-      if (sha !== undefined) {
-        break;
+        if (sha !== undefined) {
+          break;
+        }
+
+        ref = await generate(fallbackRefs.shift() ?? (() => undefined));
+      } while (sha === undefined && fallbackRefs.length > 0);
+
+      if (sha === undefined) {
+        ref = (await this.api.getRepository()).default_branch;
+        sha = (await this.api.getBranch({ ref })).commit.commit.tree.sha;
       }
-
-      ref = await generate(fallbackRefs.shift() ?? (() => undefined));
-    } while (sha === undefined && fallbackRefs.length > 0);
-
-    // Set ref to undefined if the base ref is null.
-    ref ??= undefined;
+    }
 
     // Generate a tree.
     const tree = await doTreeOps(this.api, ref, this.#tree);
