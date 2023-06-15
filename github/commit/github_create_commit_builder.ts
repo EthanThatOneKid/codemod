@@ -15,8 +15,8 @@ export class GitHubCreateCommitBuilder
   #message: Generate<string, []>;
   #tree: Generate<string, []>;
   #parents: Generate<string[] | undefined, []>;
-  #parentRef: Generate<string | undefined, []>;
-  #defaultParent: Generate<boolean, []> = false;
+  #parentRef: Generate<string | undefined | null, []>;
+  #fallbackRefs: Generate<string | undefined, []>[] = [];
   #author: Generate<GitHubAPICommitsPostRequest["author"], []>;
   #committer: Generate<GitHubAPICommitsPostRequest["committer"], []>;
   #signature: Generate<string | undefined, []>;
@@ -36,28 +36,39 @@ export class GitHubCreateCommitBuilder
   public async run(): Promise<GitHubAPICommitsPostRequest> {
     // Parents are an empty array if not specified.
     const parents = await generate(this.#parents) ?? [];
+    let parentRef = await generate(this.#parentRef);
 
-    // If base is specified, generate the base tree SHA.
-    if (parents.length === 0) {
-      const usingDefaultParent = await generate(this.#defaultParent);
-      const parentRef = await generate(this.#parentRef);
+    // If parents is empty, generate the parent SHA.
+    if (parents.length === 0 && parentRef !== null) {
+      let sha: string | undefined;
 
-      if (!usingDefaultParent && !parentRef) {
-        throw new Error("Parent ref is undefined.");
-      }
+      // Use fallback refs if parentRef is undefined.
+      const fallbackRefs = this.#fallbackRefs.slice();
+      do {
+        sha = !parentRef ? undefined : (
+          await this.api.getBranch({ ref: parentRef }).catch((error) => {
+            if (error instanceof errors.NotFound) {
+              return undefined;
+            }
 
-      const ref = parentRef || (await this.api.getRepository()).default_branch;
-      const parent = await this.api.getBranch({ ref }).catch((error) => {
-        if (error instanceof errors.NotFound) {
-          return undefined;
+            throw error;
+          })
+        )?.commit.sha;
+
+        // If sha is defined, break out of the loop.
+        if (sha !== undefined) {
+          break;
         }
 
-        throw error;
-      });
+        parentRef = await generate(fallbackRefs.shift() ?? (() => undefined));
+      } while (!sha && fallbackRefs.length > 0);
 
-      if (parent) {
-        parents.push(parent.commit.sha);
+      if (!sha) {
+        parentRef = (await this.api.getRepository()).default_branch;
+        sha = (await this.api.getBranch({ ref: parentRef })).commit.sha;
       }
+
+      parents.push(sha);
     }
 
     // If defaultBase is specified, generate the default base tree SHA.
@@ -95,15 +106,12 @@ export class GitHubCreateCommitBuilder
     return this;
   }
 
-  public parentRef(parentRefOrParentGenerate: Generate<string, []>): this {
-    this.#parentRef = parentRefOrParentGenerate;
-    return this;
-  }
-
-  public defaultParent(
-    defaultParenteOrDefaultParentGenerate?: Generate<boolean, []>,
+  public parentRef(
+    parentRefOrParentGenerate: Generate<string | undefined | null, []>,
+    ...fallbackRefs: Generate<string | undefined, []>[]
   ): this {
-    this.#defaultParent = defaultParenteOrDefaultParentGenerate ?? true;
+    this.#parentRef = parentRefOrParentGenerate;
+    this.#fallbackRefs = fallbackRefs;
     return this;
   }
 

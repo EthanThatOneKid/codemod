@@ -33,13 +33,9 @@ export interface GitHubCreateCommitBuilderInterface {
    *
    * Subsequent calls to parent will override the previous value.
    */
-  parentRef(parentRefOrParentGenerate: Generate<string | undefined, []>): this;
-
-  /**
-   * defaultParent sets the parent to the default repository branch.
-   */
-  defaultParent(
-    defaultParentOrDefaultParentGenerate?: Generate<boolean, []>,
+  parentRef(
+    parentRefOrParentGenerate: Generate<string | undefined | null, []>,
+    ...fallbackRefs: Generate<string | undefined, []>[]
   ): this;
 
   /**
