@@ -39,6 +39,18 @@ export interface GitHubCreateCommitBuilderInterface {
   ): this;
 
   /**
+   * updateFrom generates a commit that automatically resolves any merge conflicts
+   * between the parent ref and the specified ref.
+   *
+   * If the specified ref is undefined, the commit will be generated from the
+   * default branch.
+   */
+  updateFrom(
+    refOrRefGenerate: Generate<string | undefined | null, []>,
+    ...fallbackRefs: Generate<string | undefined, []>[]
+  ): this;
+
+  /**
    * author sets the author.
    */
   author(
