@@ -17,6 +17,8 @@ export class GitHubCreateCommitBuilder
   #parents: Generate<string[] | undefined, []>;
   #parentRef: Generate<string | undefined | null, []>;
   #fallbackRefs: Generate<string | undefined, []>[] = [];
+  #baseRef: Generate<string | undefined | null, []>;
+  #baseFallbackRefs: Generate<string | undefined, []>[] = [];
   #author: Generate<GitHubAPICommitsPostRequest["author"], []>;
   #committer: Generate<GitHubAPICommitsPostRequest["committer"], []>;
   #signature: Generate<string | undefined, []>;
@@ -71,7 +73,47 @@ export class GitHubCreateCommitBuilder
       parents.push(sha);
     }
 
-    // If defaultBase is specified, generate the default base tree SHA.
+    // If the baseBranch is not empty, resolve merge conflicts automatically if
+    // the branch is not up to date with a base branch or the default branch.
+    let baseRef = await generate(this.#baseRef);
+    if (baseRef) {
+      let sha: string | undefined;
+
+      // Use fallback refs if baseRef is undefined.
+      const fallbackRefs = this.#baseFallbackRefs.slice();
+      do {
+        sha = !baseRef ? undefined : (
+          await this.api.getBranch({ ref: baseRef }).catch((error) => {
+            if (error instanceof errors.NotFound) {
+              return undefined;
+            }
+
+            throw error;
+          })
+        )?.commit.sha;
+
+        // If sha is defined, break out of the loop.
+        if (sha !== undefined) {
+          break;
+        }
+
+        baseRef = await generate(fallbackRefs.shift() ?? (() => undefined));
+      } while (!sha && fallbackRefs.length > 0);
+
+      if (!sha) {
+        baseRef = (await this.api.getRepository()).default_branch;
+        sha = (await this.api.getBranch({ ref: baseRef })).commit.sha;
+      }
+
+      // If the baseRef is not the same as the parentRef, merge the baseRef into
+      // the parentRef.
+      if (baseRef !== parentRef) {
+        // TODO: Create a merge commit.
+        // Status: On hold.
+      }
+    }
+
+    // Return the generated object.
     return await generateObject({
       message: this.#message,
       tree: this.#tree,
@@ -111,6 +153,15 @@ export class GitHubCreateCommitBuilder
     ...fallbackRefs: Generate<string | undefined, []>[]
   ): this {
     this.#parentRef = parentRefOrParentGenerate;
+    this.#fallbackRefs = fallbackRefs;
+    return this;
+  }
+
+  public updateFrom(
+    refOrRefGenerate: Generate<string | null | undefined, []>,
+    ...fallbackRefs: Generate<string | undefined, []>[]
+  ): this {
+    this.#parentRef = refOrRefGenerate;
     this.#fallbackRefs = fallbackRefs;
     return this;
   }

@@ -1,4 +1,4 @@
-export { errors } from "https://deno.land/std@0.191.0/http/http_errors.ts";
+export { errors } from "https://deno.land/std@0.192.0/http/http_errors.ts";
 
 export * from "https://deno.land/x/github_api_types@2023-05-17-05-41/mod.ts";
 
@@ -7,4 +7,4 @@ export {
   type Operation as JSONPatchOperation,
 } from "https://esm.sh/fast-json-patch@3.1.1";
 
-export * from "https://deno.land/std@0.191.0/dotenv/mod.ts";
+export * from "https://deno.land/std@0.192.0/dotenv/mod.ts";
