@@ -1,5 +1,4 @@
-import type { JSONPatchOperation } from "../../deps.ts";
-import { applyJSONPatch, errors } from "../../deps.ts";
+import { errors } from "../../deps.ts";
 import type {
   GitHubAPIClientInterface,
   GitHubAPITreesPostRequest,
@@ -10,7 +9,6 @@ import type {
   GitHubCreateTreeBuilderInterface,
   GitHubTreeExecutableOp,
   GitHubTreeFileOp,
-  GitHubTreeJSONPatchOp,
   GitHubTreeOp,
   GitHubTreeRenameOp,
   GitHubTreeSubdirectoryOp,
@@ -102,24 +100,6 @@ export class GitHubCreateTreeBuilder
     this.#tree.set(path, {
       type: GitHubTreeOpType.TEXT,
       data: textOrTextGenerate,
-    });
-    return this;
-  }
-
-  public jsonPatch<T>(
-    path: string,
-    patchesOrPatchesGenerate: Generate<JSONPatchOperation[], [string]>,
-    deserializeJSON?: (content: string) => T,
-    serializeJSON?: (value: T) => string,
-  ): this {
-    this.#tree.set(path, {
-      type: GitHubTreeOpType.JSON_PATCH,
-      data: {
-        patches: patchesOrPatchesGenerate,
-        deserializeJSON: deserializeJSON ?? JSON.parse,
-        serializeJSON: serializeJSON as (value: unknown) => string ??
-          JSON.stringify,
-      },
     });
     return this;
   }
@@ -228,10 +208,6 @@ export function doTreeOp(
       return doTreeTextOp(api, ref, path, op);
     }
 
-    case GitHubTreeOpType.JSON_PATCH: {
-      return doTreeJSONPatchOp(api, ref, path, op);
-    }
-
     case GitHubTreeOpType.EXECUTABLE: {
       return doTreeExecutableOp(path, op);
     }
@@ -318,30 +294,6 @@ export async function doTreeTextOp(
       mode: "100644",
       path,
       content: text,
-      type: "blob",
-    },
-  ];
-}
-
-/**
- * doTreeJSONPatchOp does a JSON patch operation for a create tree builder.
- */
-export async function doTreeJSONPatchOp(
-  api: GitHubAPIClientInterface,
-  ref: string | undefined,
-  path: string,
-  op: GitHubTreeJSONPatchOp,
-): Promise<GitHubAPITreesPostRequest["tree"]> {
-  const existingText = await api.getRawText({ path, ref });
-  const patches = await generate(op.data.patches, existingText);
-  const deserializedJSON = op.data.deserializeJSON(existingText);
-  const patchedJSON = applyJSONPatch(deserializedJSON, patches);
-  const serializedJSON = op.data.serializeJSON(patchedJSON);
-  return [
-    {
-      mode: "100644",
-      path,
-      content: serializedJSON,
       type: "blob",
     },
   ];

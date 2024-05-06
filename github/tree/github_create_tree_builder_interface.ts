@@ -1,4 +1,3 @@
-import type { JSONPatchOperation } from "../../deps.ts";
 import type { GitHubAPITreesPostRequest } from "../api/mod.ts";
 import type { Generate } from "../shared/generate.ts";
 
@@ -67,16 +66,6 @@ export interface GitHubCreateTreeBuilderInterface {
   ): this;
 
   /**
-   * jsonPatch applies patches to a JSON file.
-   */
-  jsonPatch<T>(
-    path: string,
-    patchesOrPatchesGenerate: Generate<JSONPatchOperation[], [string]>,
-    deserializeJSON?: (content: string) => T,
-    serializeJSON?: (value: T) => string,
-  ): this;
-
-  /**
    * executable sets an executable blob.
    */
   executable(
@@ -140,7 +129,6 @@ export enum GitHubTreeOpType {
 export type GitHubTreeOp =
   | GitHubTreeFileOp
   | GitHubTreeTextOp
-  | GitHubTreeJSONPatchOp
   | GitHubTreeExecutableOp
   | GitHubTreeSubdirectoryOp
   | GitHubTreeSubmoduleOp
@@ -162,18 +150,6 @@ export interface GitHubTreeFileOp {
 export interface GitHubTreeTextOp {
   type: GitHubTreeOpType.TEXT;
   data: Generate<string, [string]>;
-}
-
-/**
- * GitHubTreeJSONPatchOp is a GitHub tree JSON patch operation.
- */
-export interface GitHubTreeJSONPatchOp {
-  type: GitHubTreeOpType.JSON_PATCH;
-  data: {
-    patches: Generate<JSONPatchOperation[], [string]>;
-    deserializeJSON: (content: string) => unknown;
-    serializeJSON: (value: unknown) => string;
-  };
 }
 
 /**

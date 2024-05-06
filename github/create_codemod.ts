@@ -18,10 +18,6 @@ import { generate } from "./shared/generate.ts";
  *       (tree) =>
  *         tree
  *           .text("hello_world.txt", "Hello, Ethan!\n")
- *           .jsonPatch<string[]>(
- *             "friends.json",
- *             [{ op: "add", path: "/-", value: "EthanThatOneKid" }],
- *           )
  *     )
  *     .createCommit(({ 0: tree }) => ({
  *       message: "Add Ethan as a new friend",
