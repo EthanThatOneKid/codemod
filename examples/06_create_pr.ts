@@ -1,12 +1,16 @@
-// File:
-// Demonstrates how to create or update a branch using the GitHub API.
-//
-// Run:
-// deno run -A examples/06_create_pr/main.ts
-//
+/**
+ * @fileoverview
+ *
+ * Demonstrates how to create or update a branch using the GitHub API.
+ *
+ * Run:
+ *
+ * ```
+ * deno run -A examples/06_create_pr.ts
+ * ```
+ */
 
-import { GITHUB_TOKEN } from "./env.ts";
-import { createCodemod } from "../../github/mod.ts";
+import { createCodemod } from "../github/mod.ts";
 
 if (import.meta.main) {
   await main();
@@ -18,7 +22,6 @@ async function main() {
       .createTree((tree) => tree.text("docs/README.md", "Hello, World!"))
       .createCommit(
         ({ 0: tree }) => ({ message: "Create README.md", tree: tree.sha }),
-        (commit) => commit.defaultParent(),
       )
       .createBranch(({ 1: commit }) => ({
         ref: "new-branch-" + Math.random().toString(36).slice(2),
@@ -31,7 +34,7 @@ async function main() {
       })), {
     owner: "EthanThatOneKid",
     repo: "pomo",
-    token: GITHUB_TOKEN,
+    token: Deno.env.get("GITHUB_TOKEN")!,
   });
   console.log(JSON.stringify(codemod, null, 2));
 }

@@ -1,8 +1,8 @@
-import { errors } from "../../deps.ts";
 import type {
   GitHubAPIClientInterface,
   GitHubAPITreesPostRequest,
 } from "../api/mod.ts";
+import { errors } from "../api/mod.ts";
 import type { Generate } from "../shared/generate.ts";
 import { generate } from "../shared/generate.ts";
 import type {
@@ -45,7 +45,10 @@ export class GitHubCreateTreeBuilder
       do {
         sha = !ref ? undefined : (
           await this.api.getBranch({ ref }).catch((error) => {
-            if (error instanceof errors.NotFound) {
+            if (
+              error instanceof Error &&
+              error.message === errors.notFound.message
+            ) {
               return undefined;
             }
 
@@ -249,7 +252,7 @@ export async function doTreeFileOp(
 ): Promise<GitHubAPITreesPostRequest["tree"]> {
   const existingBlob = await api.getRawBlob({ path, ref })
     .catch((error) => {
-      if (error instanceof errors.NotFound) {
+      if (error instanceof Error && error.message === errors.notFound.message) {
         return new Blob();
       }
 
@@ -282,7 +285,7 @@ export async function doTreeTextOp(
 ): Promise<GitHubAPITreesPostRequest["tree"]> {
   const existingText = await api.getRawText({ path, ref })
     .catch((error) => {
-      if (error instanceof errors.NotFound) {
+      if (error instanceof Error && error.message === errors.notFound.message) {
         return "";
       }
 
@@ -386,7 +389,7 @@ export async function doTreeRenameOp(
   const newPath = op.data;
   const contents = await api.getContents({ path: oldPath, ref })
     .catch((error) => {
-      if (error instanceof errors.NotFound) {
+      if (error instanceof Error && error.message === errors.notFound.message) {
         return null;
       }
 

@@ -1,4 +1,4 @@
-import type { paths } from "../../deps.ts";
+import type { paths } from "github-api-types";
 
 /**
  * The GitHub API client interface.

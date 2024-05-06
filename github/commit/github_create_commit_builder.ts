@@ -1,8 +1,8 @@
-import { errors } from "../../deps.ts";
 import type {
   GitHubAPIClientInterface,
   GitHubAPICommitsPostRequest,
 } from "../api/mod.ts";
+import { errors } from "../api/mod.ts";
 import type { GitHubCreateCommitBuilderInterface } from "./github_create_commit_builder_interface.ts";
 import { Generate, generate } from "../shared/generate.ts";
 import { generateObject } from "../shared/generate.ts";
@@ -47,7 +47,10 @@ export class GitHubCreateCommitBuilder
       do {
         sha = !parentRef ? undefined : (
           await this.api.getBranch({ ref: parentRef }).catch((error) => {
-            if (error instanceof errors.NotFound) {
+            if (
+              error instanceof Error &&
+              error.message === errors.notFound.message
+            ) {
               return undefined;
             }
 

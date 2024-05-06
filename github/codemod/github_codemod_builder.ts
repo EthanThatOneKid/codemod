@@ -1,4 +1,3 @@
-import { errors } from "../../deps.ts";
 import type {
   GitHubAPIClientOptions,
   GitHubAPICommitsPostRequest,
@@ -7,7 +6,7 @@ import type {
   GitHubAPIRefPatchRequest,
   GitHubAPIRefsPostRequest,
 } from "../api/mod.ts";
-import { GitHubAPIClient } from "../api/mod.ts";
+import { errors, GitHubAPIClient } from "../api/mod.ts";
 import {
   GitHubCodemodBuilderInterface,
   GitHubCreateBranchOp,
@@ -111,7 +110,10 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
           );
           const branch = await api.getBranch({ ref: createOptions.ref })
             .catch((error) => {
-              if (error instanceof errors.NotFound) {
+              if (
+                error instanceof Error &&
+                error.message === errors.notFound.message
+              ) {
                 return undefined;
               }
 
@@ -153,7 +155,10 @@ export class GitHubCodemodBuilder<R extends GitHubOpResult[] = []>
 
           const response = await api.postPulls(options)
             .catch((error) => {
-              if (error instanceof errors.UnprocessableEntity) {
+              if (
+                error instanceof Error &&
+                error.message === errors.unprocessableEntity.message
+              ) {
                 return undefined;
               }
 

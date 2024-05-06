@@ -1,12 +1,16 @@
-// File:
-// Demonstrates how to update a pull request using the GitHub API.
-//
-// Run:
-// deno run -A examples/07_update_pr/main.ts
-//
+/**
+ * @fileoverview
+ *
+ * Demonstrates how to update a pull request using the GitHub API.
+ *
+ * Run:
+ *
+ * ```
+ * deno run -A examples/07_update_pr.ts
+ * ```
+ */
 
-import { GITHUB_TOKEN } from "./env.ts";
-import { createCodemod } from "../../github/mod.ts";
+import { createCodemod } from "../github/mod.ts";
 
 if (import.meta.main) {
   await main();
@@ -21,7 +25,7 @@ async function main() {
       }), {
     owner: "EthanThatOneKid",
     repo: "pomo",
-    token: GITHUB_TOKEN,
+    token: Deno.env.get("GITHUB_TOKEN")!,
   });
   console.log(JSON.stringify(codemod, null, 2));
 }
