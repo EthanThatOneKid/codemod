@@ -24,9 +24,7 @@ import { generate } from "./shared/generate.ts";
  *       tree: tree.sha,
  *     }), (commit) =>
  *       commit
- *         .parentRef("new-branch")
- *         .defaultParent()
- *     )
+ *         .parentRef("new-branch"))
  *     .createOrUpdateBranch(({ 1: commit }) => ({
  *       ref: "new-branch",
  *       sha: commit.sha,

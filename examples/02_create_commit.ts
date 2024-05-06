@@ -1,12 +1,16 @@
-// File:
-// Demonstrates how to create a commit using the GitHub API.
-//
-// Run:
-// deno run -A examples/02_create_commit/main.ts
-//
+/**
+ * @fileoverview
+ *
+ * Demonstrates how to create a commit using the GitHub API.
+ *
+ * Run:
+ *
+ * ```
+ * deno run -A examples/02_create_commit.ts
+ * ```
+ */
 
-import { GITHUB_TOKEN } from "./env.ts";
-import { createCodemod } from "../../github/mod.ts";
+import { createCodemod } from "../github/mod.ts";
 
 if (import.meta.main) {
   await main();
@@ -22,7 +26,7 @@ async function main() {
       })), {
     owner: "EthanThatOneKid",
     repo: "acmcsuf.com",
-    token: GITHUB_TOKEN,
+    token: Deno.env.get("GITHUB_TOKEN")!,
   });
   console.log(JSON.stringify(codemod, null, 2));
 }

@@ -1,12 +1,16 @@
-// File:
-// Demonstrates how to maybe create a PR using the GitHub API.
-//
-// Run:
-// deno run -A examples/08_maybe_create_pr/main.ts
-//
+/**
+ * @fileoverview
+ *
+ * Demonstrates how to maybe create a PR using the GitHub API.
+ *
+ * Run:
+ *
+ * ```
+ * deno run -A examples/08_maybe_create_pr.ts
+ * ```
+ */
 
-import { GITHUB_TOKEN } from "./env.ts";
-import { createCodemod } from "../../github/mod.ts";
+import { createCodemod } from "../github/mod.ts";
 
 if (import.meta.main) {
   await main();
@@ -28,8 +32,7 @@ async function main() {
         tree: tree.sha,
       }), (commit) =>
         commit
-          .parentRef("new-branch")
-          .defaultParent())
+          .parentRef("new-branch"))
       .createOrUpdateBranch(({ 1: commit }) => ({
         ref: "new-branch",
         sha: commit.sha,
@@ -42,7 +45,7 @@ async function main() {
       }), {
     owner: "EthanThatOneKid",
     repo: "pomo",
-    token: GITHUB_TOKEN,
+    token: Deno.env.get("GITHUB_TOKEN")!,
   });
 
   console.log(JSON.stringify(codemod, null, 2));

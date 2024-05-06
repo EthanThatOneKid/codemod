@@ -1,4 +1,3 @@
-import { errors } from "../../deps.ts";
 import type {
   GitHubAPIBlobsPostRequest,
   GitHubAPIBlobsPostResponse,
@@ -82,7 +81,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       }
 
       case 404: {
-        throw new errors.NotFound(await response.text());
+        throw errors.notFound;
       }
 
       default: {
@@ -116,7 +115,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       }
 
       case 404: {
-        throw new errors.NotFound(await response.text());
+        throw errors.notFound;
       }
 
       default: {
@@ -152,11 +151,11 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
 
       case 302:
       case 404: {
-        throw new errors.NotFound(await response.text());
+        throw errors.notFound;
       }
 
       case 403: {
-        throw new errors.Forbidden(await response.text());
+        throw errors.forbidden;
       }
 
       default: {
@@ -185,11 +184,11 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
 
       case 301:
       case 404: {
-        throw new errors.NotFound(await response.text());
+        throw errors.notFound;
       }
 
       case 403: {
-        throw new errors.Forbidden(await response.text());
+        throw errors.forbidden;
       }
 
       default: {
@@ -224,7 +223,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
 
       case 301:
       case 404: {
-        throw new errors.NotFound(await response.text());
+        throw errors.notFound;
       }
 
       default: {
@@ -258,19 +257,19 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       }
 
       case 403: {
-        throw new errors.Forbidden(await response.text());
+        throw errors.forbidden;
       }
 
       case 404: {
-        throw new errors.NotFound(await response.text());
+        throw new Error("Not found");
       }
 
       case 409: {
-        throw new errors.Conflict(await response.text());
+        throw new Error("Conflict");
       }
 
       case 422: {
-        throw new errors.UnprocessableEntity(await response.text());
+        throw errors.unprocessableEntity;
       }
 
       default: {
@@ -304,15 +303,15 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       }
 
       case 403: {
-        throw new errors.Forbidden(await response.text());
+        throw errors.forbidden;
       }
 
       case 404: {
-        throw new errors.NotFound(await response.text());
+        throw new Error("Not found");
       }
 
       case 422: {
-        throw new errors.UnprocessableEntity(await response.text());
+        throw errors.unprocessableEntity;
       }
 
       default: {
@@ -346,11 +345,11 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       }
 
       case 404: {
-        throw new errors.NotFound(await response.text());
+        throw new Error("Not found");
       }
 
       case 422: {
-        throw new errors.UnprocessableEntity(await response.text());
+        throw errors.unprocessableEntity;
       }
 
       default: {
@@ -384,7 +383,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       }
 
       case 422: {
-        throw new errors.UnprocessableEntity(await response.text());
+        throw errors.unprocessableEntity;
       }
 
       default: {
@@ -419,7 +418,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       }
 
       case 422: {
-        throw new errors.UnprocessableEntity(await response.text());
+        throw errors.unprocessableEntity;
       }
 
       default: {
@@ -453,11 +452,11 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       }
 
       case 403: {
-        throw new errors.Forbidden(await response.text());
+        throw errors.forbidden;
       }
 
       case 422: {
-        throw new errors.UnprocessableEntity(await response.text());
+        throw errors.unprocessableEntity;
       }
 
       default: {
@@ -523,7 +522,7 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       }
 
       case 422: {
-        throw new errors.UnprocessableEntity(await response.text());
+        throw errors.unprocessableEntity;
       }
 
       default: {
@@ -558,11 +557,11 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
       }
 
       case 403: {
-        throw new errors.Forbidden(await response.text());
+        throw errors.forbidden;
       }
 
       case 422: {
-        throw new errors.UnprocessableEntity(await response.text());
+        throw errors.unprocessableEntity;
       }
 
       default: {
@@ -574,3 +573,12 @@ export class GitHubAPIClient implements GitHubAPIClientInterface {
     }
   }
 }
+
+/**
+ * errors for the GitHub API client.
+ */
+export const errors = {
+  forbidden: new Error("Forbidden"),
+  notFound: new Error("Not found"),
+  unprocessableEntity: new Error("Unprocessable entity"),
+};

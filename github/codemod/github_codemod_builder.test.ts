@@ -1,4 +1,4 @@
-import { assertEquals } from "../../dev_deps.ts";
+import { assertEquals } from "@std/assert";
 
 Deno.test("GitHubCodemodBuilder creates a tree", () => {
   // TODO(https://oss.acmcsuf.com/codemod/pull/3#pullrequestreview-1433626635):
